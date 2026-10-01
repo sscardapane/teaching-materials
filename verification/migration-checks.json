@@ -1,0 +1,27 @@
+{
+  "date": "2026-10-01",
+  "pdf_report": "migration-result.json",
+  "notebooks": {
+    "generated_student_sources": "passed",
+    "clean_execution": "passed",
+    "student_exercise_paths": "passed",
+    "autograd_and_per_example_gradients": "passed",
+    "image_reference_experiment": "passed",
+    "original_notebook_and_preview_bytes": "preserved"
+  },
+  "interactive": {
+    "decks": [
+      "Lecture_0",
+      "Lecture_2_tensors",
+      "Lecture_2_optimization",
+      "Theme_kit_test"
+    ],
+    "production_build": "passed",
+    "headless_navigation": "passed",
+    "local_asset_requests": "passed",
+    "gradient_descent_run_and_unstable_controls": "passed",
+    "environment_note": "Headless Chromium denies the Slidev wake-lock request; this environment-only message was excluded from application errors."
+  },
+  "relu_geometry": "passed exact-arithmetic checks through eight compositions",
+  "website_build": "passed"
+}

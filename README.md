@@ -1,93 +1,109 @@
 # Teaching materials
 
-Shared teaching sources for Simone Scardapane's courses. Course folders hold the
-presentation templates and course-specific choices; shared material lives in one
-place. The layout can accommodate Neural Networks, Neural Networks for Data
-Science, and other machine learning courses.
+Shared sources for Neural Networks (NN), Neural Networks for Data Science
+(NNDS), and future machine learning courses.
 
-The first experiment is the **linear-model lecture**, built for NN and NNDS.
-All 23 content frames live in [one source](shared/slides/linear-models.tex).
-Course settings preserve the existing notation and spacing differences. The
-original title pages, templates, fonts, authorship and section dividers remain
-part of each course wrapper.
+- [Shared PyTorch notebooks](notebooks/): PT01 and PT02, student and instructor versions.
+- [NN PDFs](pdf/nn/) and [NNDS PDFs](pdf/nnds/).
+- [Interactive slides and downloads](https://sscardapane.github.io/teaching-materials/),
+  [slide sources](html/slides/) and [authoring guide](html/AUTHORING.md).
 
-## Pilot result
+## One source, course-specific presentation
 
-Both builds match fresh builds of the original repositories:
+Linear models and MLPs use shared lecture sources in `shared/slides/`. Course
+wrappers under `courses/nn/` and `courses/nnds/` preserve the original templates,
+authorship, notation and spacing. The NN-only ReLU geometry material and the two
+courses' distinct activation discussions remain explicit course choices. Course
+introductions and NNDS preliminaries stay in their respective course folders.
+Figures and their editable sources are in `shared/assets/` or the relevant
+course's `assets/` directory.
 
-| Course | Original output filename | Pages | Different pixels at 200 dpi |
-|---|---|---:|---:|
-| NN | `NN2627_Linear_models.pdf` | 26 | 0 |
-| NNDS | `Lecture_3_supervised_learning.pdf` | 29 | 0 |
+PT01/PT02 have one shared home: **`notebooks/`**. Edit the `_solutions.ipynb`
+instructor sources, then regenerate the student notebooks. The notebook README
+covers dependencies, optional sections and verification. There are no dated draft
+folders or separate notebook copies per course.
 
-Extracted text, page dimensions, link targets and positions, named destinations,
-and title/author metadata also match. This verifies rendered equivalence in the
-recorded environment; the PDF files themselves have different hashes because
-build metadata and internal serialization can change.
+## Build slides
 
-See the [comparison report](verification/pilot-result.json) and
-[baseline provenance](verification/provenance.json). The baseline PDFs were
-compiled from committed source snapshots, including NN's pinned asset submodule.
-The experiment does not fix layout issues already present in those sources.
-
-## Build and compare
-
-Use a full TeX installation with `latexmk`, pdfLaTeX and LuaLaTeX, including the
-packages and fonts used by the two templates. The pilot used TeX Live 2024.
-Poppler (`pdftoppm`, `pdftotext`) and Python 3.10+ are needed for verification.
-Exact raster comparisons also depend on the same fonts and renderer version;
-the report records the tool versions.
-
-From the repository root:
+Use a full TeX installation with `latexmk`, pdfLaTeX, LuaLaTeX and the packages
+and fonts required by the templates. The migration was checked with TeX Live 2024.
 
 ```sh
-python3 scripts/build.py
+python3 scripts/build.py       # all seven LaTeX decks
+python3 scripts/build.py nn    # NN only; use nnds for NNDS
+```
+
+Outputs and logs go to `build/<course>/`. After reviewing a deliberate slide
+revision, add `--export` to copy the resulting PDFs into the tracked `pdf/`
+download folders. The deck list is in `decks.json`.
+
+To build the interactive site locally:
+
+```sh
+cd html
+npm ci
+cd ..
+python3 scripts/build_site.py
+```
+
+The result is `html/dist/`, built for the `/teaching-materials/` URL prefix.
+The script builds all four interactive decks and includes the PDF and notebook
+downloads. Node 20+ is required. The tensor PDF is the preserved original HTML
+export; its editable source is `html/slides/Lecture_2_tensors.md`.
+
+## Publication
+
+GitHub Pages builds the interactive decks and download index after main-branch
+changes to `html/`, `pdf/`, `notebooks/` or the site builder/workflow. The workflow
+is `.github/workflows/deploy-materials.yml`. It publishes to
+https://sscardapane.github.io/teaching-materials/; NNDS interactive decks are under
+`nnds/<deck-name>/`. PDF downloads also remain available directly from `pdf/` in
+this repository. A source-only TeX edit must be reviewed and exported before its
+public PDF changes. Verify the Actions deployment and affected live URLs.
+
+## Migration checks
+
+All seven LaTeX decks were rebuilt from independent snapshots of the original
+repositories and compared with the migrated sources. The
+[comparison report](verification/migration-result.json) records every page at
+200 dpi, extracted text, page dimensions, PDF links and metadata. The original
+[linear-model pilot](verification/pilot-result.json) remains as a historical check.
+
+```sh
 python3 -m venv .venv
 .venv/bin/python -m pip install -r requirements-verify.txt
 .venv/bin/python scripts/verify.py
 ```
 
-Build one course with `python3 scripts/build.py nn` or
-`python3 scripts/build.py nnds`. PDFs and build logs appear under `build/nn/`
-and `build/nnds/`. The default verification report is `build/verification.json`;
-a discrepancy returns a failing exit status. The committed pilot report is a
-record of this experiment and is not overwritten by routine checks.
+Exact pixel equality requires the same TeX/font/Poppler environment; tool
+versions are recorded in the reports. PDF bytes may differ because of build
+metadata. Existing layout limitations are preserved by the migration.
 
-The build is self-contained: it does not read either original repository or
-fetch a submodule. The committed figures are sufficient to compile; their
-available drawing/plot sources are alongside them.
+The [inventory](verification/migration-inventory.json) accounts for every tracked
+file in both original repositories. Generated TeX intermediates and editor/Git
+configuration were replaced by the new build setup. Original course decisions,
+port history and provenance are retained in `docs/source-history/` as historical
+records. They are not current operating instructions.
 
-## Where to edit
+All five previously published NNDS PDFs and all eight notebook/HTML files were
+copied byte for byte; see [download checks](verification/preserved-downloads.json).
+The public PDFs are publication snapshots. In particular, the old preliminaries
+PDF has a small equation-spacing difference from a fresh source build. This
+migration preserves the existing download; a future reviewed export can update it.
+The three NN downloads come from the verified migrated builds.
 
-- `shared/slides/linear-models.tex`: lecture content and sequence, shared by both courses.
-- `shared/assets/`: figures and their available editable sources.
-- `courses/nn/` and `courses/nnds/`: course wrappers, original templates, branding
-  assets and `linear-models-settings.tex` for the few differing choices.
-- `verification/reference/`: immutable baseline PDFs for this pilot.
+## Existing URLs
 
-Future courses can add their own folder under `courses/` and select the shared
-material they need. New topics can have their own files under `shared/slides/`.
-
-## Existing links and notebooks
-
-This repository is a pilot. The existing course repositories and their published
-URLs remain in place:
-
-- [NN course repository](https://github.com/sscardapane/slides-nn-2026)
-- [NNDS course repository](https://github.com/sscardapane/slides-nnds-2026)
-
-PT01/PT02, including the instructor versions and student-generation scripts,
-remain in the [shared notebook directory](https://github.com/sscardapane/slides-nnds-2026/tree/main/notebooks/drafts/2026-09-14-first-pass).
-There is no second notebook copy here.
-
-If the remaining material moves here, the old repositories can continue serving
-the same filenames and URLs, receiving generated outputs from the shared source.
-That publishing connection is a separate migration step; this pilot has no
-deployment workflow.
+`teaching-materials` is now the source to edit. The previous repositories retain
+their material for history and compatibility, so existing raw PDF, notebook and
+interactive-slide URLs continue to resolve. They are frozen snapshots and are
+not independently maintained teaching sources. New links should use this
+repository's paths. Original Google Slides and Colab documents remain external
+sources; the migration does not copy or replace them.
 
 ## Attribution
 
-The NN material preserves the joint authorship of Danilo Comminiello and Simone
-Scardapane. The NNDS material preserves its original authorship and references.
-The imported templates and assets retain their existing notices. Public
-availability does not assign a new blanket license to third-party material.
+NN preserves the joint authorship of Danilo Comminiello and Simone Scardapane.
+NNDS preserves its original authorship and references. Imported assets and
+source notices remain intact. Public availability does not assign a new blanket
+license to third-party material.

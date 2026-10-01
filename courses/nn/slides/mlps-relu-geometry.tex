@@ -1,0 +1,55 @@
+\begin{frame}{One network, many affine maps}
+  \small
+  \setlength{\abovedisplayskip}{6pt}\setlength{\belowdisplayskip}{6pt}
+  \begin{columns}[c,onlytextwidth]
+    \begin{column}{0.51\textwidth}
+      Each ReLU either passes its input or sets it to zero:
+      \[
+        \vc{h}=\vc{D}(\vc{x})(\vc{W}\vc{x}+\vc{b}),
+        \qquad D_{ii}(\vc{x})\in\{0,1\}.
+      \]
+      The diagonal entries of $\vc{D}$ indicate which units are active. With an affine output,
+      \begin{align*}
+        f(\vc{x})&=\vc{w}^{\top}\vc{D}(\vc{x})(\vc{W}\vc{x}+\vc{b})+c\\
+                 &=\vc{a}(\vc{x})^{\top}\vc{x}+\beta(\vc{x}).
+      \end{align*}
+      Within each region, the gates stay fixed: the network is \myalert{exactly affine}.
+
+      \medskip
+      This holds at any depth. Training learns both the regions and their affine maps.
+    \end{column}
+    \begin{column}{0.46\textwidth}
+      \centering
+      $f(\vc{x})=\operatorname{ReLU}(x_1)+\operatorname{ReLU}(x_2-x_1)$\par
+      \smallskip
+      \input{assets/images/nn/relu/regions.tex}
+    \end{column}
+  \end{columns}
+  \vfill
+  {\scriptsize\color{drawgray}For ReLU hidden layers, before any output sigmoid or softmax.
+  \href{https://arxiv.org/abs/1402.1869}{Mont\'ufar et al. (2014), Linear regions of deep neural networks}.}
+\end{frame}
+
+\begin{frame}{Depth through composition}
+  \small
+  \setlength{\abovedisplayskip}{5pt}\setlength{\belowdisplayskip}{5pt}
+  Three ReLUs make a triangular function. Apply the same function repeatedly:
+  \[
+    T(x)=2\operatorname{ReLU}(x)-4\operatorname{ReLU}\!\left(x-\tfrac12\right)
+         +2\operatorname{ReLU}(x-1),\qquad x\in[0,1].
+  \]
+  \begin{center}
+    \input{assets/images/nn/relu/folding.tex}
+  \end{center}
+  Each composition splits every piece in two: $k$ blocks give $2^k$ pieces using $3k$ ReLU units.
+
+  \smallskip
+  A single hidden layer with $m$ ReLUs has at most $m+1$ pieces in one dimension.
+  \myalert{Depth can make a representation much more compact.}
+
+  \smallskip
+  Without nonlinearities, all layers collapse to one affine map.
+  \vfill
+  {\scriptsize\color{drawgray}An expressivity example, not a guarantee about training or generalization.
+  \href{https://proceedings.mlr.press/v49/telgarsky16.html}{Telgarsky (2016), Benefits of depth in neural networks}.}
+\end{frame}

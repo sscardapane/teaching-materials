@@ -1,0 +1,19 @@
+{
+  "archive": "sources.zip",
+  "received": "2026-09-29",
+  "archive_sha256": "014f775aa064109ded6b3ba253d45db009c966a029771990ec028531e1011482",
+  "mapping": "sources/* -> latex/*; macOS metadata omitted",
+  "files": {
+    "latex/NN2627_01_Intro.tex": "4a52382a503446c446dc35024b36b8772c3be8d5010642de18f2c9f4127e6b57",
+    "latex/beamerthemeNN26.sty": "0504fe703c21b9c35b7ec08517cceb4bb9873da2b1d4c8c78f13c69400feedf1",
+    "latex/images/isometric-people-walking-on-street-vector-29295876.jpg": "3516116cd4e3f656b34b683db898047b9ef24d362857b3b3a9e7eff7e33bf580",
+    "latex/images/ISPAMMlab_2024-12-20.jpg": "b6a4c4a696b7b0260937c8a91fa2b3cab9d28f4952209bc9be15fad0bf7fad6d",
+    "latex/images/Teachers2023.png": "01cd44a5e48699020a1e0cd042d118ffe22ed6ba6ceee132e65f5aad6b0c08dc",
+    "latex/images/Lecture 01.drawio": "864a906f33febe81132e786d1f71e045bdc34f2d77e0eb5aea51a80a55a51841",
+    "latex/images/Sapienza-logo.pdf": "ecc6e47abbfbb8cb95c33d423645f4287638c704e6b3494e90f983ee63c83cdb",
+    "latex/images/cover.jpg": "a7ca3c0201a6e7123e13a82e134566322c1310db4108fd3cd613da4966b7ba6f",
+    "latex/images/NNscheme.pdf": "2b0f0447b82d4a7d7e1fa16e84e4dcbbfd795c4449c808d2f160dbbe30f4ea96",
+    "latex/images/NNvsMLvsDL.pdf": "20b12b407c07e2bd120c7bf459daf0a260962fab6ebf63e207b5fd06fbf0d549",
+    "latex/images/NeuralNetworksArePervasive.pdf": "f56738e9b7f7a8017b453a9b43cb481c6f276ae7c7ded70d3004707193a76727"
+  }
+}

@@ -54,8 +54,7 @@ def pdf_structure(path):
     return {'pages': pages, 'destinations': destinations, 'metadata': metadata}
 
 
-def compare(course, dpi, workspace):
-    name, _ = DECKS[course]
+def compare(course, name, dpi, workspace):
     reference = ROOT / 'verification' / 'reference' / f'{name}.pdf'
     candidate = ROOT / 'build' / course / f'{name}.pdf'
     before, after = pdf_structure(reference), pdf_structure(candidate)
@@ -63,7 +62,7 @@ def compare(course, dpi, workspace):
             for path in (reference, candidate)]
     images = []
     for label, path in [('reference', reference), ('candidate', candidate)]:
-        prefix = workspace / f'{course}-{label}'
+        prefix = workspace / f'{name}-{label}'
         subprocess.run(['pdftoppm', '-r', str(dpi), '-png', str(path), str(prefix)],
                        check=True, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)
         images.append(sorted(workspace.glob(prefix.name + '-*.png'),
@@ -101,9 +100,11 @@ def main():
         result = subprocess.run([tool, flag], capture_output=True, text=True, check=True)
         report['tools'][tool] = (result.stdout + result.stderr).splitlines()[0]
     with tempfile.TemporaryDirectory(prefix='teaching-pdf-compare-') as folder:
-        for course in DECKS:
-            report['courses'][course] = compare(course, args.dpi, Path(folder))
-            print(course, {k: v for k, v in report['courses'][course].items() if k != 'page_results'})
+        for course, names in DECKS.items():
+            for name in names:
+                key = f'{course}/{name}'
+                report['courses'][key] = compare(course, name, args.dpi, Path(folder))
+                print(key, {k: v for k, v in report['courses'][key].items() if k != 'page_results'}, flush=True)
     report['passed'] = all(all(result[key] for key in
                               ['same_page_count', 'text_identical', 'structure_identical', 'all_pixels_identical'])
                            for result in report['courses'].values())

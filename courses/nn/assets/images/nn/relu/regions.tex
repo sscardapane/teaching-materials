@@ -1,0 +1,21 @@
+% Original NN figure, 2026-10-01. Exact activation partition for
+% f(x) = ReLU(x_1) + ReLU(x_2-x_1). See verify_geometry.py.
+\begin{tikzpicture}[x=1.14cm,y=1.14cm]
+  \path[use as bounding box] (-2.35,-2.45) rectangle (2.55,2.50);
+  \fill[drawgray_l] (-2,-2)--(0,0)--(0,-2)--cycle;
+  \fill[drawblue_l!75] (-2,-2)--(-2,2)--(0,2)--(0,0)--cycle;
+  \fill[draworange_l!75] (0,-2)--(2,-2)--(2,2)--(0,0)--cycle;
+  \fill[drawgreen_l!85] (0,0)--(2,2)--(0,2)--cycle;
+  \draw[drawgray!45] (-2,-2) rectangle (2,2);
+  \draw[->,drawgray!70] (-2.15,0)--(2.30,0) node[right,text=black] {$x_1$};
+  \draw[->,drawgray!70] (0,-2.15)--(0,2.30) node[above,text=black] {$x_2$};
+  \draw[drawgray,thick,densely dashed] (0,-2)--(0,2);
+  \draw[drawgray,thick,densely dashed] (-2,-2)--(2,2);
+  \node[anchor=west,font=\scriptsize,text=drawgray] at (1.40,2.25) {$x_2=x_1$};
+  \node[below right,font=\scriptsize,text=drawgray] at (0.03,-0.03) {$0$};
+  \node[align=center] at (-0.60,-1.46) {$f=0$\\[-1pt]{\scriptsize $(0,0)$}};
+  \node[align=center] at (-1.03,0.86) {$f=x_2-x_1$\\[-1pt]{\scriptsize $(0,1)$}};
+  \node[align=center] at (1.08,-0.89) {$f=x_1$\\[-1pt]{\scriptsize $(1,0)$}};
+  \node[align=center] at (0.57,1.47) {$f=x_2$\\[-1pt]{\scriptsize $(1,1)$}};
+  \node[font=\scriptsize,text=drawgray] at (0,-2.36) {Labels: output formula and gate pattern $(d_1,d_2)$};
+\end{tikzpicture}

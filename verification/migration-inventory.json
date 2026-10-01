@@ -1,0 +1,1094 @@
+{
+  "source_commits": {
+    "nn": "6cb1bcf26a6ffae24c73f9eb2ddb09773a19df79",
+    "nnds": "9fbd7839e7979d91ab634f59cafe8f3b5ae9137f"
+  },
+  "files": [
+    {
+      "source_repository": "nn",
+      "source_path": ".gitignore",
+      "destination": null,
+      "note": "retired build/editor/Git configuration or generated TeX intermediate; replaced by canonical build and deployment"
+    },
+    {
+      "source_repository": "nn",
+      "source_path": ".gitmodules",
+      "destination": null,
+      "note": "retired build/editor/Git configuration or generated TeX intermediate; replaced by canonical build and deployment"
+    },
+    {
+      "source_repository": "nn",
+      "source_path": "AGENTS.md",
+      "destination": "docs/source-history/nn/AGENTS.pre-migration.md",
+      "note": null
+    },
+    {
+      "source_repository": "nn",
+      "source_path": "LABS.md",
+      "destination": "docs/source-history/nn/LABS.md",
+      "note": null
+    },
+    {
+      "source_repository": "nn",
+      "source_path": "NN_MATERIALS.md",
+      "destination": "docs/source-history/nn/NN_MATERIALS.md",
+      "note": null
+    },
+    {
+      "source_repository": "nn",
+      "source_path": "PORTS.md",
+      "destination": "docs/source-history/nn/PORTS.md",
+      "note": null
+    },
+    {
+      "source_repository": "nn",
+      "source_path": "README.md",
+      "destination": "docs/source-history/nn/README.md",
+      "note": null
+    },
+    {
+      "source_repository": "nn",
+      "source_path": "latex/.latexmkrc",
+      "destination": null,
+      "note": "retired build/editor/Git configuration or generated TeX intermediate; replaced by canonical build and deployment"
+    },
+    {
+      "source_repository": "nn",
+      "source_path": "latex/NN2627_01_Intro.tex",
+      "destination": "courses/nn/NN2627_01_Intro.tex",
+      "note": "relocated or factored into shared/slides; validated against original build"
+    },
+    {
+      "source_repository": "nn",
+      "source_path": "latex/NN2627_Linear_models.tex",
+      "destination": "courses/nn/NN2627_Linear_models.tex",
+      "note": "relocated or factored into shared/slides; validated against original build"
+    },
+    {
+      "source_repository": "nn",
+      "source_path": "latex/NN2627_MLPs.tex",
+      "destination": "courses/nn/NN2627_MLPs.tex",
+      "note": "relocated or factored into shared/slides; validated against original build"
+    },
+    {
+      "source_repository": "nn",
+      "source_path": "latex/beamerthemeNN26.sty",
+      "destination": "courses/nn/beamerthemeNN26.sty",
+      "note": "relocated or factored into shared/slides; validated against original build"
+    },
+    {
+      "source_repository": "nn",
+      "source_path": "latex/images/ISPAMMlab_2024-12-20.jpg",
+      "destination": "courses/nn/assets/ISPAMMlab_2024-12-20.jpg",
+      "note": null
+    },
+    {
+      "source_repository": "nn",
+      "source_path": "latex/images/Lecture 01.drawio",
+      "destination": "courses/nn/assets/Lecture 01.drawio",
+      "note": null
+    },
+    {
+      "source_repository": "nn",
+      "source_path": "latex/images/NNscheme.pdf",
+      "destination": "courses/nn/assets/NNscheme.pdf",
+      "note": null
+    },
+    {
+      "source_repository": "nn",
+      "source_path": "latex/images/NNvsMLvsDL.pdf",
+      "destination": "courses/nn/assets/NNvsMLvsDL.pdf",
+      "note": null
+    },
+    {
+      "source_repository": "nn",
+      "source_path": "latex/images/NeuralNetworksArePervasive.pdf",
+      "destination": "courses/nn/assets/NeuralNetworksArePervasive.pdf",
+      "note": null
+    },
+    {
+      "source_repository": "nn",
+      "source_path": "latex/images/Sapienza-logo.pdf",
+      "destination": "courses/nn/assets/Sapienza-logo.pdf",
+      "note": null
+    },
+    {
+      "source_repository": "nn",
+      "source_path": "latex/images/Teachers2023.png",
+      "destination": "courses/nn/assets/Teachers2023.png",
+      "note": null
+    },
+    {
+      "source_repository": "nn",
+      "source_path": "latex/images/cover.jpg",
+      "destination": "courses/nn/assets/cover.jpg",
+      "note": null
+    },
+    {
+      "source_repository": "nn",
+      "source_path": "latex/images/isometric-people-walking-on-street-vector-29295876.jpg",
+      "destination": "courses/nn/assets/isometric-people-walking-on-street-vector-29295876.jpg",
+      "note": null
+    },
+    {
+      "source_repository": "nn",
+      "source_path": "latex/images/nn/grokking/README.md",
+      "destination": "shared/assets/images/lecture_4/grokking/README.md",
+      "note": null
+    },
+    {
+      "source_repository": "nn",
+      "source_path": "latex/images/nn/grokking/extract_grokking.py",
+      "destination": "shared/assets/images/lecture_4/grokking/extract_grokking.py",
+      "note": null
+    },
+    {
+      "source_repository": "nn",
+      "source_path": "latex/images/nn/grokking/grokking-accuracy.png",
+      "destination": "shared/assets/images/lecture_4/grokking/grokking-accuracy.png",
+      "note": null
+    },
+    {
+      "source_repository": "nn",
+      "source_path": "latex/images/nn/grokking/grokking-loss.png",
+      "destination": "shared/assets/images/lecture_4/grokking/grokking-loss.png",
+      "note": null
+    },
+    {
+      "source_repository": "nn",
+      "source_path": "latex/images/nn/positionwise.tex",
+      "destination": "courses/nn/assets/images/nn/positionwise.tex",
+      "note": null
+    },
+    {
+      "source_repository": "nn",
+      "source_path": "latex/images/nn/relu/README.md",
+      "destination": "courses/nn/assets/images/nn/relu/README.md",
+      "note": null
+    },
+    {
+      "source_repository": "nn",
+      "source_path": "latex/images/nn/relu/folding.tex",
+      "destination": "courses/nn/assets/images/nn/relu/folding.tex",
+      "note": null
+    },
+    {
+      "source_repository": "nn",
+      "source_path": "latex/images/nn/relu/regions.tex",
+      "destination": "courses/nn/assets/images/nn/relu/regions.tex",
+      "note": null
+    },
+    {
+      "source_repository": "nn",
+      "source_path": "latex/images/nn/relu/verify_geometry.py",
+      "destination": "courses/nn/assets/images/nn/relu/verify_geometry.py",
+      "note": null
+    },
+    {
+      "source_repository": "nn",
+      "source_path": "latex/nn-content.tex",
+      "destination": "courses/nn/nn-content.tex",
+      "note": "relocated or factored into shared/slides; validated against original build"
+    },
+    {
+      "source_repository": "nn",
+      "source_path": "template-source.json",
+      "destination": "docs/source-history/nn/template-source.json",
+      "note": null
+    },
+    {
+      "source_repository": "nn",
+      "source_path": "upstream/nnds",
+      "destination": null,
+      "note": "retired build/editor/Git configuration or generated TeX intermediate; replaced by canonical build and deployment"
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": ".github/workflows/deploy-slides.yml",
+      "destination": null,
+      "note": "retired build/editor/Git configuration or generated TeX intermediate; replaced by canonical build and deployment"
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": ".gitignore",
+      "destination": null,
+      "note": "retired build/editor/Git configuration or generated TeX intermediate; replaced by canonical build and deployment"
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": ".latexmkrc",
+      "destination": null,
+      "note": "retired build/editor/Git configuration or generated TeX intermediate; replaced by canonical build and deployment"
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": ".vscode/settings.json",
+      "destination": null,
+      "note": "retired build/editor/Git configuration or generated TeX intermediate; replaced by canonical build and deployment"
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "AGENTS.md",
+      "destination": "docs/source-history/nnds/AGENTS.pre-migration.md",
+      "note": null
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "Lecture_2_presentation_order.md",
+      "destination": "docs/source-history/nnds/Lecture_2_presentation_order.md",
+      "note": null
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "NNDS_REFRESH.md",
+      "destination": "docs/source-history/nnds/NNDS_REFRESH.md",
+      "note": null
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "html/AUTHORING.md",
+      "destination": "html/AUTHORING.md",
+      "note": null
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "html/assets/src/cross_entropy_annotated.pdf",
+      "destination": "html/assets/src/cross_entropy_annotated.pdf",
+      "note": null
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "html/assets/src/cross_entropy_annotated.svg",
+      "destination": "html/assets/src/cross_entropy_annotated.svg",
+      "note": null
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "html/assets/src/cross_entropy_annotated.tex",
+      "destination": "html/assets/src/cross_entropy_annotated.tex",
+      "note": null
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "html/components/Alert.vue",
+      "destination": "html/components/Alert.vue",
+      "note": null
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "html/components/AttentionHeatmap.vue",
+      "destination": "html/components/AttentionHeatmap.vue",
+      "note": null
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "html/components/BeamerFrame.vue",
+      "destination": "html/components/BeamerFrame.vue",
+      "note": null
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "html/components/BeamerTitle.vue",
+      "destination": "html/components/BeamerTitle.vue",
+      "note": null
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "html/components/DebugRunDemo.vue",
+      "destination": "html/components/DebugRunDemo.vue",
+      "note": null
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "html/components/DecisionBoundary.vue",
+      "destination": "html/components/DecisionBoundary.vue",
+      "note": null
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "html/components/EqAnnotate.vue",
+      "destination": "html/components/EqAnnotate.vue",
+      "note": null
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "html/components/EquationInspector.vue",
+      "destination": "html/components/EquationInspector.vue",
+      "note": null
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "html/components/GradientDescentDemo.vue",
+      "destination": "html/components/GradientDescentDemo.vue",
+      "note": null
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "html/components/KVCacheCalculator.vue",
+      "destination": "html/components/KVCacheCalculator.vue",
+      "note": null
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "html/components/OptimizationLab.vue",
+      "destination": "html/components/OptimizationLab.vue",
+      "note": null
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "html/components/PyRunner.vue",
+      "destination": "html/components/PyRunner.vue",
+      "note": null
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "html/components/TheoremBox.vue",
+      "destination": "html/components/TheoremBox.vue",
+      "note": null
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "html/package-lock.json",
+      "destination": "html/package-lock.json",
+      "note": null
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "html/package.json",
+      "destination": "html/package.json",
+      "note": null
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "html/public/nnds-header.jpeg",
+      "destination": "html/public/nnds-header.jpeg",
+      "note": null
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "html/public/uniroma1.png",
+      "destination": "html/public/uniroma1.png",
+      "note": null
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "html/slides/Lecture_0.md",
+      "destination": "html/slides/Lecture_0.md",
+      "note": null
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "html/slides/Lecture_2_optimization.md",
+      "destination": "html/slides/Lecture_2_optimization.md",
+      "note": null
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "html/slides/Lecture_2_tensors.md",
+      "destination": "html/slides/Lecture_2_tensors.md",
+      "note": null
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "html/slides/Theme_kit_test.md",
+      "destination": "html/slides/Theme_kit_test.md",
+      "note": null
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "html/slides/components/MathTex.vue",
+      "destination": "html/slides/components/MathTex.vue",
+      "note": null
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "html/slides/public/Alice.png",
+      "destination": "html/slides/public/Alice.png",
+      "note": null
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "html/slides/public/Uniroma1.png",
+      "destination": "html/slides/public/Uniroma1.png",
+      "note": null
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "html/slides/public/cross_entropy_annotated.svg",
+      "destination": "html/slides/public/cross_entropy_annotated.svg",
+      "note": null
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "html/slides/public/header.jpeg",
+      "destination": "html/slides/public/header.jpeg",
+      "note": null
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "html/styles/index.css",
+      "destination": "html/styles/index.css",
+      "note": null
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "latex/.latexmkrc",
+      "destination": null,
+      "note": "retired build/editor/Git configuration or generated TeX intermediate; replaced by canonical build and deployment"
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "latex/Lecture_0_about_the_course.tex",
+      "destination": "courses/nnds/Lecture_0_about_the_course.tex",
+      "note": "relocated or factored into shared/slides; validated against original build"
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "latex/Lecture_2_preliminaries.tex",
+      "destination": "courses/nnds/Lecture_2_preliminaries.tex",
+      "note": "relocated or factored into shared/slides; validated against original build"
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "latex/Lecture_3_supervised_learning.tex",
+      "destination": "courses/nnds/Lecture_3_supervised_learning.tex",
+      "note": "relocated or factored into shared/slides; validated against original build"
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "latex/Lecture_4_Fully_connected.tex",
+      "destination": "courses/nnds/Lecture_4_Fully_connected.tex",
+      "note": "relocated or factored into shared/slides; validated against original build"
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "latex/images/Alice.png",
+      "destination": "courses/nnds/assets/images/Alice.png",
+      "note": null
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "latex/images/SNAIL_homepage.png",
+      "destination": "courses/nnds/assets/images/SNAIL_homepage.png",
+      "note": null
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "latex/images/TinyTorch.png",
+      "destination": "courses/nnds/assets/images/TinyTorch.png",
+      "note": null
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "latex/images/Uniroma1.png",
+      "destination": "courses/nnds/assets/images/Uniroma1.png",
+      "note": null
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "latex/images/header.jpeg",
+      "destination": "courses/nnds/assets/images/header.jpeg",
+      "note": null
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "latex/images/lecture_2/Convex_non_convex_functions.png",
+      "destination": "shared/assets/images/lecture_2/Convex_non_convex_functions.png",
+      "note": null
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "latex/images/lecture_2/Extrema_example_original.png",
+      "destination": "shared/assets/images/lecture_2/Extrema_example_original.png",
+      "note": null
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "latex/images/lecture_2/epoch_batches.pdf",
+      "destination": "shared/assets/images/lecture_2/epoch_batches.pdf",
+      "note": null
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "latex/images/lecture_2/full_vs_minibatch.pdf",
+      "destination": "shared/assets/images/lecture_2/full_vs_minibatch.pdf",
+      "note": null
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "latex/images/lecture_2/gradient_info.pdf",
+      "destination": "shared/assets/images/lecture_2/gradient_info.pdf",
+      "note": null
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "latex/images/lecture_2/mini_batch.pdf",
+      "destination": "shared/assets/images/lecture_2/mini_batch.pdf",
+      "note": null
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "latex/images/lecture_2/saddle_point.pdf",
+      "destination": "shared/assets/images/lecture_2/saddle_point.pdf",
+      "note": null
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "latex/images/lecture_2/src/README.md",
+      "destination": "shared/assets/images/lecture_2/src/README.md",
+      "note": null
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "latex/images/lecture_2/src/mini_batch.drawio",
+      "destination": "shared/assets/images/lecture_2/src/mini_batch.drawio",
+      "note": null
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "latex/images/lecture_2/src/plot_epoch_batches.py",
+      "destination": "shared/assets/images/lecture_2/src/plot_epoch_batches.py",
+      "note": null
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "latex/images/lecture_2/src/plot_full_vs_minibatch.py",
+      "destination": "shared/assets/images/lecture_2/src/plot_full_vs_minibatch.py",
+      "note": null
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "latex/images/lecture_2/src/plot_gradient_info.py",
+      "destination": "shared/assets/images/lecture_2/src/plot_gradient_info.py",
+      "note": null
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "latex/images/lecture_2/src/plot_saddle_point.py",
+      "destination": "shared/assets/images/lecture_2/src/plot_saddle_point.py",
+      "note": null
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "latex/images/lecture_2/src/plot_stationary_points.py",
+      "destination": "shared/assets/images/lecture_2/src/plot_stationary_points.py",
+      "note": null
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "latex/images/lecture_2/src/plot_taylor_approximation.py",
+      "destination": "shared/assets/images/lecture_2/src/plot_taylor_approximation.py",
+      "note": null
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "latex/images/lecture_2/src/stochastic_optimization.drawio",
+      "destination": "shared/assets/images/lecture_2/src/stochastic_optimization.drawio",
+      "note": null
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "latex/images/lecture_2/src/tensors.drawio",
+      "destination": "shared/assets/images/lecture_2/src/tensors.drawio",
+      "note": null
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "latex/images/lecture_2/stationary_points.pdf",
+      "destination": "shared/assets/images/lecture_2/stationary_points.pdf",
+      "note": null
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "latex/images/lecture_2/stochastic_loss_descent.png",
+      "destination": "shared/assets/images/lecture_2/stochastic_loss_descent.png",
+      "note": null
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "latex/images/lecture_2/stochastic_optimization.pdf",
+      "destination": "shared/assets/images/lecture_2/stochastic_optimization.pdf",
+      "note": null
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "latex/images/lecture_2/taylor_approximation.pdf",
+      "destination": "shared/assets/images/lecture_2/taylor_approximation.pdf",
+      "note": null
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "latex/images/lecture_3/Lecture_2_different_translations.pdf",
+      "destination": "shared/assets/images/lecture_3/Lecture_2_different_translations.pdf",
+      "note": null
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "latex/images/lecture_3/embedding.pdf",
+      "destination": "shared/assets/images/lecture_3/embedding.pdf",
+      "note": null
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "latex/images/lecture_3/focal_loss.png",
+      "destination": "shared/assets/images/lecture_3/focal_loss.png",
+      "note": null
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "latex/images/lecture_3/least_squares_example.pdf",
+      "destination": "shared/assets/images/lecture_3/least_squares_example.pdf",
+      "note": null
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "latex/images/lecture_3/linear_model.pdf",
+      "destination": "shared/assets/images/lecture_3/linear_model.pdf",
+      "note": null
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "latex/images/lecture_3/loss_functions_regression.pdf",
+      "destination": "shared/assets/images/lecture_3/loss_functions_regression.pdf",
+      "note": null
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "latex/images/lecture_3/reliability_plot.pdf",
+      "destination": "shared/assets/images/lecture_3/reliability_plot.pdf",
+      "note": null
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "latex/images/lecture_3/sigmoid.pdf",
+      "destination": "shared/assets/images/lecture_3/sigmoid.pdf",
+      "note": null
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "latex/images/lecture_3/softmax_1.pdf",
+      "destination": "shared/assets/images/lecture_3/softmax_1.pdf",
+      "note": null
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "latex/images/lecture_3/softmax_2.pdf",
+      "destination": "shared/assets/images/lecture_3/softmax_2.pdf",
+      "note": null
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "latex/images/lecture_3/softmax_3.pdf",
+      "destination": "shared/assets/images/lecture_3/softmax_3.pdf",
+      "note": null
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "latex/images/lecture_3/softmax_4.pdf",
+      "destination": "shared/assets/images/lecture_3/softmax_4.pdf",
+      "note": null
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "latex/images/lecture_3/src/Lecture_2_different_translations.drawio",
+      "destination": "shared/assets/images/lecture_3/src/Lecture_2_different_translations.drawio",
+      "note": null
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "latex/images/lecture_3/src/README.md",
+      "destination": "shared/assets/images/lecture_3/src/README.md",
+      "note": null
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "latex/images/lecture_3/src/embedding.drawio",
+      "destination": "shared/assets/images/lecture_3/src/embedding.drawio",
+      "note": null
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "latex/images/lecture_3/src/linear_model.drawio",
+      "destination": "shared/assets/images/lecture_3/src/linear_model.drawio",
+      "note": null
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "latex/images/lecture_3/src/plot_least_squares_loss_example.py",
+      "destination": "shared/assets/images/lecture_3/src/plot_least_squares_loss_example.py",
+      "note": null
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "latex/images/lecture_3/src/plot_loss_functions_regression.py",
+      "destination": "shared/assets/images/lecture_3/src/plot_loss_functions_regression.py",
+      "note": null
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "latex/images/lecture_3/src/plot_reliability_diagram.py",
+      "destination": "shared/assets/images/lecture_3/src/plot_reliability_diagram.py",
+      "note": null
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "latex/images/lecture_3/src/plot_sigmoid.py",
+      "destination": "shared/assets/images/lecture_3/src/plot_sigmoid.py",
+      "note": null
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "latex/images/lecture_3/src/plot_softmax.py",
+      "destination": "shared/assets/images/lecture_3/src/plot_softmax.py",
+      "note": null
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "latex/images/lecture_3/src/using_models.drawio",
+      "destination": "shared/assets/images/lecture_3/src/using_models.drawio",
+      "note": null
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "latex/images/lecture_3/using_models.pdf",
+      "destination": "shared/assets/images/lecture_3/using_models.pdf",
+      "note": null
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "latex/images/lecture_4/feedforward_network_multihidden.pdf",
+      "destination": "shared/assets/images/lecture_4/feedforward_network_multihidden.pdf",
+      "note": null
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "latex/images/lecture_4/feedforward_network_multihidden.xml",
+      "destination": "shared/assets/images/lecture_4/feedforward_network_multihidden.xml",
+      "note": null
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "latex/images/lecture_4/grokking/README.md",
+      "destination": "shared/assets/images/lecture_4/grokking/README.md",
+      "note": null
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "latex/images/lecture_4/grokking/extract_grokking.py",
+      "destination": "shared/assets/images/lecture_4/grokking/extract_grokking.py",
+      "note": null
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "latex/images/lecture_4/grokking/grokking-accuracy.png",
+      "destination": "shared/assets/images/lecture_4/grokking/grokking-accuracy.png",
+      "note": null
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "latex/images/lecture_4/grokking/grokking-loss.png",
+      "destination": "shared/assets/images/lecture_4/grokking/grokking-loss.png",
+      "note": null
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "latex/images/lecture_4/loop.tex",
+      "destination": "shared/assets/images/lecture_4/loop.tex",
+      "note": null
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "latex/images/lecture_4/positionwise.tex",
+      "destination": "shared/assets/images/lecture_4/positionwise.tex",
+      "note": null
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "latex/images/lecture_4/recurrence.tex",
+      "destination": "shared/assets/images/lecture_4/recurrence.tex",
+      "note": null
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "latex/images/lecture_4/residual.tex",
+      "destination": "shared/assets/images/lecture_4/residual.tex",
+      "note": null
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "latex/images/lecture_4/shared.tex",
+      "destination": "shared/assets/images/lecture_4/shared.tex",
+      "note": null
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "latex/images/lecture_4/swiglu.tex",
+      "destination": "shared/assets/images/lecture_4/swiglu.tex",
+      "note": null
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "latex/images/lecture_4/tensorflow-playground.png",
+      "destination": "shared/assets/images/lecture_4/tensorflow-playground.png",
+      "note": null
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "latex/images/lecture_4/untied.tex",
+      "destination": "shared/assets/images/lecture_4/untied.tex",
+      "note": null
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "latex/style.tex",
+      "destination": "courses/nnds/style.tex",
+      "note": "relocated or factored into shared/slides; validated against original build"
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "notebooks/drafts/2026-09-14-first-pass/PT01_Introduction_to_PyTorch.html",
+      "destination": "notebooks/PT01_Introduction_to_PyTorch.html",
+      "note": null
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "notebooks/drafts/2026-09-14-first-pass/PT01_Introduction_to_PyTorch.ipynb",
+      "destination": "notebooks/PT01_Introduction_to_PyTorch.ipynb",
+      "note": null
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "notebooks/drafts/2026-09-14-first-pass/PT01_Introduction_to_PyTorch_solutions.html",
+      "destination": "notebooks/PT01_Introduction_to_PyTorch_solutions.html",
+      "note": null
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "notebooks/drafts/2026-09-14-first-pass/PT01_Introduction_to_PyTorch_solutions.ipynb",
+      "destination": "notebooks/PT01_Introduction_to_PyTorch_solutions.ipynb",
+      "note": null
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "notebooks/drafts/2026-09-14-first-pass/PT02_Logistic_regression.html",
+      "destination": "notebooks/PT02_Logistic_regression.html",
+      "note": null
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "notebooks/drafts/2026-09-14-first-pass/PT02_Logistic_regression.ipynb",
+      "destination": "notebooks/PT02_Logistic_regression.ipynb",
+      "note": null
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "notebooks/drafts/2026-09-14-first-pass/PT02_Logistic_regression_solutions.html",
+      "destination": "notebooks/PT02_Logistic_regression_solutions.html",
+      "note": null
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "notebooks/drafts/2026-09-14-first-pass/PT02_Logistic_regression_solutions.ipynb",
+      "destination": "notebooks/PT02_Logistic_regression_solutions.ipynb",
+      "note": null
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "notebooks/drafts/2026-09-14-first-pass/README.md",
+      "destination": "notebooks/README.md",
+      "note": null
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "notebooks/drafts/2026-09-14-first-pass/data/penguins.csv",
+      "destination": "notebooks/data/penguins.csv",
+      "note": null
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "notebooks/drafts/2026-09-14-first-pass/make_student_notebook.py",
+      "destination": "notebooks/make_student_notebook.py",
+      "note": null
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "notebooks/drafts/2026-09-14-first-pass/requirements.txt",
+      "destination": "notebooks/requirements.txt",
+      "note": null
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "notebooks/drafts/2026-09-14-first-pass/verify_notebooks.py",
+      "destination": "notebooks/verify_notebooks.py",
+      "note": null
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "pdf/Lecture_0_about_the_course.aux",
+      "destination": null,
+      "note": "retired build/editor/Git configuration or generated TeX intermediate; replaced by canonical build and deployment"
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "pdf/Lecture_0_about_the_course.fls",
+      "destination": null,
+      "note": "retired build/editor/Git configuration or generated TeX intermediate; replaced by canonical build and deployment"
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "pdf/Lecture_0_about_the_course.log",
+      "destination": null,
+      "note": "retired build/editor/Git configuration or generated TeX intermediate; replaced by canonical build and deployment"
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "pdf/Lecture_0_about_the_course.nav",
+      "destination": null,
+      "note": "retired build/editor/Git configuration or generated TeX intermediate; replaced by canonical build and deployment"
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "pdf/Lecture_0_about_the_course.out",
+      "destination": null,
+      "note": "retired build/editor/Git configuration or generated TeX intermediate; replaced by canonical build and deployment"
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "pdf/Lecture_0_about_the_course.pdf",
+      "destination": "pdf/nnds/Lecture_0_about_the_course.pdf",
+      "note": null
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "pdf/Lecture_0_about_the_course.snm",
+      "destination": null,
+      "note": "retired build/editor/Git configuration or generated TeX intermediate; replaced by canonical build and deployment"
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "pdf/Lecture_0_about_the_course.toc",
+      "destination": null,
+      "note": "retired build/editor/Git configuration or generated TeX intermediate; replaced by canonical build and deployment"
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "pdf/Lecture_2_preliminaries.aux",
+      "destination": null,
+      "note": "retired build/editor/Git configuration or generated TeX intermediate; replaced by canonical build and deployment"
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "pdf/Lecture_2_preliminaries.fls",
+      "destination": null,
+      "note": "retired build/editor/Git configuration or generated TeX intermediate; replaced by canonical build and deployment"
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "pdf/Lecture_2_preliminaries.log",
+      "destination": null,
+      "note": "retired build/editor/Git configuration or generated TeX intermediate; replaced by canonical build and deployment"
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "pdf/Lecture_2_preliminaries.nav",
+      "destination": null,
+      "note": "retired build/editor/Git configuration or generated TeX intermediate; replaced by canonical build and deployment"
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "pdf/Lecture_2_preliminaries.out",
+      "destination": null,
+      "note": "retired build/editor/Git configuration or generated TeX intermediate; replaced by canonical build and deployment"
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "pdf/Lecture_2_preliminaries.pdf",
+      "destination": "pdf/nnds/Lecture_2_preliminaries.pdf",
+      "note": null
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "pdf/Lecture_2_preliminaries.snm",
+      "destination": null,
+      "note": "retired build/editor/Git configuration or generated TeX intermediate; replaced by canonical build and deployment"
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "pdf/Lecture_2_preliminaries.toc",
+      "destination": null,
+      "note": "retired build/editor/Git configuration or generated TeX intermediate; replaced by canonical build and deployment"
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "pdf/Lecture_2_preliminaries.vrb",
+      "destination": null,
+      "note": "retired build/editor/Git configuration or generated TeX intermediate; replaced by canonical build and deployment"
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "pdf/Lecture_2_tensors.pdf",
+      "destination": "pdf/nnds/Lecture_2_tensors.pdf",
+      "note": null
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "pdf/Lecture_3_supervised_learning.aux",
+      "destination": null,
+      "note": "retired build/editor/Git configuration or generated TeX intermediate; replaced by canonical build and deployment"
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "pdf/Lecture_3_supervised_learning.fls",
+      "destination": null,
+      "note": "retired build/editor/Git configuration or generated TeX intermediate; replaced by canonical build and deployment"
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "pdf/Lecture_3_supervised_learning.log",
+      "destination": null,
+      "note": "retired build/editor/Git configuration or generated TeX intermediate; replaced by canonical build and deployment"
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "pdf/Lecture_3_supervised_learning.nav",
+      "destination": null,
+      "note": "retired build/editor/Git configuration or generated TeX intermediate; replaced by canonical build and deployment"
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "pdf/Lecture_3_supervised_learning.out",
+      "destination": null,
+      "note": "retired build/editor/Git configuration or generated TeX intermediate; replaced by canonical build and deployment"
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "pdf/Lecture_3_supervised_learning.pdf",
+      "destination": "pdf/nnds/Lecture_3_supervised_learning.pdf",
+      "note": null
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "pdf/Lecture_3_supervised_learning.snm",
+      "destination": null,
+      "note": "retired build/editor/Git configuration or generated TeX intermediate; replaced by canonical build and deployment"
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "pdf/Lecture_3_supervised_learning.toc",
+      "destination": null,
+      "note": "retired build/editor/Git configuration or generated TeX intermediate; replaced by canonical build and deployment"
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "pdf/Lecture_3_supervised_learning.vrb",
+      "destination": null,
+      "note": "retired build/editor/Git configuration or generated TeX intermediate; replaced by canonical build and deployment"
+    },
+    {
+      "source_repository": "nnds",
+      "source_path": "pdf/Lecture_4_Fully_connected.pdf",
+      "destination": "pdf/nnds/Lecture_4_Fully_connected.pdf",
+      "note": null
+    }
+  ]
+}

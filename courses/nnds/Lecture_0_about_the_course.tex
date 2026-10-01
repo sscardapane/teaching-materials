@@ -1,0 +1,147 @@
+
+\documentclass[14pt,aspectratio=169,notheorems]{beamer}
+
+\input{style.tex}
+\setbeamerfont{frametitle}{size=\large}
+
+\graphicspath{{assets/}{../../shared/assets/}}
+\begin{document}
+
+{\usebackgroundtemplate{\tikz\node[opacity=0.4,inner sep=0]{\includegraphics[width=\paperwidth,height=\paperheight]{images/header}};}%
+\begin{frame}[plain]
+	\vspace{0.5cm}
+	\title{\large \begin{spacing}{1.0}Neural Networks for Data Science\end{spacing}\vspace{0.25em}
+		\normalsize \begin{spacing}{1.0}\textbf{Master's Degree in Data Science}\end{spacing}\vspace{0.5em}}
+	\subtitle{\Large \textbf{Lecture 0: About the course}}
+	\date{
+		{\includegraphics[scale=0.8]{images/Uniroma1}}
+	}
+	\author{
+		\setlength{\tabcolsep}{2pt}
+		\begin{tabular}{rl}
+			\textbf{Lecturer}: & S. Scardapane \\
+		\end{tabular}
+	}\titlepage
+\end{frame}
+}
+
+\part{1}
+
+\begin{frame}{Before we start}
+
+	\begin{itemize}
+		\item \textbf{Master's Degree in Data Science}, code 10589627, 2nd year, optional group D.
+		\item \textbf{Timetable}: Thursdays 09:00--12:00 and Fridays 09:00--11:00, room A5 (Via Ariosto), 24 September -- 18 December 2026.
+		\item \textbf{Office hours}: by appointment, remotely or in person.
+	\end{itemize}
+
+	\begin{tcolorbox}
+		\href{https://www.sscardapane.it/teaching/nnds-2026/}{https://www.sscardapane.it/teaching/nnds-2026/}
+	\end{tcolorbox}
+
+	Register for \textbf{Google Classroom} from the website: it is mandatory for receiving announcements.
+
+\end{frame}
+
+\begin{frame}{Exam dates (2027)}
+
+	\begin{itemize}
+		\item \textbf{Sessions 1--2}: 13 January, 3 February.
+		\item \textbf{Sessions 3--4}: 16 June, 14 July.
+		\item \textbf{Session 5}: 15 September.
+		\item \textbf{Extraordinary E1}: 7 April.
+		\item \textbf{Extraordinary E2}: 13 October.
+	\end{itemize}
+
+\end{frame}
+
+\begin{frame}{Exam ({\color{yellow}new this year})}
+
+	Default exam is an \textbf{oral examination} on the course material (2 questions).
+
+	A \myalert{research project} can replace the oral only when it is agreed in advance and it serves one of two purposes:
+
+	\begin{itemize}
+		\item pursuing a mark of \textbf{30 e lode};
+		\item preparing for a follow-up \textbf{thesis}.
+	\end{itemize}
+
+	It is intended for interested students and is generally \textbf{more demanding} than the oral examination.
+
+\end{frame}
+
+\begin{frame}{The course in one slide}
+
+	\begin{enumerate}
+		\item \textbf{Fundamentals}\\
+		      Arrays, optimization, supervised learning, MLPs, automatic differentiation, and PyTorch (maybe JAX).
+		\item \textbf{Architectures}\\
+		      Images, sequences, text, and graphs; convolutions, recurrence, attention, and message passing.
+		\item \textbf{Applications}\\
+		      Tokenization, pre- and post-training, self-supervised learning, possibly agents.
+	\end{enumerate}
+
+\end{frame}
+
+\begin{whiteframe}{Alice in a {\color{yellow}differentiable} wonderland}
+
+
+	Slides are self-contained, but most of the material is expanded in a textbook:
+
+	\vspace{1em}
+	\begin{columns}
+		\begin{column}{0.25\textwidth}
+			\begin{center}
+				{%
+					\setlength{\fboxsep}{0pt}%
+					\setlength{\fboxrule}{1pt}%
+					\fbox{\includegraphics[width=0.2\pagewidth]{images/Alice.png} }%
+				}%
+			\end{center}
+		\end{column}
+		\begin{column}{0.75\textwidth}
+			The book is available for free as a PDF or as a printed copy:
+
+			\begin{center}\footnotesize\url{https://sscardapane.it/alice-book/}\end{center}
+
+			You can also find additional lab sessions and chapters (e.g., more on post-training of models and automatic differentiation).
+		\end{column}
+	\end{columns}
+
+
+
+\end{whiteframe}
+
+{\setbeamercolor{background canvas}{bg=light-gray}
+\begin{frame}{Structured Neural Intelligence Lab}
+	\begin{center}
+		{\setlength{\fboxsep}{0pt}\setlength{\fboxrule}{1.25pt}%
+			\color{darkcerulean}\href{https://www.sscardapane.it/snail/}{\fbox{\includegraphics[width=0.70\paperwidth]{images/SNAIL_homepage.png}}}}\\[0.4em]
+		\small Explore the group: \href{https://www.sscardapane.it/snail/}{www.sscardapane.it/snail}
+	\end{center}
+\end{frame}
+}
+
+\begin{whiteframe}{Optional resource: TinyTorch}
+	\begin{columns}[T,onlytextwidth]
+		\begin{column}{0.32\textwidth}
+			\vspace{0.25em}
+			\small
+			\textbf{A hands-on implementation of PyTorch from scratch.}
+
+			\vspace{0.5em}
+			More in-depth than our lab sessions. Let me know if you try them.
+
+			\scriptsize Disclaimer: I have not.
+
+			\vspace{0.5em}
+			\scriptsize\url{https://mlsysbook.ai/tinytorch/}
+		\end{column}
+		\begin{column}{0.66\textwidth}
+			\centering
+			\includegraphics[height=0.48\textheight,keepaspectratio]{images/TinyTorch.png}
+		\end{column}
+	\end{columns}
+\end{whiteframe}
+
+\end{document}

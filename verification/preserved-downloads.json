@@ -1,0 +1,67 @@
+[
+  {
+    "file": "pdf/nnds/Lecture_2_tensors.pdf",
+    "sha256": "8fd3f20731982904ced3f3874182ffa64104b0ff5b35b593b225bbb7e4d16e89",
+    "byte_identical_to_original": true
+  },
+  {
+    "file": "pdf/nnds/Lecture_2_preliminaries.pdf",
+    "sha256": "7a72984481043927f302d8bcfccb5c2ae14a325a37c06b30d0c5bbd00677fd90",
+    "byte_identical_to_original": true
+  },
+  {
+    "file": "pdf/nnds/Lecture_0_about_the_course.pdf",
+    "sha256": "c73bf64d9f7b07f1356302438ea1f4f2648d9f2a183d6de0e4c6b15f6adb4d07",
+    "byte_identical_to_original": true
+  },
+  {
+    "file": "pdf/nnds/Lecture_3_supervised_learning.pdf",
+    "sha256": "4a8d0ccbba37192357c3d96ed4bee2f4f6f181d9a2f7a48f16b01cfef5e887af",
+    "byte_identical_to_original": true
+  },
+  {
+    "file": "pdf/nnds/Lecture_4_Fully_connected.pdf",
+    "sha256": "45d7f1ca5a372bb2407dbd1267508c67d4a85b4545cf006b4c4a6b79992c5ce8",
+    "byte_identical_to_original": true
+  },
+  {
+    "file": "notebooks/PT02_Logistic_regression.html",
+    "sha256": "508e254e5abd8644ad9d308e67711cdaf84f6149aa2a31d9a212a6e209c34a79",
+    "byte_identical_to_original": true
+  },
+  {
+    "file": "notebooks/PT01_Introduction_to_PyTorch.ipynb",
+    "sha256": "3e5db441ebd4a7bcc051f5c8c0f23635bcfe84f85401ef415b96a65415cd1763",
+    "byte_identical_to_original": true
+  },
+  {
+    "file": "notebooks/PT01_Introduction_to_PyTorch_solutions.html",
+    "sha256": "70ade88c0dbce9ba1d10f6312abcd4215d1bc52f86474a815ea52c34d6d28df7",
+    "byte_identical_to_original": true
+  },
+  {
+    "file": "notebooks/PT01_Introduction_to_PyTorch_solutions.ipynb",
+    "sha256": "d97ec09e38e10b71402ce10b25fde4610b6a1cb9126f542bc506a914e3eba68e",
+    "byte_identical_to_original": true
+  },
+  {
+    "file": "notebooks/PT02_Logistic_regression_solutions.html",
+    "sha256": "9e1bb31252da87a5bc3562974f841fd2fb79463176a2e47304a21e8fafeb7a42",
+    "byte_identical_to_original": true
+  },
+  {
+    "file": "notebooks/PT02_Logistic_regression.ipynb",
+    "sha256": "50a92a298c6044480d6e70a4db2d2db4b575c6e31d4dfe438f187fc2ed41e384",
+    "byte_identical_to_original": true
+  },
+  {
+    "file": "notebooks/PT01_Introduction_to_PyTorch.html",
+    "sha256": "ebb7945b2b8b73ff32ea5b5e8c7f985276ac6cebe1b0c43049072df5972960dd",
+    "byte_identical_to_original": true
+  },
+  {
+    "file": "notebooks/PT02_Logistic_regression_solutions.ipynb",
+    "sha256": "a8d60b178addcd5a6207f27f0cf92208803b9538df26844ca00f52944d97a106",
+    "byte_identical_to_original": true
+  }
+]

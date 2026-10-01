@@ -1,0 +1,13 @@
+{
+  "nn": [
+    "NN2627_01_Intro",
+    "NN2627_Linear_models",
+    "NN2627_MLPs"
+  ],
+  "nnds": [
+    "Lecture_0_about_the_course",
+    "Lecture_2_preliminaries",
+    "Lecture_3_supervised_learning",
+    "Lecture_4_Fully_connected"
+  ]
+}

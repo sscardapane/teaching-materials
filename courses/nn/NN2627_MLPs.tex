@@ -1,0 +1,16 @@
+% Ported from NNDS commit 44660a9ba39412ecd6f8a4daea1d812e659d97ad; see PORTS.md.
+\documentclass[xcolor=x11names,compress,10pt,unknownkeysallowed,aspectratio=169]{beamer}
+\usetheme{NN26}
+\input{nn-content.tex}
+\title{Multilayer perceptrons}
+\author[D. Comminiello \& S. Scardapane]{Danilo Comminiello and Simone Scardapane}
+\date{}
+\input{mlps-settings.tex}
+\graphicspath{{assets/}{../../shared/assets/}}
+\begin{document}
+{\usebackgroundtemplate{
+\vbox to \paperheight{\hbox to \paperwidth{\hfil\includegraphics[keepaspectratio,width=\textwidth]{cover.jpg}\hfil}\vfil}}
+\frame[plain]{\titlepage}}
+
+\input{../../shared/slides/mlps.tex}
+\end{document}

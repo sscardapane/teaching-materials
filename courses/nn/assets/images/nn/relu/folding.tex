@@ -1,0 +1,37 @@
+% Original NN plot of the ReLU triangle construction used by Telgarsky (2016).
+% T^k has 2^k affine pieces on [0,1]. Vertices are exact dyadic fractions.
+\begin{tikzpicture}[x=3.4cm,y=1.70cm]
+  \path[use as bounding box] (-0.10,-0.47) rectangle (3.80,1.49);
+  \foreach \shift/\pieces/\heading in {0/2/{T(x)},1.36/4/{T(T(x))},2.72/8/{T(T(T(x)))}} {
+    \begin{scope}[shift={(\shift,0)}]
+      \foreach \j in {1,...,\pieces} {
+        \pgfmathsetmacro{\leftedge}{(\j-1)/\pieces}
+        \pgfmathsetmacro{\rightedge}{\j/\pieces}
+        \ifodd\j
+          \fill[drawblue_l!55] (\leftedge,0) rectangle (\rightedge,1);
+        \else
+          \fill[drawgreen_l!65] (\leftedge,0) rectangle (\rightedge,1);
+        \fi
+      }
+      \draw[drawgray!35,densely dotted] (0,1)--(1,1);
+      \draw[->,drawgray] (-0.04,0)--(1.06,0) node[right,text=black] {$x$};
+      \draw[->,drawgray] (0,-0.04)--(0,1.13);
+      \node[below left,font=\scriptsize] at (0,0) {$0$};
+      \node[below,font=\scriptsize] at (1,0) {$1$};
+      \node[left,font=\scriptsize] at (0,1) {$1$};
+      \foreach \j in {1,...,\pieces} {
+        \pgfmathsetmacro{\xa}{(\j-1)/\pieces}
+        \pgfmathsetmacro{\xb}{\j/\pieces}
+        \ifodd\j
+          \draw[darkcerulean,line width=1.25pt] (\xa,0)--(\xb,1);
+        \else
+          \draw[darkcerulean,line width=1.25pt] (\xa,1)--(\xb,0);
+        \fi
+      }
+      \node at (0.5,1.35) {$\heading$};
+      \node[font=\small] at (0.5,-0.34) {\textbf{\pieces} affine pieces};
+    \end{scope}
+  }
+  \draw[-{Stealth},drawgray,thick] (1.10,0.54)--(1.24,0.54);
+  \draw[-{Stealth},drawgray,thick] (2.46,0.54)--(2.60,0.54);
+\end{tikzpicture}
