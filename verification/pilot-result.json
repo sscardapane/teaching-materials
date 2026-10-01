@@ -1,0 +1,697 @@
+{
+  "dpi": 200,
+  "Pillow": "12.3.0",
+  "pypdf": "6.19.0",
+  "tools": {
+    "pdftoppm": "pdftoppm version 26.04.0",
+    "pdflatex": "pdfTeX 3.141592653-2.6-1.40.26 (TeX Live 2024)",
+    "lualatex": "This is LuaHBTeX, Version 1.18.0 (TeX Live 2024)"
+  },
+  "courses": {
+    "nn": {
+      "reference_sha256": "22a004e3d3999223e5e99df5e56c9662de6588e6922f13aca132accb729734df",
+      "candidate_sha256": "1f1fb39907d1ec2fdb86705f9f1f3ef3835819551b76f716613922f2b867a512",
+      "pages": 26,
+      "same_page_count": true,
+      "text_identical": true,
+      "structure_identical": true,
+      "link_count": 31,
+      "all_pixels_identical": true,
+      "page_results": [
+        {
+          "page": 1,
+          "reference_size": [
+            1260,
+            709
+          ],
+          "candidate_size": [
+            1260,
+            709
+          ],
+          "different_pixels": 0
+        },
+        {
+          "page": 2,
+          "reference_size": [
+            1260,
+            709
+          ],
+          "candidate_size": [
+            1260,
+            709
+          ],
+          "different_pixels": 0
+        },
+        {
+          "page": 3,
+          "reference_size": [
+            1260,
+            709
+          ],
+          "candidate_size": [
+            1260,
+            709
+          ],
+          "different_pixels": 0
+        },
+        {
+          "page": 4,
+          "reference_size": [
+            1260,
+            709
+          ],
+          "candidate_size": [
+            1260,
+            709
+          ],
+          "different_pixels": 0
+        },
+        {
+          "page": 5,
+          "reference_size": [
+            1260,
+            709
+          ],
+          "candidate_size": [
+            1260,
+            709
+          ],
+          "different_pixels": 0
+        },
+        {
+          "page": 6,
+          "reference_size": [
+            1260,
+            709
+          ],
+          "candidate_size": [
+            1260,
+            709
+          ],
+          "different_pixels": 0
+        },
+        {
+          "page": 7,
+          "reference_size": [
+            1260,
+            709
+          ],
+          "candidate_size": [
+            1260,
+            709
+          ],
+          "different_pixels": 0
+        },
+        {
+          "page": 8,
+          "reference_size": [
+            1260,
+            709
+          ],
+          "candidate_size": [
+            1260,
+            709
+          ],
+          "different_pixels": 0
+        },
+        {
+          "page": 9,
+          "reference_size": [
+            1260,
+            709
+          ],
+          "candidate_size": [
+            1260,
+            709
+          ],
+          "different_pixels": 0
+        },
+        {
+          "page": 10,
+          "reference_size": [
+            1260,
+            709
+          ],
+          "candidate_size": [
+            1260,
+            709
+          ],
+          "different_pixels": 0
+        },
+        {
+          "page": 11,
+          "reference_size": [
+            1260,
+            709
+          ],
+          "candidate_size": [
+            1260,
+            709
+          ],
+          "different_pixels": 0
+        },
+        {
+          "page": 12,
+          "reference_size": [
+            1260,
+            709
+          ],
+          "candidate_size": [
+            1260,
+            709
+          ],
+          "different_pixels": 0
+        },
+        {
+          "page": 13,
+          "reference_size": [
+            1260,
+            709
+          ],
+          "candidate_size": [
+            1260,
+            709
+          ],
+          "different_pixels": 0
+        },
+        {
+          "page": 14,
+          "reference_size": [
+            1260,
+            709
+          ],
+          "candidate_size": [
+            1260,
+            709
+          ],
+          "different_pixels": 0
+        },
+        {
+          "page": 15,
+          "reference_size": [
+            1260,
+            709
+          ],
+          "candidate_size": [
+            1260,
+            709
+          ],
+          "different_pixels": 0
+        },
+        {
+          "page": 16,
+          "reference_size": [
+            1260,
+            709
+          ],
+          "candidate_size": [
+            1260,
+            709
+          ],
+          "different_pixels": 0
+        },
+        {
+          "page": 17,
+          "reference_size": [
+            1260,
+            709
+          ],
+          "candidate_size": [
+            1260,
+            709
+          ],
+          "different_pixels": 0
+        },
+        {
+          "page": 18,
+          "reference_size": [
+            1260,
+            709
+          ],
+          "candidate_size": [
+            1260,
+            709
+          ],
+          "different_pixels": 0
+        },
+        {
+          "page": 19,
+          "reference_size": [
+            1260,
+            709
+          ],
+          "candidate_size": [
+            1260,
+            709
+          ],
+          "different_pixels": 0
+        },
+        {
+          "page": 20,
+          "reference_size": [
+            1260,
+            709
+          ],
+          "candidate_size": [
+            1260,
+            709
+          ],
+          "different_pixels": 0
+        },
+        {
+          "page": 21,
+          "reference_size": [
+            1260,
+            709
+          ],
+          "candidate_size": [
+            1260,
+            709
+          ],
+          "different_pixels": 0
+        },
+        {
+          "page": 22,
+          "reference_size": [
+            1260,
+            709
+          ],
+          "candidate_size": [
+            1260,
+            709
+          ],
+          "different_pixels": 0
+        },
+        {
+          "page": 23,
+          "reference_size": [
+            1260,
+            709
+          ],
+          "candidate_size": [
+            1260,
+            709
+          ],
+          "different_pixels": 0
+        },
+        {
+          "page": 24,
+          "reference_size": [
+            1260,
+            709
+          ],
+          "candidate_size": [
+            1260,
+            709
+          ],
+          "different_pixels": 0
+        },
+        {
+          "page": 25,
+          "reference_size": [
+            1260,
+            709
+          ],
+          "candidate_size": [
+            1260,
+            709
+          ],
+          "different_pixels": 0
+        },
+        {
+          "page": 26,
+          "reference_size": [
+            1260,
+            709
+          ],
+          "candidate_size": [
+            1260,
+            709
+          ],
+          "different_pixels": 0
+        }
+      ]
+    },
+    "nnds": {
+      "reference_sha256": "89a9c57619e39db3ddea35de6a7f3554b58ee1aae7f2743531b5dce47c3bbfee",
+      "candidate_sha256": "55a5e04fd31f827a1b7d9341084662e1d4a0e397126d9d5dccf320381e9b2709",
+      "pages": 29,
+      "same_page_count": true,
+      "text_identical": true,
+      "structure_identical": true,
+      "link_count": 11,
+      "all_pixels_identical": true,
+      "page_results": [
+        {
+          "page": 1,
+          "reference_size": [
+            1260,
+            709
+          ],
+          "candidate_size": [
+            1260,
+            709
+          ],
+          "different_pixels": 0
+        },
+        {
+          "page": 2,
+          "reference_size": [
+            1260,
+            709
+          ],
+          "candidate_size": [
+            1260,
+            709
+          ],
+          "different_pixels": 0
+        },
+        {
+          "page": 3,
+          "reference_size": [
+            1260,
+            709
+          ],
+          "candidate_size": [
+            1260,
+            709
+          ],
+          "different_pixels": 0
+        },
+        {
+          "page": 4,
+          "reference_size": [
+            1260,
+            709
+          ],
+          "candidate_size": [
+            1260,
+            709
+          ],
+          "different_pixels": 0
+        },
+        {
+          "page": 5,
+          "reference_size": [
+            1260,
+            709
+          ],
+          "candidate_size": [
+            1260,
+            709
+          ],
+          "different_pixels": 0
+        },
+        {
+          "page": 6,
+          "reference_size": [
+            1260,
+            709
+          ],
+          "candidate_size": [
+            1260,
+            709
+          ],
+          "different_pixels": 0
+        },
+        {
+          "page": 7,
+          "reference_size": [
+            1260,
+            709
+          ],
+          "candidate_size": [
+            1260,
+            709
+          ],
+          "different_pixels": 0
+        },
+        {
+          "page": 8,
+          "reference_size": [
+            1260,
+            709
+          ],
+          "candidate_size": [
+            1260,
+            709
+          ],
+          "different_pixels": 0
+        },
+        {
+          "page": 9,
+          "reference_size": [
+            1260,
+            709
+          ],
+          "candidate_size": [
+            1260,
+            709
+          ],
+          "different_pixels": 0
+        },
+        {
+          "page": 10,
+          "reference_size": [
+            1260,
+            709
+          ],
+          "candidate_size": [
+            1260,
+            709
+          ],
+          "different_pixels": 0
+        },
+        {
+          "page": 11,
+          "reference_size": [
+            1260,
+            709
+          ],
+          "candidate_size": [
+            1260,
+            709
+          ],
+          "different_pixels": 0
+        },
+        {
+          "page": 12,
+          "reference_size": [
+            1260,
+            709
+          ],
+          "candidate_size": [
+            1260,
+            709
+          ],
+          "different_pixels": 0
+        },
+        {
+          "page": 13,
+          "reference_size": [
+            1260,
+            709
+          ],
+          "candidate_size": [
+            1260,
+            709
+          ],
+          "different_pixels": 0
+        },
+        {
+          "page": 14,
+          "reference_size": [
+            1260,
+            709
+          ],
+          "candidate_size": [
+            1260,
+            709
+          ],
+          "different_pixels": 0
+        },
+        {
+          "page": 15,
+          "reference_size": [
+            1260,
+            709
+          ],
+          "candidate_size": [
+            1260,
+            709
+          ],
+          "different_pixels": 0
+        },
+        {
+          "page": 16,
+          "reference_size": [
+            1260,
+            709
+          ],
+          "candidate_size": [
+            1260,
+            709
+          ],
+          "different_pixels": 0
+        },
+        {
+          "page": 17,
+          "reference_size": [
+            1260,
+            709
+          ],
+          "candidate_size": [
+            1260,
+            709
+          ],
+          "different_pixels": 0
+        },
+        {
+          "page": 18,
+          "reference_size": [
+            1260,
+            709
+          ],
+          "candidate_size": [
+            1260,
+            709
+          ],
+          "different_pixels": 0
+        },
+        {
+          "page": 19,
+          "reference_size": [
+            1260,
+            709
+          ],
+          "candidate_size": [
+            1260,
+            709
+          ],
+          "different_pixels": 0
+        },
+        {
+          "page": 20,
+          "reference_size": [
+            1260,
+            709
+          ],
+          "candidate_size": [
+            1260,
+            709
+          ],
+          "different_pixels": 0
+        },
+        {
+          "page": 21,
+          "reference_size": [
+            1260,
+            709
+          ],
+          "candidate_size": [
+            1260,
+            709
+          ],
+          "different_pixels": 0
+        },
+        {
+          "page": 22,
+          "reference_size": [
+            1260,
+            709
+          ],
+          "candidate_size": [
+            1260,
+            709
+          ],
+          "different_pixels": 0
+        },
+        {
+          "page": 23,
+          "reference_size": [
+            1260,
+            709
+          ],
+          "candidate_size": [
+            1260,
+            709
+          ],
+          "different_pixels": 0
+        },
+        {
+          "page": 24,
+          "reference_size": [
+            1260,
+            709
+          ],
+          "candidate_size": [
+            1260,
+            709
+          ],
+          "different_pixels": 0
+        },
+        {
+          "page": 25,
+          "reference_size": [
+            1260,
+            709
+          ],
+          "candidate_size": [
+            1260,
+            709
+          ],
+          "different_pixels": 0
+        },
+        {
+          "page": 26,
+          "reference_size": [
+            1260,
+            709
+          ],
+          "candidate_size": [
+            1260,
+            709
+          ],
+          "different_pixels": 0
+        },
+        {
+          "page": 27,
+          "reference_size": [
+            1260,
+            709
+          ],
+          "candidate_size": [
+            1260,
+            709
+          ],
+          "different_pixels": 0
+        },
+        {
+          "page": 28,
+          "reference_size": [
+            1260,
+            709
+          ],
+          "candidate_size": [
+            1260,
+            709
+          ],
+          "different_pixels": 0
+        },
+        {
+          "page": 29,
+          "reference_size": [
+            1260,
+            709
+          ],
+          "candidate_size": [
+            1260,
+            709
+          ],
+          "different_pixels": 0
+        }
+      ]
+    }
+  },
+  "passed": true
+}

@@ -1,0 +1,131 @@
+{
+  "date": "2026-10-01",
+  "originals": {
+    "nn": {
+      "repository": "https://github.com/sscardapane/slides-nn-2026",
+      "commit": "6cb1bcf26a6ffae24c73f9eb2ddb09773a19df79",
+      "asset_submodule_commit": "44660a9ba39412ecd6f8a4daea1d812e659d97ad"
+    },
+    "nnds": {
+      "repository": "https://github.com/sscardapane/slides-nnds-2026",
+      "commit": "9fbd7839e7979d91ab634f59cafe8f3b5ae9137f"
+    }
+  },
+  "imports": [
+    {
+      "file": "courses/nn/beamerthemeNN26.sty",
+      "source": "nn/latex/beamerthemeNN26.sty",
+      "sha256": "0504fe703c21b9c35b7ec08517cceb4bb9873da2b1d4c8c78f13c69400feedf1"
+    },
+    {
+      "file": "courses/nn/nn-content.tex",
+      "source": "nn/latex/nn-content.tex",
+      "sha256": "80b18a5ce72b921572623b7cea6dd6b2d4daca757489732540952e8a50b6202b"
+    },
+    {
+      "file": "courses/nnds/style.tex",
+      "source": "nnds/latex/style.tex",
+      "sha256": "3c351c4b3bfc8969cc0873488ff49ee6f40208407d8d7fa1979f11b81ba5fd04"
+    },
+    {
+      "file": "courses/nn/assets/cover.jpg",
+      "source": "nn/latex/images/cover.jpg",
+      "sha256": "a7ca3c0201a6e7123e13a82e134566322c1310db4108fd3cd613da4966b7ba6f"
+    },
+    {
+      "file": "courses/nn/assets/Sapienza-logo.pdf",
+      "source": "nn/latex/images/Sapienza-logo.pdf",
+      "sha256": "ecc6e47abbfbb8cb95c33d423645f4287638c704e6b3494e90f983ee63c83cdb"
+    },
+    {
+      "file": "courses/nnds/assets/images/header.jpeg",
+      "source": "nnds/latex/images/header.jpeg",
+      "sha256": "06c89fdcd3208658abfff93d16197079f92ae96a103e18f0b33f17f03ba053b9"
+    },
+    {
+      "file": "courses/nnds/assets/images/Uniroma1.png",
+      "source": "nnds/latex/images/Uniroma1.png",
+      "sha256": "c2af95096c863d46fb175a63e01805fc12250a4e4320ecfb49b2bbea403a7024"
+    },
+    {
+      "file": "shared/assets/images/lecture_3/Lecture_2_different_translations.pdf",
+      "source": "nnds/latex/images/lecture_3/Lecture_2_different_translations.pdf",
+      "sha256": "21cb1ffd4a3d56464b44372609b81aa7e7c201df0d6b3d4d2ecbc47c96667e96"
+    },
+    {
+      "file": "shared/assets/images/lecture_3/loss_functions_regression.pdf",
+      "source": "nnds/latex/images/lecture_3/loss_functions_regression.pdf",
+      "sha256": "34650107b3c757982e58f87673e0de637237f2c24f0047a07367a20cdfdb1704"
+    },
+    {
+      "file": "shared/assets/images/lecture_3/reliability_plot.pdf",
+      "source": "nnds/latex/images/lecture_3/reliability_plot.pdf",
+      "sha256": "ddcf050fd1084bce95a656612a8e2c3bdf8a741299eff4099592eb69d3b07c3e"
+    },
+    {
+      "file": "shared/assets/images/lecture_3/sigmoid.pdf",
+      "source": "nnds/latex/images/lecture_3/sigmoid.pdf",
+      "sha256": "b66ce04b17a9a8aaebb4fcac86146f420caed95d2f8c375fec73c441a4289683"
+    },
+    {
+      "file": "shared/assets/images/lecture_3/softmax_1.pdf",
+      "source": "nnds/latex/images/lecture_3/softmax_1.pdf",
+      "sha256": "af1908c764b33df7823107696729a577fef157fff30a8906d881208cde75dea1"
+    },
+    {
+      "file": "shared/assets/images/lecture_3/softmax_2.pdf",
+      "source": "nnds/latex/images/lecture_3/softmax_2.pdf",
+      "sha256": "4119aec964a013c96baa76cbc12131616d4707112157427d54a9ead79ab8f55d"
+    },
+    {
+      "file": "shared/assets/images/lecture_3/softmax_3.pdf",
+      "source": "nnds/latex/images/lecture_3/softmax_3.pdf",
+      "sha256": "d21b3b6e4ac2c8f5c96c8cd458be4d578e822d38cc6239e3d3b68c25b8975ed9"
+    },
+    {
+      "file": "shared/assets/images/lecture_3/softmax_4.pdf",
+      "source": "nnds/latex/images/lecture_3/softmax_4.pdf",
+      "sha256": "5acd229107ba21f87e9dc682a6cefd1c57aed5ea3457c5efec91bfef331d5379"
+    },
+    {
+      "file": "shared/assets/images/lecture_3/src/Lecture_2_different_translations.drawio",
+      "source": "nnds/latex/images/lecture_3/src/Lecture_2_different_translations.drawio",
+      "sha256": "8cc4eea6f92ac1b3e9206c0896d692a5c1667266019013af43e545c9becea1ae"
+    },
+    {
+      "file": "shared/assets/images/lecture_3/src/plot_loss_functions_regression.py",
+      "source": "nnds/latex/images/lecture_3/src/plot_loss_functions_regression.py",
+      "sha256": "7211b7832608c9707b836e77ccd317cda33ad66f80c4a75afd513c25cf84be7c"
+    },
+    {
+      "file": "shared/assets/images/lecture_3/src/plot_reliability_diagram.py",
+      "source": "nnds/latex/images/lecture_3/src/plot_reliability_diagram.py",
+      "sha256": "6c8ff1c1d7e919596d269902d5332de58d1f91e4adb15c5148f0e21fcc18cf21"
+    },
+    {
+      "file": "shared/assets/images/lecture_3/src/plot_sigmoid.py",
+      "source": "nnds/latex/images/lecture_3/src/plot_sigmoid.py",
+      "sha256": "e8319eb25ab515325ded790df96409246ef058db42efb96710bc5bc7b8e8a055"
+    },
+    {
+      "file": "shared/assets/images/lecture_3/src/plot_softmax.py",
+      "source": "nnds/latex/images/lecture_3/src/plot_softmax.py",
+      "sha256": "a5efacbd4a51d693ad8752fb9f89b7465000becf8f5afba1b3d45e91b982e2c7"
+    },
+    {
+      "file": "verification/reference/NN2627_Linear_models.pdf",
+      "source": "nn/build/NN2627_Linear_models.pdf",
+      "sha256": "22a004e3d3999223e5e99df5e56c9662de6588e6922f13aca132accb729734df"
+    },
+    {
+      "file": "verification/reference/Lecture_3_supervised_learning.pdf",
+      "source": "nnds/pdf/Lecture_3_supervised_learning.pdf",
+      "sha256": "89a9c57619e39db3ddea35de6a7f3554b58ee1aae7f2743531b5dce47c3bbfee"
+    }
+  ],
+  "baseline_builds": {
+    "nn": "latexmk -gg -interaction=nonstopmode -halt-on-error NN2627_Linear_models.tex (in archived latex/; original .latexmkrc)",
+    "nnds": "latexmk -gg -interaction=nonstopmode -halt-on-error Lecture_3_supervised_learning.tex (in archived latex/; original .latexmkrc)"
+  },
+  "shared_source_note": "All 23 content frames share one TeX source. Seven named commands preserve notation and spacing differences across five frames; course wrappers retain original introductions and templates."
+}

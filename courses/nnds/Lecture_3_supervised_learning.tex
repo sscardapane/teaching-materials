@@ -1,0 +1,64 @@
+
+
+\documentclass[12pt,aspectratio=169]{beamer}
+
+\input{style.tex}
+% The 2024 source used annotate-equations for optional visual labels.
+% Keep the deck portable when that package is unavailable.
+\newcommand{\eqnmarkbox}[3][]{#3}
+\newcommand{\annotate}[4][]{}
+\usepackage{subfig}
+
+% Colors
+\definecolor{titlecolor}{RGB}{245, 242, 238} 
+\definecolor{drawgray}{HTML}{666666}
+\definecolor{drawgray_l}{HTML}{F5F5F5}
+\definecolor{drawblue}{HTML}{6C8EBF}
+\definecolor{drawblue_l}{HTML}{DAE8FC}
+\definecolor{drawgreen}{HTML}{82B366}
+\definecolor{drawgreen_l}{HTML}{D5E8D4}
+\definecolor{draworange}{HTML}{D79B00}
+\definecolor{draworange_l}{HTML}{FFE6CC}
+\definecolor{drawyellow}{HTML}{D6B656}
+\definecolor{drawyellow_l}{HTML}{FFF2CC}
+\definecolor{drawred}{HTML}{B85450}
+\definecolor{drawred_l}{HTML}{EA6B66}
+\definecolor{drawviolet}{HTML}{9673A6}
+\definecolor{drawviolet_l}{HTML}{E1D5E7}
+
+\tcbset{
+	nndsblue/.style={colback=drawblue_l!35!white,colframe=drawblue,boxrule=0.8pt,arc=1mm},
+	nndsgreen/.style={colback=drawgreen_l!35!white,colframe=drawgreen,boxrule=0.8pt,arc=1mm},
+	nndsorange/.style={colback=draworange_l!35!white,colframe=draworange,boxrule=0.8pt,arc=1mm},
+	nndsred/.style={colback=drawred_l!12!white,colframe=drawred,boxrule=0.8pt,arc=1mm}
+}
+
+
+\input{linear-models-settings.tex}
+\graphicspath{{assets/}{../../shared/assets/}}
+\begin{document}
+
+	{\usebackgroundtemplate{\tikz\node[opacity=0.4,inner sep=0]{\includegraphics[width=\paperwidth,height=\paperheight]{images/header}};}%
+	\begin{frame}[plain]
+		\vspace{0.5cm}
+		\title{\large \begin{spacing}{1.0}Neural Networks for Data Science\end{spacing}\vspace{0.25em}
+			\normalsize \begin{spacing}{1.0}\textbf{Master's Degree in Data Science}\end{spacing}\vspace{0.5em}}
+		\subtitle{\Large \textbf{Lecture 3: Linear regression and classification}}
+		\date{
+			{\includegraphics[scale=0.8]{images/Uniroma1}}
+		}
+		\author{
+			\setlength{\tabcolsep}{2pt}
+			\begin{tabular}{rl}
+				\textbf{Lecturer}: & S. Scardapane \\
+			\end{tabular}
+		}\titlepage
+	\end{frame}
+	}
+
+\part{1}
+
+\section{Introduction}
+
+\input{../../shared/slides/linear-models.tex}
+\end{document}

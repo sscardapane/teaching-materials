@@ -1,0 +1,41 @@
+% NN content helpers. The NN26 theme remains the presentation authority.
+\usepackage{mathtools,amssymb,tcolorbox}
+\usetikzlibrary{positioning,arrows.meta,calc}
+\tcbsetforeverylayer{autoparskip}
+\definecolor{darkred}{rgb}{0.55,0,0}
+\definecolor{darkpastelblue}{rgb}{0.47,0.62,0.8}
+\definecolor{darkcerulean}{rgb}{0.03,0.27,0.49}
+\definecolor{darkgreen}{rgb}{0,0.55,0}
+\newcommand{\vc}[1]{\boldsymbol{\mathbf{#1}}}
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\argmin}{arg\,min}
+\newcommand{\myalert}[1]{{\color{redSap}\textbf{#1}}}
+\newenvironment{whiteframe}[1]{\begin{frame}{#1}}{\end{frame}}
+\newcommand{\eqnmarkbox}[3][]{#3}
+\newcommand{\annotate}[4][]{}
+\graphicspath{{./images/}{../upstream/nnds/latex/}}
+\hypersetup{pdfauthor={Danilo Comminiello and Simone Scardapane}}
+
+% Colors
+\definecolor{titlecolor}{RGB}{245, 242, 238}
+\definecolor{drawgray}{HTML}{666666}
+\definecolor{drawgray_l}{HTML}{F5F5F5}
+\definecolor{drawblue}{HTML}{6C8EBF}
+\definecolor{drawblue_l}{HTML}{DAE8FC}
+\definecolor{drawgreen}{HTML}{82B366}
+\definecolor{drawgreen_l}{HTML}{D5E8D4}
+\definecolor{draworange}{HTML}{D79B00}
+\definecolor{draworange_l}{HTML}{FFE6CC}
+\definecolor{drawyellow}{HTML}{D6B656}
+\definecolor{drawyellow_l}{HTML}{FFF2CC}
+\definecolor{drawred}{HTML}{B85450}
+\definecolor{drawred_l}{HTML}{EA6B66}
+\definecolor{drawviolet}{HTML}{9673A6}
+\definecolor{drawviolet_l}{HTML}{E1D5E7}
+
+\tcbset{
+	nndsblue/.style={colback=drawblue_l!35!white,colframe=drawblue,boxrule=0.8pt,arc=1mm},
+	nndsgreen/.style={colback=drawgreen_l!35!white,colframe=drawgreen,boxrule=0.8pt,arc=1mm},
+	nndsorange/.style={colback=draworange_l!35!white,colframe=draworange,boxrule=0.8pt,arc=1mm},
+	nndsred/.style={colback=drawred_l!12!white,colframe=drawred,boxrule=0.8pt,arc=1mm}
+}

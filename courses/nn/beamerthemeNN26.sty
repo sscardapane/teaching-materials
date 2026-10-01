@@ -1,0 +1,410 @@
+% -----------------------------------------------------------
+% Beamer Theme by Danilo Comminiello based on Amsterdam theme
+% -----------------------------------------------------------
+% Last update: 24/09/2026
+% Last change: 2026
+%
+\DeclareOptionBeamer{compress}{\beamer@compresstrue}
+\ProcessOptionsBeamer
+%
+\mode<presentation>
+%
+% ---------------------------------------------------
+% Packages
+% ---------------------------------------------------
+\usepackage{graphicx}
+\usefonttheme{professionalfonts}
+\usepackage[default,oldstyle,scale=0.95]{opensans}
+\usepackage{amsmath}
+\usepackage{multicol}
+\usepackage{ragged2e}
+\usepackage[english]{babel}
+%\usepackage[italian]{babel}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{setspace}
+\setstretch{1.25}
+\usepackage{animate} %Requires to remove the option center in beamerboxes
+\usepackage{lmodern}
+\usepackage{isomath}
+\usepackage{hyperref}
+\usepackage[hyphenbreaks]{breakurl}
+\hypersetup{pdfauthor={Danilo Comminiello},colorlinks=false,linktocpage=true}
+\usepackage[scriptsize,labelfont={color=redSap,scriptsize},justification=justified]{caption}
+\usepackage{xargs}
+\usepackage{bibentry}
+\nobibliography*
+\usepackage{tabularx}
+\usepackage{tikz}
+%\usepackage{subfigure}
+\usepackage[caption=false]{subfig}
+\usepackage{booktabs}%per le tabelle
+\justifying
+%
+% ---------------------------------------------------
+% Used themes
+% ---------------------------------------------------
+\useinnertheme{circles}
+%
+% ---------------------------------------------------
+% Define colors
+% ---------------------------------------------------
+\definecolor{redSap}{rgb}{0.50980392156,0.14117647058,0.2}
+\definecolor{darkgreenSap}{rgb}{0.43921568627,0.64313725490,0.53725490196}
+\definecolor{lightgreenSap}{rgb}{0.66666666667,0.78823529412,0.71372549020}
+\definecolor{darkyellowSap}{rgb}{0.78039215687,0.6,0}
+\definecolor{lightyellowSap}{rgb}{0.84313725490,0.66274509804,0}
+\definecolor{darkorangeSap}{rgb}{0.77254901960,0.29803921569,0}
+\definecolor{lightorangeSap}{rgb}{0.96470588235,0.57254901960,0.25098039216}
+\definecolor{darkblueSap}{rgb}{0,0.40392156862,0.47058823529}
+\definecolor{lightblueSap}{rgb}{0,0.69019607843,0.74509803921}
+\definecolor{darkgraySap}{rgb}{0.66666666667,0.63921568627,0.55686274510}
+\definecolor{lightgraySap}{rgb}{0.84313725490,0.82745098039,0.78039215687}
+\definecolor{darkvioletSap}{rgb}{0.65098039215,0.73725490196,0.77647058823}
+\definecolor{lightvioletSap}{rgb}{0.82745098039,0.87058823529,0.89411764705}
+\definecolor{darkBlue0_23_70}{rgb}{0,0.09019607843,0.27450980392}
+\makeatletter
+%
+% ---------------------------------------------------
+% Set colors
+% ---------------------------------------------------
+\setbeamercolor{structure}{fg=redSap}
+\setbeamercolor{frametitle}{parent=structure}
+\setbeamercolor{title}{parent=structure}
+\setbeamercolor{item}{parent=structure}
+\setbeamercolor{normal text}{fg=black,bg=white}
+\setbeamercolor{alerted text}{fg=redSap}
+\setbeamercolor{example text}{fg=black,bg=lightgraySap}
+\setbeamercolor{palette primary}{use=structure,fg=redSap,bg=darkvioletSap}
+\setbeamercolor{palette secondary}{use=structure,fg=redSap,bg=lightvioletSap!60!} % 2020
+\setbeamercolor{palette tertiary}{use=structure,fg=redSap,bg=darkvioletSap}
+\setbeamercolor{palette frametitle}{use=structure,fg=darkBlue0_23_70,bg=lightvioletSap}
+\setbeamercolor{uppercolLGray}{fg=redSap,bg=lightgraySap}
+\setbeamercolor{lowercolLGrayS}{fg=black,bg=lightgraySap}
+\setbeamercolor{uppercolLVS}{fg=redSap,bg=lightvioletSap}
+\setbeamercolor{lowercolLVS}{fg=black,bg=lightvioletSap}
+\setbeamercolor{uppercolLGreenS}{fg=redSap,bg=lightgreenSap!40!}
+\setbeamercolor{lowercolLGreenS}{fg=black,bg=lightgreenSap!40!}
+\setbeamercolor{uppercolref}{fg=darkblueSap,bg=lightblueSap!5!}
+\setbeamercolor{lowercolref}{fg=darkblueSap,bg=lightblueSap!5!}
+\setbeamercolor{uppercolBLG}{fg=darkblueSap,bg=lightgraySap!15!}
+\setbeamercolor{lowercolBLG}{fg=darkblueSap,bg=lightgraySap!15!}
+\setbeamercolor*{author in head/foot}{parent=palette primary}
+\setbeamercolor*{title in head/foot}{parent=palette secondary}
+\setbeamercolor*{date in head/foot}{parent=palette primary}
+\setbeamercolor*{section in head/foot}{parent=palette tertiary}
+\setbeamercolor*{frametitle}{parent=palette secondary}
+\setbeamercolor*{frametitle right}{parent=section in head/foot}
+\setbeamercolor*{postit}{parent=palette secondary}
+\setbeamercolor*{authorpostit}{fg=redSap,bg=white}
+%\setbeamercolor*{block title}{fg=white,bg=lightgreenSap}
+%\setbeamercolor*{block body}{use=example text,fg=black,bg=lightgreenSap!40!}
+\setbeamercolor*{block title}{fg=white,bg=darkvioletSap!80!}
+\setbeamercolor*{block body}{use=example text,fg=black,bg=lightvioletSap!40!}
+\setbeamertemplate{bibliography item}[text]
+\setbeamercolor{bibliography item}{fg=darkblueSap}
+\setbeamercolor*{bibliography entry author}{fg=darkblueSap}
+\setbeamercolor*{bibliography entry title}{fg=black}
+\setbeamercolor*{bibliography entry location}{fg=darkblueSap}
+\setbeamercolor*{bibliography entry school}{fg=darkblueSap}
+\setbeamercolor*{bibliography entry note}{fg=darkblueSap}
+\setbeamercolor*{bibliography entry publisher}{fg=darkblueSap}
+%
+\makeatother
+%
+% ---------------------------------------------------
+% Set beamer fonts
+% ---------------------------------------------------
+\setbeamerfont{frametitle}{size=\fontsize{14}{20}}
+\setbeamerfont{subsection in toc}{size=\small}
+%
+% ---------------------------------------------------
+% Fixed Lecture information
+% ---------------------------------------------------
+\subtitle{Neural Networks 2026/2027}
+\institute{%Dept. Information Engineering, Electronics and Telecommunications (DIET)\\Sapienza University of Rome\\
+%\vspace{0.3cm}
+\myhref{https://sites.google.com/uniroma1.it/neuralnetworks2026}{https://sites.google.com/uniroma1.it/neuralnetworks2026}\\ 
+\vspace{0.3cm}
+\{danilo.comminiello, simone.scardapane\}@uniroma1.it}
+%
+% ---------------------------------------------------
+% Define info commands
+% ---------------------------------------------------
+\newcommand{\MyShortAuthor}{\fontsize{7}{8}{\insertshortauthor}} %Red
+\newcommand{\MyShortTitle}{\fontsize{7}{8}{\insertshorttitle}} %Red
+\newcommand{\MyShortSubtitle}{\fontsize{7}{8}{\insertshortsubtitle}} %Red
+\newcommand{\MyShortFramenumber}{\fontsize{7}{8}{\insertframenumber{} / \inserttotalframenumber}} %Red
+\newcommand{\MyFrameTitle}{{\insertframetitle}}
+\newcommand{\MyTitle}{\Large{\textbf{\textsc{\inserttitle}}}}
+\newcommand{\MyBigTitle}{\LARGE\scshape{\inserttitle}}% 2022
+\newcommand{\MySubtitle}{\textcolor{gray}{\normalsize\insertsubtitle}} % 2022
+\newcommand{\MyAuthor}{\textcolor{black}{\textsc{\insertauthor}}}
+\newcommand{\MyInstitute}{\footnotesize{\insertinstitute}}% 2022
+\newcommand{\MyDate}{\small\textcolor{gray}{\insertdate}} %2022
+\renewcommand{\indent}{\hspace*{2em}}
+%
+% ---------------------------------------------------
+% Outer theme definition
+% ---------------------------------------------------
+\setbeamertemplate{headline}
+{%
+  \begin{beamercolorbox}[colsep=1.5pt]{upper separation line head}
+  \end{beamercolorbox}
+  \begin{beamercolorbox}[colsep=1.5pt]{middle separation line head}
+  \end{beamercolorbox}
+}
+%
+% ---------------------------------------------------
+\setbeamertemplate{navigation symbols}{} % elimina i simboli di navigazione
+%
+% ---------------------------------------------------
+\setbeamertemplate{footline}
+{
+	%
+	% Footline with Author - Course - Page
+	\leavevmode%
+  \hbox{%
+	% 2019 - Second option : Author - Course - Date
+  \begin{beamercolorbox}[wd=.25\paperwidth,ht=2.5ex,dp=1ex,left,leftskip=4ex]{title in head/foot}%
+    \usebeamerfont{title in head/foot}\MyShortAuthor
+  \end{beamercolorbox}%
+  \begin{beamercolorbox}[wd=.5\paperwidth,ht=2.5ex,dp=1ex,center]{title in head/foot}%
+    \usebeamerfont{title in head/foot}\textcolor{gray}\MyShortSubtitle % for lectures
+		%\usebeamerfont{title in head/foot}\MyShortTitle % for seminars
+  \end{beamercolorbox}%
+  \begin{beamercolorbox}[wd=.25\paperwidth,ht=2.5ex,dp=1ex,right,rightskip=4ex]{title in head/foot}%
+    \usebeamerfont{title in head/foot}\MyShortFramenumber 
+  \end{beamercolorbox}}%
+  \vskip0pt%
+}
+%
+% ---------------------------------------------------
+\setbeamertemplate{frametitle}
+{
+	\nointerlineskip
+	\hbox{\leavevmode
+	\begin{beamercolorbox}[sep=0cm,ht=1.1em,wd=\paperwidth,dp=0.9ex,left,leftskip=2ex]{frametitle} 
+		\vbox{}\vskip-2ex
+		\strut\usebeamerfont{frametitle}\MyFrameTitle\strut
+	\end{beamercolorbox}
+	\begin{beamercolorbox}[colsep=1.5pt]{lower separation line head}
+	\end{beamercolorbox}
+	}
+}
+%
+% ---------------------------------------------------
+\setbeamertemplate{title page}{%
+	
+	%\vspace{2.7cm} % useful for seminars with logos
+	\vspace{3.51cm} % One title line for lectures
+	%\vspace{3cm} % Two title line for lectures
+	\alert{\MyTitle}
+	
+	\vspace{-0.2cm}
+	\begin{tikzpicture}
+		\fill[redSap](0,0) rectangle (\textwidth, 0.4pt);
+	\end{tikzpicture}
+
+	\hbox{\leavevmode
+		\hfill\MyAuthor\hfill
+	}%\hfill
+
+	%{\scriptsize{\textit{Dept. Information Engineering, Electronics and Telecommunications (DIET), Sapienza University of Rome, Italy}}} % for seminars
+
+	\btVFill
+	
+	{{\scshape\small{\MySubtitle}}}\\
+	\vspace{0.1cm}
+	{{\MyDate}}\\	
+	
+	\vspace{0.5cm}
+	\includegraphics[keepaspectratio,scale=0.35]{Sapienza-logo.pdf} % for lectures
+	%\includegraphics[keepaspectratio,scale=0.3]{Sapienza-logo.pdf} \hfill \includegraphics[keepaspectratio,scale=0.2]{secondlogo.jpg} % for seminars and conferences
+	\vspace{0.5cm}
+}
+%
+% ---------------------------------------------------
+\newlength{\progsectpage}
+\newlength{\progsectpagelinewidth}
+\setlength{\progsectpagelinewidth}{0.4pt}
+\AtBeginSection[] {
+\setlength{\progsectpage}{.9\linewidth * \ratio{\insertframenumber pt}{\inserttotalframenumber pt}}
+  \begin{frame}[plain]
+    \frametitle{}
+		\begin{center}
+			\hfill
+			\parbox{.9\textwidth}{
+			\tableofcontents[currentsection, sectionstyle=show/hide, subsectionstyle=show/hide/hide]
+			%
+			\begin{tikzpicture}
+				\fill[darkgraySap](0,0) rectangle (.9\linewidth, \progsectpagelinewidth);
+				\fill[redSap](0,0) rectangle (\progsectpage, \progsectpagelinewidth);
+			\end{tikzpicture}
+			
+			\vspace{0.2cm}
+			\tableofcontents[currentsection, sectionstyle=hide/hide, subsectionstyle=show/show/hide]
+			}
+		\end{center}
+    \addtocounter{framenumber}{-1}
+  \end{frame}
+}
+%
+% ---------------------------------------------------
+% Commands, styles and environments definition
+% ---------------------------------------------------
+\DeclareMathOperator{\cov}{cov}				  								% Define math operator cov
+\DeclareMathOperator{\de}{d} 														% Definition of the operator d
+\DeclareMathOperator{\diag}{diag} 											% Definition of the operator diag
+\DeclareMathOperator{\E}{E} 														% Definition of the expectation operator E
+\DeclareMathOperator{\sgn}{sgn}													% Define math operator sign
+\DeclareMathOperator{\trace}{tr}												% Define math operator trace
+\DeclareMathOperator{\var}{var}				  								% Define math operator var
+\newcommand{\bC}{\mathbb{C}}														% Definition of the mathbb letter C
+\newcommand{\bH}{\mathbb{H}}														% Definition of the mathbb letter H
+\newcommand{\bK}{\mathbb{K}}														% Definition of the mathbb letter K
+\newcommand{\bR}{\mathbb{R}}														% Definition of the mathbb letter R
+\newcommand{\RC}{{(\mathbb {R,C})}}											% Definition of the mathbb letters (R,C)
+\newcommand{\bbeta}{{\boldsymbol{\beta}}}						% Definition of the boldsymbol beta
+\newcommand{\beps}{{\boldsymbol{\epsilon}}}						  % Definition of the boldsymbol epsilon
+\newcommand{\bgamma}{{\boldsymbol{\gamma}}}						% Definition of the boldsymbol gamma
+\newcommand{\blambda}{{\boldsymbol{\lambda}}}						% Definition of the boldsymbol lambda
+\newcommand{\bmu}{{\boldsymbol{\mu}}}										% Definition of the boldsymbol mu
+\newcommand{\bphi}{{\boldsymbol{\phi}}}									% Definition of the boldsymbol phi
+\newcommand{\bSigma}{{\boldsymbol{\Sigma}}}        			% Definition of the boldsymbol Sigma
+\newcommand{\bsigma}{{\boldsymbol{\sigma}}}        			% Definition of the boldsymbol sigma
+\newcommand{\bth}{{\boldsymbol{\theta}}}	        			% Definition of the boldsymbol theta
+\newcommand{\bxi}{{\boldsymbol{\xi}}}				  					% Definition of the boldsymbol xi
+\newcommand{\cD}{{\cal{D}}}   													% Definition of the calligraphic letter D
+\newcommand{\cF}{{\cal{F}}}   													% Definition of the calligraphic letter F
+\newcommand{\cH}{{\mathcal{H}}} 												% Definition of the calligraphic letter H - to be used in equation mode
+\newcommand{\cL}{{\cal{L}}}   													% Definition of the calligraphic letter L
+\newcommand{\cN}{{\cal{N}}}   													% Definition of the calligraphic letter N
+\newcommand{\cO}{{\mathcal{O}}} 												% Definition of the calligraphic letter O - to be used in equation mode
+\newcommand{\cR}{{\cal{R}}}  														% Definition of the calligraphic letter R
+\newcommand{\cU}{{\cal{U}}}  														% Definition of the calligraphic letter U
+\newcommand{\cX}{{\cal{X}}}  														% Definition of the calligraphic letter X
+\newcommand{\cY}{{\cal{Y}}}  														% Definition of the calligraphic letter Y
+\newcommand{\rOmega}{{\rm{\Omega}}}											% Definition of the roman letter Omega
+\newcommand{\tH} {^{\text{H}}}													% Definition of the Hermitian symbol H
+\newcommand{\tT}{^{\text{T}}}														% Definition of the transpose symbol T
+\newcommand{\R}{{\mathbf{R}}} 													% Definition of the bold letter R
+\newcommand{\W}{{\mathbf{W}}} 													% Definition of the bold letter W
+\newcommand{\w}{{\mathbf{w}}} 													% Definition of the bold letter w
+\newcommand{\x}{{\mathbf{x}}} 													% Definition of the bold letter x
+\newcommand{\y}{{\mathbf{y}}} 													% Definition of the bold letter y
+\newcommand{\z}{{\mathbf{z}}} 													% Definition of the bold letter z
+\def\ii{{\hat{\imath}}}																	% Definition of the immaginary symbol i
+\def\ij{{\hat{\jmath}}}																	% Definition of the immaginary symbol j
+\def\ik{{\hat{\kappa}}}																	% Definition of the immaginary symbol k
+%
+\newcommand*{\theorembreak}{\usebeamertemplate{theorem end}\framebreak\usebeamertemplate{theorem begin}}
+\newcommand*{\examplebreak}{\usebeamertemplate{example end}\framebreak\usebeamertemplate{example begin}}
+\newcommand{\refcite}[1]{\textcolor{darkblueSap}{\cite{#1}}}
+\newcommand{\refentry}[1]{
+	\setstretch{0.1}
+	\begin{itemize}\justifying{%\setstretch{0.3}
+		\item[{\tiny{\refcite{#1}}}]
+		    {{\tiny{\textcolor{darkblueSap}{\bibentry{#1}}}}}}
+	\end{itemize}
+}
+\newcommand{\btVFill}{\vskip0pt plus 1filll}
+%
+\newcommand{\myhref}[2]{\href{#1}{{\color{darkblueSap}{\underline{#2}}}}} % Hyperref color description
+%
+\theoremstyle{remark} 
+\newtheorem{rem}{Remark}
+\newtheorem*{rem*}{\small{\textsc{\textbf{Remark}}}}
+%
+\theoremstyle{plain}
+\newtheorem{theom}{Theorem}
+\newtheorem*{theom*}{\small{\textsc{\textbf{Theorem}}}}
+\newtheorem{lem}{Lemma}
+\newtheorem{prop}{Property}
+\newtheorem*{prop*}{\small{\textsc{\textbf{Property}}}}
+\newtheorem*{note*}{\small{\textsc{\textbf{Note}}}}
+\newtheorem*{def*}{\small{\alert{\textsc{\textbf{Definition}}}}}
+%
+\theoremstyle{example}
+\newtheorem{ex}{Example}
+\newtheorem{cor}{Corollary}
+\setbeamercolor*{block title example}{fg=redSap,bg=lightgraySap}
+\setbeamercolor*{block body example}{use=example text,fg=black,bg=lightgraySap!40!}
+\setbeamertemplate{theorems}[numbered]
+%
+\newenvironment<>{grayenv}{%
+  \color#1{lightgraySap}}{}
+	
+\newenvironment{refblock}{%
+\begin{beamerboxesrounded}[upper=uppercolBLG,lower=lowercolBLG,shadow=false]}{
+\end{beamerboxesrounded}}
+%
+%
+% ---------------------------------------------------
+% Commands and styles definition for columns
+% ---------------------------------------------------
+\newlength\MyColSep
+\setlength\MyColSep{0.1\textwidth}
+\newlength\MyColWd
+\setlength\MyColWd{0.45\textwidth}
+%
+%
+% ---------------------------------------------------
+% Caption numbering
+% ---------------------------------------------------
+\setbeamertemplate{caption}[numbered]{}% Number float-like environments
+%
+%
+% ---------------------------------------------------
+% Command for side caption
+% ---------------------------------------------------
+\newcommandx{\mycaptionminipage}[3][3=c,usedefault]{%
+    \begin{minipage}[#3]{#1}%
+        \ifthenelse{\equal{#3}{b}}{\captionsetup{aboveskip=0pt}}{}
+        \ifthenelse{\equal{#3}{t}}{\captionsetup{belowskip=0pt}}{}
+        \vspace{0pt}\centering\captionsetup{width=\textwidth} %Temporarily set caption width
+        #2%
+    \end{minipage}%
+}%
+\newcommandx{\mysidecaption}[4][4=c,usedefault]{%
+        \mycaptionminipage{\dimexpr\linewidth-#1\linewidth-\intextsep\relax}{#3}[#4]%
+        \hfill%
+        \mycaptionminipage{#1\linewidth}{#2}[#4]%
+}
+%
+% ---------------------------------------------------
+% Listing Settings
+% ---------------------------------------------------
+% Listing Python
+\usepackage{listings}
+%\lstdefinestyle{mystyle}{
+\lstset{
+	backgroundcolor=\color{lightgraySap},
+	tabsize=4,
+	rulecolor=\color{redSap},
+	language=Python,
+        basicstyle=\scriptsize,
+        upquote=true,
+        aboveskip={1\baselineskip},
+        columns=fixed,
+        showstringspaces=false,
+        extendedchars=true,
+        breaklines=true,
+        prebreak = \raisebox{0ex}[0ex][0ex]{\ensuremath{\hookleftarrow}},
+        frame=single,
+        showtabs=false,
+        showspaces=false,
+        showstringspaces=false,
+        identifierstyle=\ttfamily,
+        keywordstyle=\color{darkblueSap},
+        commentstyle=\color{darkgreenSap},
+        stringstyle=\color{darkorangeSap},
+        %morekeywords={parfor,spmd,open},
+}
+%\lstset{style=mystyle}
+%
+% ---------------------------------------------------
+%
+%
+\mode
+<all>
