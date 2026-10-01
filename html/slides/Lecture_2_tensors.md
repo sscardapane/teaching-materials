@@ -269,64 +269,6 @@ layout: full
 import BeamerFrame from '../components/BeamerFrame.vue'
 import EquationInspector from '../components/EquationInspector.vue'
 
-const lowRankComponentEquation = String.raw`
-  \mathbf{x}^{\top}\mathbf{W}
-  \approx
-  \sum_{\htmlData{inspect=k}{k}=1}^{r}
-  \htmlData{inspect=read}{
-    (\mathbf{U}_{\htmlData{inspect=k}{k}}^{\top}\mathbf{x})
-  }
-  \htmlData{inspect=write}{
-    \mathbf{V}_{\htmlData{inspect=k}{k}}^{\top}
-  }
-`
-
-const lowRankComponentItems = [
-  { id: 'k', tex: 'k' },
-  { id: 'read', tex: '\\mathbf{U}_k^{\\top}\\mathbf{x}' },
-  { id: 'write', tex: '\\mathbf{V}_k^{\\top}' },
-]
-</script>
-
-<BeamerFrame title="Low-rank factorization">
-
-For $\mathbf{W}\sim(D,H)$, a <span class="accent">rank-$r$ approximation</span> can be factorized as:
-
-$$
-\mathbf{W}\approx\mathbf{U}\mathbf{V}^{\top},
-\qquad
-\mathbf{U}\sim(D,r),\quad
-\mathbf{V}\sim(H,r),\quad
-r\ll\min(D,H).
-$$
-
-For a row vector $\mathbf{x}^{\top}$:
-
-<EquationInspector
-  :tex="lowRankComponentEquation"
-  :items="lowRankComponentItems"
-  label="highlight term"
-  inline
-/>
-
-All linear maps can be decomposed into a sum of rank-1 operations operating on 1D subspaces.
-
-<div class="definition-box small">
-
-**Why we care:** $\mathbf{U}\mathbf{V}^{\top}$ has rank at most $r$ and uses $r(D+H)$ parameters instead of $DH$. This idea underlies parameter-efficient methods such as **low-rank adaptation** (LoRA).
-
-</div>
-
-</BeamerFrame>
-
----
-layout: full
----
-
-<script setup>
-import BeamerFrame from '../components/BeamerFrame.vue'
-import EquationInspector from '../components/EquationInspector.vue'
-
 const batchedProductEquation = String.raw`
   Y_{
     \htmlData{inspect=b}{b},
