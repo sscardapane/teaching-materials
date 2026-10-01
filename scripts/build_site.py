@@ -35,6 +35,9 @@ def main():
         if source.suffix in {'.ipynb', '.html'}:
             shutil.copy2(source, notebook_output / source.name)
             items.append((f'notebooks/{source.name}', source.name))
+            if source.suffix == '.ipynb':
+                colab = 'https://colab.research.google.com/github/sscardapane/teaching-materials/blob/main/notebooks/'
+                items.append((colab + source.name, source.stem.replace('_', ' ') + ' (Open in Colab)'))
     shutil.copytree(ROOT / 'notebooks' / 'data', notebook_output / 'data', dirs_exist_ok=True)
     rows = '\n'.join(f'<li><a href="{html.escape(url)}">{html.escape(title)}</a></li>' for url, title in items)
     (output / 'index.html').write_text(

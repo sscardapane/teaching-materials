@@ -10,6 +10,18 @@ draft directory remains available in the old repository for existing links.
 The original Colab notebooks and Notion page were not modified. This choice does not establish a
 course-wide policy on agent use.
 
+## Open the notebooks
+
+These links open the current GitHub notebooks directly in Colab, without a
+download/upload step.
+
+| Notebook | Run online | Local copy |
+|---|---|---|
+| PT01 · student | [Open in Colab](https://colab.research.google.com/github/sscardapane/teaching-materials/blob/main/notebooks/PT01_Introduction_to_PyTorch.ipynb) | [Download](https://raw.githubusercontent.com/sscardapane/teaching-materials/main/notebooks/PT01_Introduction_to_PyTorch.ipynb) |
+| PT01 · instructor | [Open in Colab](https://colab.research.google.com/github/sscardapane/teaching-materials/blob/main/notebooks/PT01_Introduction_to_PyTorch_solutions.ipynb) | [Download](https://raw.githubusercontent.com/sscardapane/teaching-materials/main/notebooks/PT01_Introduction_to_PyTorch_solutions.ipynb) |
+| PT02 · student | [Open in Colab](https://colab.research.google.com/github/sscardapane/teaching-materials/blob/main/notebooks/PT02_Logistic_regression.ipynb) | [Download](https://raw.githubusercontent.com/sscardapane/teaching-materials/main/notebooks/PT02_Logistic_regression.ipynb) |
+| PT02 · instructor | [Open in Colab](https://colab.research.google.com/github/sscardapane/teaching-materials/blob/main/notebooks/PT02_Logistic_regression_solutions.ipynb) | [Download](https://raw.githubusercontent.com/sscardapane/teaching-materials/main/notebooks/PT02_Logistic_regression_solutions.ipynb) |
+
 ## Files
 
 - `PT01_Introduction_to_PyTorch.ipynb`: required preparation, with complete
