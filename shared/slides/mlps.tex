@@ -9,7 +9,7 @@
 	\vspace{0.2em}
 	\begin{columns}[T,onlytextwidth]
 		\begin{column}{0.49\textwidth}
-			\begin{tcolorbox}[nndsblue,height=0.42\textheight]
+			\begin{tcolorbox}[nndsblue,courseheight={mlp-definition}{0.42\textheight}]
 				\textbf{\color{darkcerulean}Hidden representation}
 				\[
 					{\color{darkcerulean}\vc{h}} = \phi(\vc{W}\vc{x}+\vc{b})
@@ -18,7 +18,7 @@
 			\end{tcolorbox}
 		\end{column}
 		\begin{column}{0.49\textwidth}
-			\begin{tcolorbox}[nndsgreen,height=0.42\textheight]
+			\begin{tcolorbox}[nndsgreen,courseheight={mlp-definition}{0.42\textheight}]
 				\textbf{\color{darkgreen}Linear output}
 				\[
 					{\color{darkgreen}f(\vc{x})} = \vc{w}^{\top}{\color{darkcerulean}\vc{h}}+c
@@ -112,14 +112,14 @@
 	\small
 	\begin{columns}[T,onlytextwidth]
 		\begin{column}{0.49\textwidth}
-			\begin{tcolorbox}[nndsblue,height=0.32\textheight]
+			\begin{tcolorbox}[nndsblue,courseheight={mlp-terminology}{0.32\textheight}]
 				\textbf{\color{darkcerulean}Representation / embedding}
 
 				The feature vector $\vc{h}^{(\ell)}$ computed at an intermediate layer.
 			\end{tcolorbox}
 		\end{column}
 		\begin{column}{0.49\textwidth}
-			\begin{tcolorbox}[nndsblue,height=0.32\textheight]
+			\begin{tcolorbox}[nndsblue,courseheight={mlp-terminology}{0.32\textheight}]
 				\textbf{\color{darkcerulean}Width and depth}
 
 				Width: $\dim\vc{h}^{(\ell)}$. Depth: $L$ hidden layers ($L+1$ with the output).
@@ -129,14 +129,14 @@
 	\par\vspace{0.6em}
 	\begin{columns}[T,onlytextwidth]
 		\begin{column}{0.49\textwidth}
-			\begin{tcolorbox}[nndsgreen,height=0.32\textheight]
+			\begin{tcolorbox}[nndsgreen,courseheight={mlp-terminology}{0.32\textheight}]
 				\textbf{\color{darkgreen}Parameters: learned}
 
 				The weights and biases $\boldsymbol{\theta}$ learned from the data.
 			\end{tcolorbox}
 		\end{column}
 		\begin{column}{0.49\textwidth}
-			\begin{tcolorbox}[nndsorange,height=0.32\textheight]
+			\begin{tcolorbox}[nndsorange,courseheight={mlp-terminology}{0.32\textheight}]
 				\textbf{\color{draworange}Hyperparameters: chosen}
 
 				Layer count, widths, activation functions, and learning rate.
@@ -284,13 +284,13 @@
 	\]
 	\begin{columns}[T,onlytextwidth]
 		\begin{column}{0.49\textwidth}
-			\begin{tcolorbox}[nndsblue,height=0.28\textheight]
+			\begin{tcolorbox}[nndsblue,courseheight={mlp-negative-slope}{0.28\textheight}]
 				\textbf{LeakyReLU}\\[0.4em]
 				\small Fix a small negative-side slope, e.g., $\alpha=0.01$.
 			\end{tcolorbox}
 		\end{column}
 		\begin{column}{0.49\textwidth}
-			\begin{tcolorbox}[nndsgreen,height=0.28\textheight]
+			\begin{tcolorbox}[nndsgreen,courseheight={mlp-negative-slope}{0.28\textheight}]
 				\textbf{Parametric ReLU (PReLU)}\\[0.4em]
 				\small Learn $\alpha$ jointly with the weights and biases.
 			\end{tcolorbox}
@@ -326,14 +326,14 @@
 	We can also change where the learned scalar functions act:
 	\begin{columns}[T,onlytextwidth]
 		\begin{column}{0.49\textwidth}
-			\begin{tcolorbox}[nndsblue,height=0.40\textheight]
+			\begin{tcolorbox}[nndsblue,courseheight={mlp-kan}{0.40\textheight}]
 				\small\setlength{\abovedisplayskip}{4pt}\setlength{\belowdisplayskip}{4pt}\setlength{\parskip}{3pt}\textbf{MLP with learned activations}
 				\[h_i=\phi_i\!\left(\textstyle\sum_j W_{ij}x_j+b_i\right).\]
 				Mix inputs, then transform each unit.
 			\end{tcolorbox}
 		\end{column}
 		\begin{column}{0.49\textwidth}
-			\begin{tcolorbox}[nndsgreen,height=0.40\textheight]
+			\begin{tcolorbox}[nndsgreen,courseheight={mlp-kan}{0.40\textheight}]
 				\small\setlength{\abovedisplayskip}{4pt}\setlength{\belowdisplayskip}{4pt}\setlength{\parskip}{3pt}\textbf{KAN layer}
 				\[h_i=\textstyle\sum_jW_{ij}\phi_{ij}(x_j).\]
 				Transform each connection, then sum.
@@ -404,7 +404,7 @@
 
 	\begin{columns}[T,onlytextwidth]
 		\begin{column}{0.49\textwidth}
-			\begin{tcolorbox}[nndsblue,height=5.05cm,boxsep=2pt,left=5pt,right=5pt,top=5pt,bottom=5pt]
+			\begin{tcolorbox}[nndsblue,courseheight={mlp-branches}{5.05cm},boxsep=2pt,left=5pt,right=5pt,top=5pt,bottom=5pt]
 				\footnotesize\RaggedRight
 				\setlength{\parskip}{3pt}
 				\setlength{\abovedisplayskip}{5pt}
@@ -421,7 +421,7 @@
 			\end{tcolorbox}
 		\end{column}
 		\begin{column}{0.49\textwidth}
-			\begin{tcolorbox}[nndsgreen,height=5.05cm,boxsep=2pt,left=5pt,right=5pt,top=5pt,bottom=5pt]
+			\begin{tcolorbox}[nndsgreen,courseheight={mlp-branches}{5.05cm},boxsep=2pt,left=5pt,right=5pt,top=5pt,bottom=5pt]
 				\footnotesize\RaggedRight
 				\setlength{\parskip}{3pt}
 				\setlength{\abovedisplayskip}{5pt}

@@ -69,6 +69,13 @@ repositories and compared with the migrated sources. The
 200 dpi, extracted text, page dimensions, PDF links and metadata. The original
 [linear-model pilot](verification/pilot-result.json) remains as a historical check.
 
+The subsequent [NN box-spacing review](verification/nn-box-layout-review.json)
+records an intentional layout change on nine NN slides: boxes fit their contents
+while adjacent boxes keep equal heights. The two PDFs in `pdf/nn/` and their
+recorded hashes identify that reviewed layout baseline. The migration comparison
+above still targets the untouched original PDFs, so it now reports those nine
+NN pages as expected differences; the NNDS decks remain identical.
+
 ```sh
 python3 -m venv .venv
 .venv/bin/python -m pip install -r requirements-verify.txt
