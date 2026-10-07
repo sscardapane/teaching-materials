@@ -1,8 +1,8 @@
-# PT01 and PT02: shared course notebooks
+# Shared course notebooks
 
 > [!note] Written by Codex (2026-09-14)
 
-PT01 and PT02 are maintained here as one shared set for all courses, including
+PT01, PT02 and the autodiff lab are maintained here as one shared set for all courses, including
 NN and NNDS (Simone's decision, October 1, 2026). Lectures can select different
 sections from the same notebooks; additions do not require course-specific copies.
 The canonical directory is `teaching-materials/notebooks/`. The former dated
@@ -21,6 +21,8 @@ download/upload step.
 | PT01 · instructor | [Open in Colab](https://colab.research.google.com/github/sscardapane/teaching-materials/blob/main/notebooks/PT01_Introduction_to_PyTorch_solutions.ipynb) | [Download](https://raw.githubusercontent.com/sscardapane/teaching-materials/main/notebooks/PT01_Introduction_to_PyTorch_solutions.ipynb) |
 | PT02 · student | [Open in Colab](https://colab.research.google.com/github/sscardapane/teaching-materials/blob/main/notebooks/PT02_Logistic_regression.ipynb) | [Download](https://raw.githubusercontent.com/sscardapane/teaching-materials/main/notebooks/PT02_Logistic_regression.ipynb) |
 | PT02 · instructor | [Open in Colab](https://colab.research.google.com/github/sscardapane/teaching-materials/blob/main/notebooks/PT02_Logistic_regression_solutions.ipynb) | [Download](https://raw.githubusercontent.com/sscardapane/teaching-materials/main/notebooks/PT02_Logistic_regression_solutions.ipynb) |
+| Autodiff · student | [Open in Colab](https://colab.research.google.com/github/sscardapane/teaching-materials/blob/main/notebooks/Automatic_differentiation.ipynb) | [Download](https://raw.githubusercontent.com/sscardapane/teaching-materials/main/notebooks/Automatic_differentiation.ipynb) |
+| Autodiff · instructor | [Open in Colab](https://colab.research.google.com/github/sscardapane/teaching-materials/blob/main/notebooks/Automatic_differentiation_solutions.ipynb) | [Download](https://raw.githubusercontent.com/sscardapane/teaching-materials/main/notebooks/Automatic_differentiation_solutions.ipynb) |
 
 ## Files
 
@@ -40,13 +42,20 @@ download/upload step.
   diagnostic, and a complete coordinate-MLP reference experiment.
 - Matching `.html` files: reading previews; use the notebooks to edit or run
   code.
-- `make_student_notebook.py`: reproducibly rebuilds both student notebooks from
+- `Automatic_differentiation.ipynb`: standalone NumPy reverse-mode lab. Students
+  implement local rules, reverse topological backward and a classifier update.
+  Cotangents and pullbacks are defined through the slides' adjoint/VJP notation.
+  The shared-graph example shows why each node must wait for all its consumers.
+- `Automatic_differentiation_solutions.ipynb`: editable instructor source with
+  executable core and optional solutions, graph plots and training comparison.
+- `make_student_notebook.py`: reproducibly rebuilds all three student notebooks from
   the instructor sources, removing reference cells, fallbacks and saved outputs.
   Use `--check` to verify that the generated sources are current. Edit instructor
   notebooks first; shared code and prose belong there, with instructor-only
   cells tagged `reference`.
 - `data/penguins.csv`: unscaled Palmer Penguins data, supplied for offline use.
 - `verify_notebooks.py`: reproducible execution and exercise-path checks.
+- `verify_autodiff.py`: autodiff checks called by the notebook verifier.
 
 Open the folder in Jupyter and select the notebook, so `data/penguins.csv` is
 available relative to it. The notebook and data folder travel together. When
@@ -228,3 +237,58 @@ Two questions, with instructor answers and asserted reference runs, show what
 the linear model hid: `lr=10` makes the MLP's loss explode (about 2e5 in the
 recorded run, NaN at 30), and zero initialization leaves every weight at zero,
 so only the output bias learns. The image exercise now builds on this section.
+
+## Automatic differentiation from scratch
+
+> [!note] Written by Codex (2026-10-07)
+
+PT01/PT02 are already migrated. This standalone lab implements the approved
+replacement for the legacy autodiff Colab; it does not change those notebooks.
+Its filename has no PT number until the CNN/autodiff teaching order is chosen.
+
+| Section | Supplied material | Student implementation |
+| --- | --- | --- |
+| 1. Setup and backward quantities | Dependencies, shape assertions, cotangent/pullback definitions and adjoint identity | Shape prediction |
+| 2. Values and computation graph | Immutable float64 `Tensor`, forward operators, transpose/sum pullbacks and Matplotlib graph visualizer | Shared-node prediction |
+| 3. Activity 1 | Local-rule explanations and independent checks | `sum_to_shape`, addition, multiplication and vector/matrix-product pullbacks |
+| 4. Activity 2 | Shared-graph trace (complete gradient 44 versus premature 12), scheduling explanation, seed/buffer helper and checks | Iterative topological order and reverse accumulation |
+| 5. Classifier | PT02 data split/scaling, stable mean cross-entropy with pullback, PyTorch reference | Read the shapes and loss averaging |
+| 6. Activity 3 | Logits/loss/gradient/update parity harness | Fresh graph and updates of both weight and bias |
+| 7. Training comparison | 60 full-batch updates and training/validation plots | Interpret agreement and limitations |
+| Optional | `grad`/Jacobian skeletons and checks; complete JVP/VJP worked bridge | Scalar functional gradient and Jacobian via basis seeds |
+
+The engine stores cotangents in a fresh dictionary on every backward call,
+including for constant leaves; it has no persistent `.grad` or `requires_grad`
+interface. It snapshots immutable forward values and allows fresh-seed reuse
+of a graph. This differs from PyTorch's usual gradient-buffer accumulation and
+saved-intermediate lifetime. The lab states those differences explicitly.
+Matrix products support vectors and matrices only. Backward returns NumPy
+arrays, so the engine does not implement higher-order differentiation.
+
+The student source contains stubs and no hidden reference fallbacks. The
+instructor contains complete answers; cells tagged `reference` are removed by
+the generator. Guided examples and supplied infrastructure stay in both versions.
+Both HTML previews follow the same separation. The site builder includes the
+unnumbered lab in downloads and Colab links.
+
+The October 7 CPU check used Python 3.12.4, NumPy 2.5.3 and PyTorch 2.14.1.
+Instructor execution and completed student paths passed, including optional
+extensions. The unfilled student path stopped at Activity 1 as intended.
+Checks cover scalar/multiple-singleton broadcasting, rectangular products,
+nonuniform seeds, repeated operands and shared branches, fresh backward buffers,
+long iterative traversals, stable loss, both parameter updates, data isolation
+and training parity. Negative checks reject wrong-axis reduction, reversed
+outer products, overwritten cotangents, premature traversal, frozen bias and
+summed rather than mean loss. Graph and training plots received visual review.
+Sandbox process-inspection warnings during kernel shutdown did not fail execution.
+The notebooks have not been executed in Colab.
+
+For a focused check or refresh:
+
+```sh
+python verify_notebooks.py --only-autodiff
+python verify_notebooks.py --only-autodiff --write-outputs
+```
+
+The default `python verify_notebooks.py` checks all three labs. Runtime packages
+are unchanged. Student-facing prose received the humanizer pass in embedded mode.

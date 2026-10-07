@@ -15,6 +15,7 @@ import nbformat
 from nbclient import NotebookClient
 from nbconvert import HTMLExporter
 from make_student_notebook import build_pt01, build_pt02, clear_execution
+from verify_autodiff import verify_autodiff
 
 ROOT = Path(__file__).resolve().parent
 
@@ -27,6 +28,8 @@ def execute(nb):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--write-outputs", action="store_true")
+    parser.add_argument("--only-autodiff", action="store_true",
+                        help="Verify and optionally refresh only the autodiff artifacts")
     args = parser.parse_args()
     for name, generated in [("PT01_Introduction_to_PyTorch", build_pt01()),
                             ("PT02_Logistic_regression", build_pt02())]:
@@ -44,6 +47,9 @@ def main():
         os.environ.update(JUPYTER_PATH=str(root), JUPYTER_RUNTIME_DIR=str(root / "runtime"),
                           IPYTHONDIR=str(root / "ipython"), MPLCONFIGDIR=str(root / "mpl"),
                           OMP_NUM_THREADS="1", OPENBLAS_NUM_THREADS="1")
+        verify_autodiff(execute, write_outputs=args.write_outputs)
+        if args.only_autodiff:
+            return
         completed = {}
         clean_paths = [
             ROOT / "PT01_Introduction_to_PyTorch.ipynb",

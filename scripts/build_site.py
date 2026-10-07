@@ -31,7 +31,7 @@ def main():
             items.append((f'pdf/{course}/{pdf.name}', f'{course.upper()}: {pdf.stem} (PDF)'))
     notebook_output = output / 'notebooks'
     notebook_output.mkdir(exist_ok=True)
-    for source in sorted((ROOT / 'notebooks').glob('PT*')):
+    for source in sorted((ROOT / 'notebooks').iterdir()):
         if source.suffix in {'.ipynb', '.html'}:
             shutil.copy2(source, notebook_output / source.name)
             items.append((f'notebooks/{source.name}', source.name))

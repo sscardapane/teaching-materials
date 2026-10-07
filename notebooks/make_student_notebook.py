@@ -1,4 +1,4 @@
-"""Build both student notebooks from their instructor sources.
+"""Build the shared student notebooks from their instructor sources.
 
 Use --check to verify that the committed student sources match the generators.
 """
@@ -159,12 +159,38 @@ print("Both updates passed the checks.")'''
     return clear_execution(notebook)
 
 
+def build_autodiff():
+    notebook = json.loads((ROOT / "Automatic_differentiation_solutions.ipynb").read_text())
+    reference_ids = {cell["id"] for cell in notebook["cells"]
+                     if "reference" in cell.get("metadata", {}).get("tags", [])}
+    expected = {"ad-shape-answer", "ad-local-reference-text", "ad-local-reference",
+                "ad-backward-reference-text", "ad-backward-reference",
+                "ad-step-reference-text", "ad-step-reference", "ad-core-answers",
+                "ad-grad-reference", "ad-jacobian-reference"}
+    if reference_ids != expected:
+        raise RuntimeError("The autodiff reference cells changed; review the student export.")
+    notebook["cells"] = [cell for cell in notebook["cells"] if cell["id"] not in reference_ids]
+    intro = cell_by_id(notebook, "ad-intro")
+    source = "".join(intro["source"])
+    source = source.replace(" (instructor version)", "")
+    source = source.replace(
+        "This instructor version includes executable solutions in cells tagged\n"
+        "`reference`. The generated student version removes them and all saved outputs.\n"
+        "An unfinished activity raises an error; it never silently calls a solution.",
+        "This is the student version. Complete each activity before continuing.\n"
+        "An unfinished activity raises an error that names the missing implementation.\n"
+        "Exercise solutions and saved outputs are not included.")
+    intro["source"] = lines(source)
+    return clear_execution(notebook)
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--check", action="store_true")
     args = parser.parse_args()
     for path, notebook in [(ROOT / "PT01_Introduction_to_PyTorch.ipynb", build_pt01()),
-                           (STUDENT, build_pt02())]:
+                           (STUDENT, build_pt02()),
+                           (ROOT / "Automatic_differentiation.ipynb", build_autodiff())]:
         if args.check:
             existing = clear_execution(json.loads(path.read_text()))
             if existing != notebook:

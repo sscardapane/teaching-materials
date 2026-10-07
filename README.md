@@ -3,7 +3,8 @@
 Shared sources for Neural Networks (NN), Neural Networks for Data Science
 (NNDS), and future machine learning courses.
 
-- [Shared PyTorch notebooks](notebooks/): PT01 and PT02, student and instructor versions.
+- [Shared notebooks](notebooks/): PT01, PT02 and automatic differentiation from scratch,
+  with student and instructor versions.
 - [NN PDFs](pdf/nn/) and [NNDS PDFs](pdf/nnds/).
 - [Interactive slides and downloads](https://sscardapane.github.io/teaching-materials/),
   [slide sources](html/slides/) and [authoring guide](html/AUTHORING.md).
@@ -18,7 +19,7 @@ introductions and NNDS preliminaries stay in their respective course folders.
 Figures and their editable sources are in `shared/assets/` or the relevant
 course's `assets/` directory.
 
-PT01/PT02 have one shared home: **`notebooks/`**. Edit the `_solutions.ipynb`
+PT01/PT02 and the autodiff lab have one shared home: **`notebooks/`**. Edit the `_solutions.ipynb`
 instructor sources, then regenerate the student notebooks. The notebook README
 covers dependencies, optional sections and verification. There are no dated draft
 folders or separate notebook copies per course.
