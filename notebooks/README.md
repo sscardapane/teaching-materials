@@ -2,7 +2,7 @@
 
 > [!note] Written by Codex (2026-09-14)
 
-PT01, PT02 and the autodiff lab are maintained here as one shared set for all courses, including
+PT01, PT02 and PT03 (autodiff) are maintained here as one shared set for all courses, including
 NN and NNDS (Simone's decision, October 1, 2026). Lectures can select different
 sections from the same notebooks; additions do not require course-specific copies.
 The canonical directory is `teaching-materials/notebooks/`. The former dated
@@ -21,8 +21,8 @@ download/upload step.
 | PT01 · instructor | [Open in Colab](https://colab.research.google.com/github/sscardapane/teaching-materials/blob/main/notebooks/PT01_Introduction_to_PyTorch_solutions.ipynb) | [Download](https://raw.githubusercontent.com/sscardapane/teaching-materials/main/notebooks/PT01_Introduction_to_PyTorch_solutions.ipynb) |
 | PT02 · student | [Open in Colab](https://colab.research.google.com/github/sscardapane/teaching-materials/blob/main/notebooks/PT02_Logistic_regression.ipynb) | [Download](https://raw.githubusercontent.com/sscardapane/teaching-materials/main/notebooks/PT02_Logistic_regression.ipynb) |
 | PT02 · instructor | [Open in Colab](https://colab.research.google.com/github/sscardapane/teaching-materials/blob/main/notebooks/PT02_Logistic_regression_solutions.ipynb) | [Download](https://raw.githubusercontent.com/sscardapane/teaching-materials/main/notebooks/PT02_Logistic_regression_solutions.ipynb) |
-| Autodiff · student | [Open in Colab](https://colab.research.google.com/github/sscardapane/teaching-materials/blob/main/notebooks/Automatic_differentiation.ipynb) | [Download](https://raw.githubusercontent.com/sscardapane/teaching-materials/main/notebooks/Automatic_differentiation.ipynb) |
-| Autodiff · instructor | [Open in Colab](https://colab.research.google.com/github/sscardapane/teaching-materials/blob/main/notebooks/Automatic_differentiation_solutions.ipynb) | [Download](https://raw.githubusercontent.com/sscardapane/teaching-materials/main/notebooks/Automatic_differentiation_solutions.ipynb) |
+| PT03 · student | [Open in Colab](https://colab.research.google.com/github/sscardapane/teaching-materials/blob/main/notebooks/PT03_Automatic_differentiation.ipynb) | [Download](https://raw.githubusercontent.com/sscardapane/teaching-materials/main/notebooks/PT03_Automatic_differentiation.ipynb) |
+| PT03 · instructor | [Open in Colab](https://colab.research.google.com/github/sscardapane/teaching-materials/blob/main/notebooks/PT03_Automatic_differentiation_solutions.ipynb) | [Download](https://raw.githubusercontent.com/sscardapane/teaching-materials/main/notebooks/PT03_Automatic_differentiation_solutions.ipynb) |
 
 ## Files
 
@@ -42,12 +42,13 @@ download/upload step.
   diagnostic, and a complete coordinate-MLP reference experiment.
 - Matching `.html` files: reading previews; use the notebooks to edit or run
   code.
-- `Automatic_differentiation.ipynb`: standalone NumPy reverse-mode lab. Students
-  implement local rules, reverse topological backward and a classifier update.
-  Cotangents and pullbacks are defined through the slides' adjoint/VJP notation.
-  The shared-graph example shows why each node must wait for all its consumers.
-- `Automatic_differentiation_solutions.ipynb`: editable instructor source with
-  executable core and optional solutions, graph plots and training comparison.
+- `PT03_Automatic_differentiation.ipynb`: standalone NumPy reverse-mode lab. Students
+  write local VJPs (including broadcasting and `tanh`/`relu`), a reverse topological
+  backward pass and a classifier update. Terminology follows the lecture slides
+  (JVP, VJP, adjoint). A live demonstration shows why each node must wait for all
+  its consumers.
+- `PT03_Automatic_differentiation_solutions.ipynb`: editable instructor source with
+  executable core and optional solutions, graph plots and training comparisons.
 - `make_student_notebook.py`: reproducibly rebuilds all three student notebooks from
   the instructor sources, removing reference cells, fallbacks and saved outputs.
   Use `--check` to verify that the generated sources are current. Edit instructor
@@ -238,50 +239,58 @@ the linear model hid: `lr=10` makes the MLP's loss explode (about 2e5 in the
 recorded run, NaN at 30), and zero initialization leaves every weight at zero,
 so only the output bias learns. The image exercise now builds on this section.
 
-## Automatic differentiation from scratch
+## PT03: automatic differentiation from scratch
 
-> [!note] Written by Codex (2026-10-07)
+> [!note] Written by Codex (2026-10-07), revised by Claude (2026-10-07)
 
-PT01/PT02 are already migrated. This standalone lab implements the approved
-replacement for the legacy autodiff Colab; it does not change those notebooks.
-Its filename has no PT number until the CNN/autodiff teaching order is chosen.
+PT01/PT02 are already migrated. This standalone lab replaces the legacy autodiff
+Colab; it does not change those notebooks. Simone chose the PT03 number on
+October 7 (the files were renamed from `Automatic_differentiation*`, published
+the same day). The CNN/autodiff teaching order is not fixed by this number.
 
 | Section | Supplied material | Student implementation |
 | --- | --- | --- |
-| 1. Setup and backward quantities | Dependencies, shape assertions, cotangent/pullback definitions and adjoint identity | Shape prediction |
-| 2. Values and computation graph | Immutable float64 `Tensor`, forward operators, transpose/sum pullbacks and Matplotlib graph visualizer | Shared-node prediction |
-| 3. Activity 1 | Local-rule explanations and independent checks | `sum_to_shape`, addition, multiplication and vector/matrix-product pullbacks |
-| 4. Activity 2 | Shared-graph trace (complete gradient 44 versus premature 12), scheduling explanation, seed/buffer helper and checks | Iterative topological order and reverse accumulation |
-| 5. Classifier | PT02 data split/scaling, stable mean cross-entropy with pullback, PyTorch reference | Read the shapes and loss averaging |
-| 6. Activity 3 | Logits/loss/gradient/update parity harness | Fresh graph and updates of both weight and bias |
-| 7. Training comparison | 60 full-batch updates and training/validation plots | Interpret agreement and limitations |
-| Optional | `grad`/Jacobian skeletons and checks; complete JVP/VJP worked bridge | Scalar functional gradient and Jacobian via basis seeds |
+| 1. Setup | Dependencies and check helpers | None |
+| 2. From the chain rule to VJPs | Scalar example worked by hand and checked numerically; JVP/VJP/adjoint in the slides' notation | Shape and formula prediction for $f(W)=Wx$ |
+| 3. `Tensor` | Immutable float64 wrapper with operator overloading, `-`, transpose, sum, `tanh`/`relu` wrappers, Matplotlib graph drawer | Shared-node prediction |
+| 4. Activity 1 | Separate checks per step, with PyTorch, finite differences and the VJP definition | 1a addition, multiplication and four matmul cases; 1b `sum_to_shape`; 1c `tanh_vjp` and `relu_vjp` |
+| 5. Activity 2 | Shared-graph example with a live premature backward (12 instead of 44), `initial_adjoints` | Iterative topological order and reverse accumulation |
+| 6. Activity 3 | PT02 data split/scaling, stable mean cross-entropy with VJP, PyTorch reference | `classifier_step` with both parameter updates |
+| 7. Training | 60 full-batch updates, training/validation plot, validation accuracy | Interpret agreement |
+| 8. What you built | Limits of the engine and four discussion questions | Discussion (answers in the instructor copy) |
+| Optional A–D | PT02's 16-unit ReLU MLP trained with both engines from identical weights; `grad`; Jacobian from basis seeds; worked JVP/VJP comparison | `mlp_step`, `grad`, `jacobian` |
 
-The engine stores cotangents in a fresh dictionary on every backward call,
+**Terminology.** The October 7 revision aligns the lab with the current lecture
+deck, which uses $\partial f(x)[u]$ (JVP), $\partial f(x)^*[v]$ (VJP, the adjoint
+map) and VJP methods on primitives. It never uses "cotangent" or "pullback".
+Functions are therefore `*_vjp`, the per-node values are called adjoints, and the
+JAX terms are mentioned once as synonyms. The slide formulas are images; their
+notation was taken from the deck's text and the October 7 slide review note,
+because a fresh PDF export was unavailable. Slide 79 still links the legacy
+Colab and should point to PT03 when the deck is corrected.
+
+The engine stores adjoints in a fresh dictionary on every backward call,
 including for constant leaves; it has no persistent `.grad` or `requires_grad`
-interface. It snapshots immutable forward values and allows fresh-seed reuse
-of a graph. This differs from PyTorch's usual gradient-buffer accumulation and
-saved-intermediate lifetime. The lab states those differences explicitly.
-Matrix products support vectors and matrices only. Backward returns NumPy
-arrays, so the engine does not implement higher-order differentiation.
+interface. Broadcast reduction happens in the `Tensor` wrapper, so students write
+each local rule as if shapes matched and then implement `sum_to_shape` as a
+separate step. Matrix products support vectors and matrices only, and backward
+returns NumPy arrays, so there is no higher-order differentiation.
 
-The student source contains stubs and no hidden reference fallbacks. The
-instructor contains complete answers; cells tagged `reference` are removed by
-the generator. Guided examples and supplied infrastructure stay in both versions.
-Both HTML previews follow the same separation. The site builder includes the
-unnumbered lab in downloads and Colab links.
+The student source contains stubs and no hidden reference fallbacks; cells
+tagged `reference` are removed by the generator. Both HTML previews follow the
+same separation, and the site builder picks up the renamed files automatically.
 
-The October 7 CPU check used Python 3.12.4, NumPy 2.5.3 and PyTorch 2.14.1.
-Instructor execution and completed student paths passed, including optional
-extensions. The unfilled student path stopped at Activity 1 as intended.
-Checks cover scalar/multiple-singleton broadcasting, rectangular products,
-nonuniform seeds, repeated operands and shared branches, fresh backward buffers,
-long iterative traversals, stable loss, both parameter updates, data isolation
-and training parity. Negative checks reject wrong-axis reduction, reversed
-outer products, overwritten cotangents, premature traversal, frozen bias and
-summed rather than mean loss. Graph and training plots received visual review.
-Sandbox process-inspection warnings during kernel shutdown did not fail execution.
-The notebooks have not been executed in Colab.
+The October 7 revision was checked on CPU with Python 3.12.4, NumPy 2.5.3 and
+PyTorch 2.14.1. Instructor execution and the completed student path passed,
+including all optional sections; the unfilled student path stops at Activity 1a.
+Negative checks reject wrong-axis reduction, swapped multiplication factors, a
+reversed outer product, `tanh` derivative applied to the output, ReLU passing
+gradient at 0, overwritten adjoints, premature traversal, a frozen bias and a
+summed rather than mean loss. The MLP section matches PyTorch's SGD to 1e-8 over
+200 updates (validation accuracy 0.985 in the recorded run; the linear model
+reaches 0.956 after 60 updates). Graph and training plots were reviewed visually.
+The notebooks have not been executed in Colab. Student-facing prose received the
+humanizer pass in embedded mode.
 
 For a focused check or refresh:
 
@@ -291,4 +300,4 @@ python verify_notebooks.py --only-autodiff --write-outputs
 ```
 
 The default `python verify_notebooks.py` checks all three labs. Runtime packages
-are unchanged. Student-facing prose received the humanizer pass in embedded mode.
+are unchanged.

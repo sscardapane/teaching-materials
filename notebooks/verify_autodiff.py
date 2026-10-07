@@ -9,12 +9,15 @@ from nbconvert import HTMLExporter
 from make_student_notebook import build_autodiff, clear_execution
 
 ROOT = Path(__file__).resolve().parent
-NAME = "Automatic_differentiation"
+NAME = "PT03_Automatic_differentiation"
 SOLUTIONS = ROOT / f"{NAME}_solutions.ipynb"
 STUDENT = ROOT / f"{NAME}.ipynb"
 EXERCISES = {"ad-local-exercise": "ad-local-reference",
+             "ad-broadcast-exercise": "ad-broadcast-reference",
+             "ad-nonlinear-exercise": "ad-nonlinear-reference",
              "ad-backward-exercise": "ad-backward-reference",
              "ad-step-exercise": "ad-step-reference",
+             "ad-mlp-exercise": "ad-mlp-reference",
              "ad-grad-exercise": "ad-grad-reference",
              "ad-jacobian-exercise": "ad-jacobian-reference"}
 
@@ -34,38 +37,42 @@ def wrong_axis(v, shape):
         return np.asarray(v).sum(axis=1)
     return saved_reduce(v, shape)
 sum_to_shape = wrong_axis
-must_reject(check_local_rules)
+must_reject(check_broadcasting)
 sum_to_shape = saved_reduce
 
-saved_matmul = matmul_pullback
+saved_matmul = matmul_vjp
 def reversed_outer(a, b, v):
     if a.ndim == 2 and b.ndim == 1:
         return np.outer(b, v), a.T @ v
     return saved_matmul(a, b, v)
-matmul_pullback = reversed_outer
-must_reject(check_local_rules)
-matmul_pullback = saved_matmul
+matmul_vjp = reversed_outer
+must_reject(check_matmul_vjp)
+matmul_vjp = saved_matmul
+
+saved_multiply = multiply_vjp
+multiply_vjp = lambda a, b, v: (v * a, v * b)
+must_reject(check_elementwise_vjps)
+multiply_vjp = saved_multiply
+
+saved_tanh, saved_relu = tanh_vjp, relu_vjp
+tanh_vjp = lambda y, v: v / np.cosh(y) ** 2  # Applies the input formula to the saved output.
+must_reject(check_nonlinear_vjps)
+tanh_vjp = saved_tanh
+relu_vjp = lambda x, v: (x >= 0) * v  # Passes the adjoint through at exactly zero.
+must_reject(check_nonlinear_vjps)
+relu_vjp = saved_relu
 
 saved_backward = backward
 def overwriting_backward(output, seed=None):
     nodes = topological_order(output)
-    cotangents = initial_cotangents(nodes, output, seed)
+    adjoints = initial_adjoints(nodes, output, seed)
     for node in reversed(nodes):
-        if node.pullback is not None:
-            for parent, contribution in zip(node.parents, node.pullback(cotangents[node])):
-                cotangents[parent] = np.asarray(contribution).copy()
-    return cotangents
+        if node.vjp is not None:
+            for parent, contribution in zip(node.parents, node.vjp(adjoints[node])):
+                adjoints[parent] = np.asarray(contribution).copy()
+    return adjoints
 backward = overwriting_backward
 must_reject(check_backward)
-
-def premature_backward(output, seed=None):
-    nodes = graph_nodes(output)  # A preorder discovery is not a backward schedule.
-    cotangents = initial_cotangents(nodes, output, seed)
-    for node in nodes:
-        if node.pullback is not None:
-            for parent, contribution in zip(node.parents, node.pullback(cotangents[node])):
-                cotangents[parent] += contribution
-    return cotangents
 backward = premature_backward
 must_reject(check_backward)
 backward = saved_backward
@@ -120,12 +127,16 @@ matrix = Tensor(np.arange(6.).reshape(2, 3))
 close(backward(matrix.sum(axis=-1), np.array([2., 3.]))[matrix],
       np.array([[2., 2., 2.], [3., 3., 3.]]))
 close(backward(matrix.sum(axis=()), np.ones((2, 3)))[matrix], np.ones((2, 3)))
+cube = Tensor(np.arange(24.).reshape(2, 3, 4))
+close(backward(cube.sum(axis=(0, -1)), np.array([1., 2., 3.]))[cube],
+      np.broadcast_to(np.array([1., 2., 3.])[None, :, None], (2, 3, 4)))
 scalar = Tensor(2.)
 close(backward(scalar.sum())[scalar], np.array(1.))
 close(grad(lambda x: x * x)(np.array(3.)), np.array(6.))
 close(jacobian(lambda x: x * x, np.array(3.)), np.array(6.))
 close(jacobian(lambda x: Tensor(np.array([])), np.array([1., 2.])), np.empty((0, 2)))
 assert len(training_history['custom train']) == 60
+assert len(mlp_losses['NumPy']) == 200 and mlp_losses['NumPy'][-1] < mlp_losses['NumPy'][0]
 assert all(np.isfinite(values).all() for values in training_history.values())
 assert len(graph_nodes(graph_loss)) == 4
 assert np.array_equal(np.sort(np.concatenate((train_idx, val_idx, test_idx))), np.arange(342))
@@ -170,7 +181,7 @@ def verify_autodiff(execute, write_outputs=False):
     completed_student.cells.append(nbformat.v4.new_code_cell(REGRESSION_CHECKS,
                                                             id="autodiff-private-verification"))
     execute(completed_student)
-    print("PASS completed autodiff student path and rejection of six legacy-style errors", flush=True)
+    print("PASS completed autodiff student path and rejection of nine legacy-style errors", flush=True)
 
     if write_outputs:
         executed_instructor.metadata.kernelspec = {

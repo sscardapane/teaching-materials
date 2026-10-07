@@ -19,7 +19,7 @@ introductions and NNDS preliminaries stay in their respective course folders.
 Figures and their editable sources are in `shared/assets/` or the relevant
 course's `assets/` directory.
 
-PT01/PT02 and the autodiff lab have one shared home: **`notebooks/`**. Edit the `_solutions.ipynb`
+PT01, PT02 and PT03 (autodiff) have one shared home: **`notebooks/`**. Edit the `_solutions.ipynb`
 instructor sources, then regenerate the student notebooks. The notebook README
 covers dependencies, optional sections and verification. There are no dated draft
 folders or separate notebook copies per course.

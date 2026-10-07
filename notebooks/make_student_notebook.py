@@ -160,13 +160,15 @@ print("Both updates passed the checks.")'''
 
 
 def build_autodiff():
-    notebook = json.loads((ROOT / "Automatic_differentiation_solutions.ipynb").read_text())
+    notebook = json.loads((ROOT / "PT03_Automatic_differentiation_solutions.ipynb").read_text())
     reference_ids = {cell["id"] for cell in notebook["cells"]
                      if "reference" in cell.get("metadata", {}).get("tags", [])}
     expected = {"ad-shape-answer", "ad-local-reference-text", "ad-local-reference",
+                "ad-broadcast-reference", "ad-nonlinear-reference",
                 "ad-backward-reference-text", "ad-backward-reference",
                 "ad-step-reference-text", "ad-step-reference", "ad-core-answers",
-                "ad-grad-reference", "ad-jacobian-reference"}
+                "ad-mlp-reference", "ad-grad-reference", "ad-jacobian-reference",
+                "ad-jacobian-answer"}
     if reference_ids != expected:
         raise RuntimeError("The autodiff reference cells changed; review the student export.")
     notebook["cells"] = [cell for cell in notebook["cells"] if cell["id"] not in reference_ids]
@@ -190,7 +192,7 @@ def main():
     args = parser.parse_args()
     for path, notebook in [(ROOT / "PT01_Introduction_to_PyTorch.ipynb", build_pt01()),
                            (STUDENT, build_pt02()),
-                           (ROOT / "Automatic_differentiation.ipynb", build_autodiff())]:
+                           (ROOT / "PT03_Automatic_differentiation.ipynb", build_autodiff())]:
         if args.check:
             existing = clear_execution(json.loads(path.read_text()))
             if existing != notebook:
