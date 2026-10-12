@@ -1,0 +1,80 @@
+{
+  "original_deck": "6_Convolutional_Neural_Networks/Lecture_6_convolutions.tex",
+  "original_sha256": "392e7e95921151e7ef2da5fef1cbb1cdda5d6a0a8cd961de9f9f8bfbbb6566ad",
+  "figures": [
+    {
+      "original_export": "Book figures/patch.pdf",
+      "export": "courses/nnds/assets/images/cnn/book/patch.pdf",
+      "native_sources": [
+        "courses/nnds/assets/images/cnn/book/patch.drawio"
+      ],
+      "sha256": "11333251356878c4cd85e4cab490519443a435e72dbc65509b51bb477dccb899"
+    },
+    {
+      "original_export": "6_Convolutional_Neural_Networks/draw.io/Zero_padding.pdf",
+      "export": "courses/nnds/assets/images/cnn/source/Zero_padding.pdf",
+      "native_sources": [
+        "courses/nnds/assets/images/cnn/source/Zero_padding.xml"
+      ],
+      "sha256": "c98002834d45d13e71fc39e73ff418b0f57a9dfa35eb9722fb805d3cc0dc6359"
+    },
+    {
+      "original_export": "6_Convolutional_Neural_Networks/draw.io/Convolution_1.pdf",
+      "export": "courses/nnds/assets/images/cnn/source/Convolution_1.pdf",
+      "native_sources": [
+        "courses/nnds/assets/images/cnn/source/Convolution_1.xml"
+      ],
+      "sha256": "3ea79f21262ac0337e5cbd401f4ae81c1132c44430bb06e845acb19ef60cebf3"
+    },
+    {
+      "original_export": "6_Convolutional_Neural_Networks/draw.io/Convolution_2.pdf",
+      "export": "courses/nnds/assets/images/cnn/source/Convolution_2.pdf",
+      "native_sources": [],
+      "sha256": "fa4303fab74d2c7f26320febf062035eb359334693f33f9e716348b46e5c5641"
+    },
+    {
+      "original_export": "6_Convolutional_Neural_Networks/draw.io/Convolution_3.pdf",
+      "export": "courses/nnds/assets/images/cnn/source/Convolution_3.pdf",
+      "native_sources": [],
+      "sha256": "8cf84d7dcc0e7fb3a1db061e858ec35e2dd5baab1438d5a18b3432f410c61d4f"
+    },
+    {
+      "original_export": "6_Convolutional_Neural_Networks/draw.io/Convolutive_layer.pdf",
+      "export": "courses/nnds/assets/images/cnn/source/Convolutive_layer.pdf",
+      "native_sources": [
+        "courses/nnds/assets/images/cnn/source/Convolutive_layer (1).xml"
+      ],
+      "sha256": "766ab07cb84f02a8e5eb3f070bff8aa1e61b39a4e37ccc9510661f4619343514"
+    },
+    {
+      "original_export": "6_Convolutional_Neural_Networks/images/stride.jpg",
+      "export": "courses/nnds/assets/images/cnn/source/stride.jpg",
+      "native_sources": [],
+      "sha256": "5b5f71b55bac0ccdad72189c12aee5c5a64f75ef808dc1338230740d629aa1ab"
+    },
+    {
+      "original_export": "Book figures/max_pooling.pdf",
+      "export": "courses/nnds/assets/images/cnn/book/max_pooling.pdf",
+      "native_sources": [
+        "courses/nnds/assets/images/cnn/book/max_pooling.xml"
+      ],
+      "sha256": "b393e014513746fecba1eb260a2c6c7b9ba1b938531bb237d95fb40bde3d8268"
+    },
+    {
+      "original_export": "Book figures/CNN_architecture.pdf",
+      "export": "courses/nnds/assets/images/cnn/book/CNN_architecture.pdf",
+      "native_sources": [
+        "courses/nnds/assets/images/cnn/book/CNN_architecture.xml"
+      ],
+      "sha256": "7e9a1dd3f77b37e208978e55dafcabe7471094bd3b8162ef41aa5297fffa6f3b"
+    },
+    {
+      "original_export": "Book figures/CNN_blocks.pdf",
+      "export": "courses/nnds/assets/images/cnn/book/CNN_blocks.pdf",
+      "native_sources": [
+        "courses/nnds/assets/images/cnn/book/CNN_blocks.xml"
+      ],
+      "sha256": "2c486a1f64e56f93f74378224ac77df09a2eb662cdb15ce40f797dc3ebddb529"
+    }
+  ]
+}

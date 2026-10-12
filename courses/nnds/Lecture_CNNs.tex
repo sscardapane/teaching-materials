@@ -1,0 +1,533 @@
+
+\documentclass[12pt,aspectratio=169]{beamer}
+
+\input{style.tex}
+\usetikzlibrary{arrows.meta,calc}
+\graphicspath{{assets/}{../../shared/assets/}}
+\newcommand*{\boldone}{\text{\usefont{U}{bbold}{m}{n}1}}
+
+\usepackage{annotate-equations}
+\usepackage{subfig}
+
+% Colors
+\definecolor{titlecolor}{RGB}{245, 242, 238} 
+\definecolor{drawgray}{HTML}{666666}
+\definecolor{drawgray_l}{HTML}{F5F5F5}
+\definecolor{drawblue}{HTML}{6C8EBF}
+\definecolor{drawblue_l}{HTML}{DAE8FC}
+\definecolor{drawgreen}{HTML}{82B366}
+\definecolor{drawgreen_l}{HTML}{D5E8D4}
+\definecolor{draworange}{HTML}{D79B00}
+\definecolor{draworange_l}{HTML}{FFE6CC}
+\definecolor{drawyellow}{HTML}{D6B656}
+\definecolor{drawyellow_l}{HTML}{FFF2CC}
+\definecolor{drawred}{HTML}{B85450}
+\definecolor{drawred_l}{HTML}{EA6B66}
+\definecolor{drawviolet}{HTML}{9673A6}
+\definecolor{drawviolet_l}{HTML}{E1D5E7}
+
+\begin{document}
+
+	{\usebackgroundtemplate{\tikz\node[opacity=0.4,inner sep=0]{\includegraphics[width=\paperwidth,height=\paperheight]{images/header}};}%
+	\begin{frame}[plain]
+		\vspace{0.5cm}
+		\title{\large \begin{spacing}{1.0}Neural Networks for Data Science\end{spacing}\vspace{0.25em}
+			\normalsize \begin{spacing}{1.0}\textbf{Master's Degree in Data Science}\end{spacing}\vspace{0.5em}}
+		\subtitle{\Large \textbf{Convolutional neural networks}}
+		\date{
+			{\includegraphics[scale=0.8]{images/Uniroma1}}
+		}
+		\author{
+			\setlength{\tabcolsep}{2pt}
+			\begin{tabular}{rl}
+				\textbf{Lecturer}: & S. Scardapane \\
+			\end{tabular}
+		}\titlepage
+	\end{frame}
+	}
+
+\part{1}
+
+\section{Introduction}
+\subsection{Why fully-connected layers are not enough}
+
+\begin{frame}{Definition of an image}
+	
+	An \myalert{image} is a $3$-dimensional tensor $\stackunder{X}{\sss (h,w,c)}$, where:
+	%
+	\begin{itemize}
+		\item $h$ is the \textbf{height} of the image (e.g., 512 pixels).
+		\item $w$ is the \textbf{width} of the image (e.g., 1024 pixels).
+		\item $c$ is the number of \textbf{channels} (e.g., $3$ channels for a RGB image, $1$ channel for a greyscale image).
+	\end{itemize}
+	%
+	The first two dimensions have a precise \textit{grid} ordering, while the channels do not have a precise ordering (i.e., we can switch RGB to GBR or BRG with no information loss).
+	
+\end{frame}
+
+\begin{frame}{An MLP at every pixel}
+
+    As we saw for sequences, we can apply the same MLP at every pixel:
+    \[
+        \idx{H}{i,j,:} = f_{\boldsymbol{\theta}}(\idx{X}{i,j,:}),
+        \qquad H \sim (h,w,c').
+    \]
+
+    Each pixel is processed independently. The MLP mixes channels, but does
+    not use the neighboring pixels.
+
+    The same parameters are shared across all locations, so the number of
+    parameters does not depend on the size of the image.
+
+    How can we also exchange information between pixels?
+
+\end{frame}
+
+\begin{frame}{Vectorizing an image}
+
+    A simple way to process the whole image is to \myalert{vectorize} it,
+    apply a fully-connected layer, and reshape the output:
+    \[
+        \shape{\vc{x}}{(hwc)} = \operatorname{vect}(X),
+        \qquad
+        H = \operatorname{unvect}\!\left(\phi(\vc{W}\vc{x}+\vc{b})\right).
+    \]
+
+    We can choose the output shape to be $(h,w,c')$, so that the layer can
+    be composed with other image layers.
+
+    Now every output pixel can depend on the entire image. However, the
+    weight matrix has $hwc \cdot hwc'$ parameters. Nothing in this layer
+    forces it to use the spatial structure of the image.
+
+\end{frame}
+
+\begin{frame}{Two ways to process an image}
+    \centering
+    \scalebox{0.97}{\input{assets/images/cnn/input-mixing.tex}}
+\end{frame}
+
+\begin{frame}{An example to keep in mind}
+\small
+\setlength{\parskip}{2pt}
+\setlength{\arraycolsep}{7pt}
+\setlength{\abovedisplayskip}{5pt}
+\setlength{\belowdisplayskip}{5pt}
+
+	As a running example to visualize what follows, consider a 1D sequence (think of this as “\textit{4 pixels with a single channel}”):
+
+	$$
+	\mathbf{x} = \left[x_1, x_2, x_3, x_4\right]
+	$$
+	
+	In this case, we do not need any reshaping operations, and the previous layer (with $c^\prime = 1$) can be written as:
+	
+	$$
+	\begin{bmatrix} h_1 \\ h_2 \\ h_3 \\ h_4 \end{bmatrix}=\begin{bmatrix}W_{11} & W_{12} & W_{13} & W_{14} \\ W_{21} & W_{22} & W_{23} & W_{24} \\ W_{31} & W_{32} & W_{33} & W_{34} \\ W_{41} & W_{42} & W_{43} & W_{44} \end{bmatrix} \begin{bmatrix} x_1 \\ x_2 \\ x_3 \\ x_4 \end{bmatrix}
+	$$
+
+\end{frame}
+
+\section{Convolutional neural networks}
+\subsection{Convolutional layers}
+
+\begin{frame}{What we want}
+	
+	We want a layer of the form:
+	%
+	\begin{equation*}
+		\shape{H}{(h,w,c')} = \shape{f\left( X \right)}{(h,w,c)} \,,
+	\end{equation*}
+	%
+	with the following properties:
+	%
+	\begin{itemize}
+		\item the output tensor must exploit the `spatial information' contained in the image;
+		\item It must be efficient (with a small number of parameters);
+		\item It must be \textit{composable} and \textit{differentiable}, i.e., we want to do:
+		%
+		\[
+			Y = (f_l \circ \ldots \circ f_2 \circ f_1) (X)
+		\] 
+	\end{itemize}
+	
+\end{frame}
+
+\begin{frame}{Distance between pixels}
+	
+	We can define many distances between two pixels $i,j$ and $i',j'$, e.g.:
+	%
+	\[
+		d(i,j,i',j') = \max \left\{ \lvert i - i' \rvert, \lvert j - j' \rvert \right\} \,.
+	\]
+	%
+	Fix an odd number $s=2k+1$. A \myalert{patch} is a sub-image centered at $(i,j)$, containing all pixels $(i',j')$ under distance $k$:
+	%
+	\begin{equation}
+		\shape{P_k(i,j)}{(s,s,c)} = \idx{X}{i-k:i+k,j-k:j+k,:} \,.
+	\end{equation}
+	
+\end{frame}
+
+\begin{whiteframe}{Visualizing a patch}
+	
+	We can think of a patch as a small slice of the original tensor:
+	%
+	\begin{figure}
+		\includegraphics{images/cnn/book/patch.pdf}
+	\end{figure}
+	%
+	The size of the patch will be called the \myalert{filter size} or \myalert{kernel size}.
+	
+\end{whiteframe}
+
+\begin{frame}{Locality}
+	
+	\begin{tcolorbox}
+		An image layer is \myalert{local} if $\idx{H}{i,j}$ only depends on $P_k(i,j)$ for some $k$.
+	\end{tcolorbox}
+	
+	We can achieve this by restricting the linear operation to the single patch:
+	
+	\vspace{1em}
+	$$
+	H_{ij} =\phi\left(\eqnmarkbox[drawgreen]{node2}{\mathbf{W}_{ij}}\cdot\eqnmarkbox[drawred]{node}{\text{vect}(P_{k}(i,j))}\right)
+	$$
+	\annotate[yshift=1em]{above,left}{node}{Flattened patch (of shape $s^2 c$)}
+	\annotate[yshift=-1em]{below,right}{node2}{Position-dependent weight matrix}
+	\vspace{1em}
+	
+	where we have a separate weight matrix $\shape{\vc{W}_{i,j}}{(c',ssc)}$ for each location. These are called \myalert{locally-connected} layers.
+	
+\end{frame}
+
+\begin{frame}{Running example}
+
+	Considering our toy example, assuming for example $k=1$ (hence $s=3$) we can write the resulting operation as:
+
+	$$
+	\begin{bmatrix} h_1 \\ h_2 \\ h_3 \\ h_4 \end{bmatrix}=\begin{bmatrix}W_{12} & W_{13} & {\color{drawred}0} & {\color{drawred}0} \\ W_{21} & W_{22} & W_{23} & {\color{drawred}0} \\ {\color{drawred}0} & W_{31} & W_{32} & W_{33} \\ {\color{drawred}0} & {\color{drawred}0} & W_{41} & W_{42} \end{bmatrix} \begin{bmatrix} x_1 \\ x_2 \\ x_3 \\ x_4 \end{bmatrix}
+	$$
+	
+\end{frame}
+
+\begin{frame}{Zero-padding}
+	The operation is not defined for $x_1$ and $x_4$. Instead of shortening the output, we can add $0$ on the border whenever necessary:
+	
+	$$
+	\begin{bmatrix} h_1 \\ h_2 \\ h_3 \\ h_4 \end{bmatrix}=\begin{bmatrix}W_{11} & W_{12} & W_{13} & 0 & 0 & {\color{drawred}0}\\ {\color{drawred}0} & W_{21} & W_{22} & W_{23} & 0 & {\color{drawred}0}\\ {\color{drawred}0} & 0 & W_{31} & W_{32} & W_{33} & {\color{drawred}0} \\ {\color{drawred}0} & 0 & 0 & W_{41} & W_{42} & W_{43} \end{bmatrix} \begin{bmatrix} {\color{drawred}0} \\ x_1 \\ x_2 \\ x_3 \\ x_4 \\ {\color{drawred}0} \end{bmatrix}
+	$$
+
+	This is called \myalert{zero padding}.
+
+\end{frame}
+
+\begin{whiteframe}{Image padding}
+		
+	\vspace{1em}
+	\begin{figure}
+		\centering
+		\includegraphics[width=0.8\columnwidth]{images/cnn/source/Zero_padding.pdf}
+	\end{figure}
+	
+\end{whiteframe}
+
+\begin{frame}{Translational equivariance}
+	
+	The previous layer keeps the spatial information, but it is definitely not efficient: in total, it requires $o \cdot ssc \cdot h \cdot w$ parameters.
+	
+	Fortunately, there is another nice property we can exploit.
+	
+	\begin{tcolorbox}
+		An image layer is \myalert{translational equivariant} if $P_k(i,j) = P_k(i',j')$ implies $\idx{H}{i,j} = \idx{H}{i',j'}$.
+	\end{tcolorbox}
+	%
+	Informally, we want to recognize something \textit{irrespective} of where it appears in the image, i.e., if something moves (the patch) we want the output feature to move `with it'.
+	
+\end{frame}
+
+\begin{frame}{Convolutional layer}
+	
+	We can achieve translational equivariance easily by \textit{sharing} the same weights across all locations, i.e., $\vc{W}_{i,j} = \vc{W}$:
+	%
+	\begin{equation}
+		\idx{H}{i,j} = \phi( {\color{darkred}\vc{W}} \cdot \text{vect}(P_{i,j,k})) \,,
+	\end{equation}
+	%
+	The resulting layer is called a \myalert{convolutional layer}. It has all the properties we were looking for, including efficiency (we have only $c' \cdot ssc$ parameters).
+	
+	Remember that in general we always consider a version with bias:
+	%
+	\begin{equation}
+		\idx{H}{i,j} = \phi( \vc{W} \cdot \text{vect}(P_{i,j,k}) {\color{blue} + \shape{\vc{b}}{(c')}}) \,.
+	\end{equation}
+	
+\end{frame}
+
+\begin{frame}{Running example}
+
+	The final convolutional layer in our toy example is:
+	
+	\begin{equation}
+	\begin{bmatrix} h_1 \\ h_2 \\ h_3 \\ h_4 \end{bmatrix}=\begin{bmatrix}{\color{drawred}W_2} & {\color{drawred}W_3} & 0 & 0 \\ {\color{drawred}W_1} & {\color{drawred}W_2} & {\color{drawred}W_3} & 0 \\ 0 & {\color{drawred}W_1} & {\color{drawred}W_2} & {\color{drawred}W_3} \\ 0 & 0 & {\color{drawred}W_1} & {\color{drawred}W_2} \end{bmatrix} \begin{bmatrix} x_1 \\ x_2 \\ x_3 \\ x_4 \end{bmatrix}
+	\label{eq:convolution_example}
+	\end{equation}
+	
+	where we now have only three weights $\mathbf{W} = \left[W_1, W_2, W_3\right]^\top$. Note the special (\myalert{Toeplitz}) structure of the matrix -- the convolutional layer remains a linear transformation.
+
+\end{frame}
+
+\begin{frame}{Equivalent formulation}
+	
+	An equivalent way to define convolution is to consider a $4$-dimensional weight tensor $\shape{W}{(s,s,c,c')}$, with a scalar function to convert between offsets:
+	%
+	\begin{equation}
+	t(i) = i - k - 1
+	\label{eq:convolutive_offset}
+	\end{equation}
+	%
+	We now rewrite the output of the layer with explicit summations across the axes:
+	%
+	\begin{equation}
+	H_{ijz} = \sum_{i^\prime=1}^{2k+1}\sum_{j^\prime = 1}^{2k+1}\sum_{d=1}^{c} \idx{W}{i^\prime, j^\prime, z, d}\idx{X}{i^\prime+t(i),j^\prime+t(j), d}
+	\label{eq:convolution_full_indexing}
+	\end{equation}
+	
+	In signal processing terminology, this is a filtering operation exploiting a \myalert{finite impulse response} filter.
+
+\end{frame}
+
+\begin{frame}{Terminology time!}
+	
+	\begin{itemize}
+		\item $s=2k+1$ is called the \myalert{kernel size} or \myalert{filter size}. It is a hyper-parameter of the layer, together with the number $c'$ of output channels.
+		\item In accordance with signal processing, the elements of the matrix $\vc{W}$ (or the equivalent tensor $W$) are called \myalert{filters}.
+		\item A single slice $\idx{H}{:,:,a}$ is called an \myalert{activation map}. Sometimes, we distinguish between pre-activation (before $\phi$) and post-activation.
+	\end{itemize}
+	
+\end{frame}
+
+\begin{whiteframe}{Filter operation 1/3}
+	
+	\begin{figure}
+		\centering
+		\includegraphics[width=0.9\columnwidth]{images/cnn/source/Convolution_1.pdf}
+		\vspace{-1em}\caption{Start from the first patch, filling the first element of the activation map.}
+	\end{figure}
+	
+\end{whiteframe}
+
+\begin{whiteframe}{Filter operation 2/3}
+	
+	\begin{figure}
+		\centering
+		\includegraphics[width=0.9\columnwidth]{images/cnn/source/Convolution_2.pdf}
+		\vspace{-1em}	\caption{The window is moved one pixel, and we compute a different activation.}
+	\end{figure}
+	
+\end{whiteframe}
+
+\begin{whiteframe}{Filter operation 3/3}
+	
+	\begin{figure}
+		\centering
+		\includegraphics[width=0.9\columnwidth]{images/cnn/source/Convolution_3.pdf}
+		\vspace{-1em}\caption{At the end, we obtain an activation map for the entire image.}
+	\end{figure}
+	
+\end{whiteframe}
+
+\begin{whiteframe}{Convolutional layer}
+	
+	The previous operation is shown for a single filter. Stacking many filters together gives us the complete \myalert{convolutional layer}.
+	
+	\begin{figure}
+		\centering
+		\includegraphics[width=0.7\columnwidth]{images/cnn/source/Convolutive_layer.pdf}
+	\end{figure}
+	
+\end{whiteframe}
+
+\begin{frame}{Receptive field}
+	
+	Suppose we stack several convolutional layers:
+	%
+	\[
+		H = (f_3 \circ f_2 \circ f_1) (X)
+	\]
+	%
+	\begin{tcolorbox}
+		The \myalert{receptive field} of $\idx{H}{i,j}$ is the subset of $X$ that contributed to its computation.
+	\end{tcolorbox}
+	
+	For one layer, the receptive field is just $P_{i,j,k}$. For two layers, however (with the same kernel size), it becomes $P_{i,j,2k}$. This justifies our choice of locality: even if a \textit{single} layer is highly localized, \textit{many} layers can still process the entire image at once, since the receptive field increases linearly.
+	
+\end{frame}
+
+\begin{frame}[fragile]{Implementation}
+	
+	Most frameworks, including TensorFlow, provide a primitive with an efficient low-level implementation:
+	%
+	\begin{python}
+	 # Image (with mini-batch dimension)
+	 X = tf.random.normal((1, 64, 64, 3))
+	
+	 # Filters (filter size = 5, output filters = 100)
+	 W = tf.random.normal((5, 5, 3, 100))
+	
+	 # Convolution
+	 H = tf.nn.conv2d(X, W, 1, 'SAME')
+	 print(H.shape) # (1, 64, 64, 100)
+	\end{python}
+	
+	\blfootnote{\url{https://www.tensorflow.org/api_docs/python/tf/nn/conv2d}.}
+	
+\end{frame}
+
+\subsection{Defining the network}
+
+\begin{frame}{Reducing dimensionality}
+	
+	We can define a convolutional block by interleaving convolutional layers with activation functions:
+	%
+	$$
+	H = (\phi \circ \text{Conv}\circ\ldots\circ\phi\circ\text{Conv})(X)
+	$$
+
+	Convolutional blocks can modify the number of channels, but they keep the spatial resolution $(h,w)$ constant. We might want to reduce the resolution in-between blocks, to make the networks faster and more efficient.
+	
+	This is also justified from a signal processing perspective, where \myalert{multi-resolution} filter banks are common.
+
+\end{frame}
+
+\begin{frame}[fragile]{Stride}
+	
+	In a convolution with \myalert{stride}, we compute only $1$ every $s$ elements of the output tensor $H$, where $s$ is the stride parameter.
+	
+	For example, for $s=2$, we have:
+	%
+	\[
+		\shape{\idx{H}{i,j}}{\color{darkred}(h/2,w/2,c')} = \phi( \vc{W} \cdot \text{vect}(P_{\color{darkred}2i-1,2j-1,k})) \,,
+	\]
+	%
+	The \verb+tf.nn.conv2d+ function we saw before requires, in fact, a stride parameter.
+	
+\end{frame}
+
+\begin{whiteframe}{Convolution with a larger stride}
+	
+	\vspace{1.5em}
+	\begin{figure}
+		\centering
+		\includegraphics[width=0.95\columnwidth]{images/cnn/source/stride.jpg}
+		\caption{Left figure has stride = 1, right figure has stride = 2. Image source is \url{http://cs231n.github.io/convolutional-networks/}.}
+	\end{figure}
+	
+\end{whiteframe}
+
+\begin{frame}{Max-pooling}
+	
+	Alternatively, a \myalert{max-pooling} (or an \myalert{average-pooling}) layer can be used. It computes the maximum (or the average) from small blocks of the input tensor.
+	
+	Differently from convolutional layers, it is common to consider even-dimensional blocks (2x2, 4x4, ...). It acts on each channel separately.
+	
+\end{frame}
+
+\begin{whiteframe}{Visualization of max-pooling}
+	
+	\vspace{1.5em}
+	\begin{figure}
+		\centering
+		\includegraphics[width=0.7\columnwidth]{images/cnn/book/max_pooling.pdf}
+		\caption{Visualization of max-pooling on a $4 \times 4$ image with windows of size $2 \times 2$. Note that the maximum operation can be replaced with any differentiable aggregation (e.g., average).}
+	\end{figure}
+	
+\end{whiteframe}
+
+\begin{frame}{
+		 (1)}
+	
+	A standard CNN for classification is then composed by:
+	%
+	\begin{itemize}
+		\item Interleaving convolutional and pooling layers;
+		\item Flattening (or \myalert{global pooling});
+		\item A classification block.
+	\end{itemize}
+
+	Note: with global pooling, the final layer is roughly \myalert{invariant} to a translation, despite each convolutional layer being equivariant.
+
+	More recent CNNs add many variations on this basic architecture. How to choose the sequence of layers and their hyper-parameters is still an open \textit{model selection} research issue.
+
+\end{frame}
+
+\begin{frame}{Complete architecture of a CNN (2)}
+	
+	\begin{equation*}
+	\begin{array}{rclr}
+		\textrm{Block 1:} & \;\;\; \shape{H}{(h',w',c')} = &  (f_l \circ \ldots \circ f_2 \circ f_1)(X) \;\; & \text{(\color{darkred}convolutional or pooling layers)} \\
+		\textrm{Block 2a:} & \;\;\; \shape{\vc{h}}{(h'w'c')} = &  \text{vect}(H) \;\; & \text{(\color{darkgreen}flattening)} \\
+		\textrm{Block 2b:} & \;\;\; \shape{\vc{h}}{(c')} = & \frac{1}{h'w'}\sum_{i,j} \idx{H}{i,j} \;\; & \text{(\color{darkgreen}global pooling)} \\
+		\textrm{Block 3:} & \;\;\; \vc{y} = & \text{softmax}(g(\vc{h})) \;\; & \text{(\color{blue}e.g., logistic regression)}
+	\end{array}
+	\end{equation*}
+	
+\end{frame}
+
+\begin{whiteframe}{Example of a simple CNN specification}
+	
+	\vspace{1.5em}
+	\begin{figure}
+		\centering
+		\includegraphics[width=0.85\columnwidth]{images/cnn/book/CNN_architecture.pdf}
+		\caption{Note how multiple down-sampling layers are required to make the final classification dimensionality manageable.}
+	\end{figure}
+	
+\end{whiteframe}
+
+\begin{whiteframe}{Designing in blocks}
+	
+	\vspace{1.5em}
+	\begin{figure}
+		\centering
+		\includegraphics[width=0.8\columnwidth]{images/cnn/book/CNN_blocks.pdf}
+		\caption{When CNNs tends to become deep, it is simpler to reason in repeating \textit{blocks} made of multiple components. This is easy using the layering abstraction.}
+	\end{figure}
+	
+\end{whiteframe}
+
+\subsection{Other notable types of convolutions}
+
+\begin{frame}{1x1 convolutions}
+	
+	One important type of convolutional layer is a 1x1 layer, i.e., a layer with a kernel size of 1 ($k=0$), also called a \myalert{pointwise convolution}.
+	
+	This can be understood as a pixel-wise operation, which is applied independently at every pixel, with no contribution from the neighbours.
+	
+	It is especially important when we desire to simply modify the number of channels.
+	
+\end{frame}
+
+\begin{frame}{Depth-wise convolutional layer}
+	
+	An orthogonal idea is to apply a convolution to each channel \textit{independently}, by combining only information across the spatial dimensions.
+	
+	The result is a \myalert{depth-wise} (separable) convolution:
+	%
+	$$
+	H_{ij{\color{drawred}c}} = \sum_{i^\prime=1}^{2k+1}\sum_{j^\prime = 1}^{2k+1} W_{i^\prime, j^\prime,{\color{drawred}c}}X_{i^\prime +t(i),j^\prime+t(j),{\color{drawred}c}}
+	$$
+	%
+	This idea can also be extended to \myalert{group} convolution. A depthwise convolution followed by a pointwise convolution is called a \myalert{depthwise-separable convolution} and it is extremely common for modeling efficient architectures.
+	
+\end{frame}
+
+\begin{frame}{Further readings}
+	
+	\begin{itemize}
+		\item \textbf{Chapter 7} of the book.
+	\end{itemize}
+	
+\end{frame}
+
+\end{document}
