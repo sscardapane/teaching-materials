@@ -7,9 +7,9 @@
 This continues the accepted opening in [CNN opening review](nnds-cnn-opening.md).
 The authoritative source is `courses/nnds/Lecture_CNNs.tex`. Simone approved
 shortening **Convolutional layers** and then requested a rendered preview.
-The section now has seven content slides, down from eighteen. They occupy PDF
-pages 9 to 15, with printed slide numbers 7 to 13. The complete deck has 25
-explicit frames and 29 PDF pages, including dividers.
+The section now has eight content slides, down from eighteen. They occupy PDF
+pages 9 to 16, with printed slide numbers 7 to 14. The complete deck has 26
+explicit frames and 30 PDF pages, including dividers.
 
 Simone explicitly asked to remove **Filter operation 1/3**, **2/3** and **3/3**:
 "they are very old and I can do that at the blackboard, it's also redundant now
@@ -29,6 +29,18 @@ matrix product, followed by a short PyTorch example. Toeplitz structure remains
 in the four-element example. Stride and its sampling implications belong to the
 next subsection. Memory-stride views remain a possible spoken or lab aside.
 
+After reviewing the first render, Simone requested a separate zero-padding slide
+using the running example, including the amount needed to preserve spatial size.
+It comes before the Toeplitz matrix so its boundary zeros have already been
+introduced. For the odd, contiguous kernels evaluated at every position in this
+section, padding is `(s-1)/2` on each side.
+
+He also requested `+b` with implicit broadcasting, matching the MLP convention.
+The implementation slide now uses that notation. Its explanation follows his
+suggested wording: `nn.Conv2d` uses a hardware-specific implementation, so our
+code does not construct `U(X)` explicitly. The details are left to the lab; the
+slide does not claim that every backend internally avoids materializing it.
+
 These are changes to this finite set of slides. No shared template changes or
 HTML conversion form part of this candidate. The accepted opening is identical.
 Everything from **Defining the network** to the end remains identical to the
@@ -46,11 +58,11 @@ Each original slide has one preservation status.
 | Visualizing a patch | move | Embed the original book figure in Local neighborhoods. |
 | Locality | substantial edit | Retain the locality definition on Local neighborhoods and the affine-map form on Convolutional layer; omit position-specific weights. |
 | Running example (unshared local weights) | remove | Keep the final shared-weight example instead. |
-| Zero-padding | substantial edit | Explain boundary zeros on the final four-element example; omit the separate expanded matrix. |
+| Zero-padding | substantial edit | Keep a separate slide using the padded four-element sequence; explain the amount that preserves size. |
 | Image padding | remove | The boundary example covers padding. |
 | Translational equivariance | substantial edit | Define translation equivariance by shifting input and output; state the finite-boundary qualification. |
 | Convolutional layer (equations) | substantial edit | Keep one affine-plus-activation equation with transposed weights, correct shapes and the bias-inclusive parameter count. |
-| Running example (shared weights) | light edit | Preserve the matrix and Toeplitz interpretation; incorporate padding and state that bias and activation are omitted. |
+| Running example (shared weights) | light edit | Preserve the matrix and Toeplitz interpretation; introduce padding on the preceding slide and state that bias and activation are omitted. |
 | Equivalent formulation | remove | The vectorized-neighborhood equation defines the operation; omit the duplicate indexing/FIR formulation. |
 | Terminology time! | substantial edit | Introduce kernel size, filters and activation maps where they are used. |
 | Filter operation 1/3 | remove | Explicitly requested. |
@@ -58,7 +70,7 @@ Each original slide has one preservation status.
 | Filter operation 3/3 | remove | Explicitly requested. |
 | Convolutional layer (multiple-filter figure) | light edit | Preserve the figure; explain filter columns and output-channel slices. |
 | Receptive field | substantial edit | Retain the definition and add the width formula and the 3/5/7 example for contiguous kernels evaluated at every pixel. |
-| Implementation | substantial edit | Replace TensorFlow with PyTorch; connect unfolding to matrix multiplication and distinguish explicit input duplication from implicit GEMM. |
+| Implementation | substantial edit | Replace TensorFlow with PyTorch; connect unfolding to matrix multiplication, use broadcast bias and explain hardware specialization in plain language. |
 
 ## Dependencies and notation
 
@@ -67,7 +79,8 @@ Each original slide has one preservation status.
 | Local neighborhoods | Image axes and channels from the accepted opening. |
 | Convolutional layer | Local tensor, vectorization, affine maps and pointwise activations. |
 | Filters and output channels | Shared weight matrix and output channels. |
-| Running example | The four-element sequence, kernel size and shared weights. Introduces padding before boundary qualifications. |
+| Zero-padding | The four-element sequence and kernel size. Introduces boundary handling before the Toeplitz example. |
+| Running example | The four-element sequence, kernel size, shared weights and padding. |
 | Translation equivariance | Shared weights and padding. Introduces the shift operator before using it. |
 | Receptive field | Local layers and composition from the MLP unit. |
 | Implementation | Vectorized neighborhoods, shared affine maps and padding. |
@@ -80,21 +93,27 @@ Each original slide has one preservation status.
 - `U(X)` contains neighborhoods as columns. With zero padding preserving the
   spatial size, it has shape `(s^2 c,hw)`. `Z` denotes pre-activation outputs;
   the implementation equation uses their matrix form, `\widetilde Z`.
-- The all-ones vector in the bias term has length `hw`. The PyTorch code adds
-  the batch axis and uses `(B,C,H,W)` ordering, shown in its comment.
+- The bias is implicitly broadcast across the spatial positions, as in the MLP
+  slides. The PyTorch code adds the batch axis and uses `(B,C,H,W)` ordering,
+  shown in its comment.
 
 ## Verification and review
 
 `python3 scripts/build.py nnds` builds all five NNDS decks. Every changed slide
 has been rendered and inspected in full. The neighborhood figure's height and
-implementation spacing were adjusted after the first render. The final seven
+implementation spacing were adjusted after the first render. The restored
+zero-padding slide uses local paragraph and equation spacing to fit at the
+existing font size. The final eight
 slides have no overfull box warnings. The title and later unreviewed slides
 retain their existing warnings.
 
 The displayed PyTorch example runs and returns shape `(1,100,64,64)`. Its
 `Unfold` plus matrix-product equivalent agrees with `Conv2d` within floating-point
 tolerance (maximum absolute error `7.15e-7`). The retained Toeplitz matrix agrees
-with zero-padded `Conv1d`. Source checks verify that the accepted opening is
+with zero-padded `Conv1d`. Additional checks confirm that padding one cell for
+a size-3 kernel and two for a size-5 kernel preserve both sequence length and
+2D spatial dimensions; without padding, the four-element size-3 example has
+two outputs. Source checks verify that the accepted opening is
 unchanged and that everything after this subsection is unchanged.
 All ten imported figure exports still match their recorded source hashes; removed
 figures remain in the repository for provenance.

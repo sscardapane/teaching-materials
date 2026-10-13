@@ -192,6 +192,32 @@
 
 \end{whiteframe}
 
+\begin{frame}{Zero-padding}
+    \setlength{\parskip}{3pt}
+    \setlength{\abovedisplayskip}{9pt}
+    \setlength{\belowdisplayskip}{9pt}
+
+    In our four-element sequence, a size-$3$ kernel has only two complete
+    neighborhoods. Add a zero on each side to keep four output positions:
+    \[
+        \widetilde{\vc{x}}
+        = \begin{bmatrix}
+            {\color{darkcerulean}0} & x_1 & x_2 & x_3 & x_4 & {\color{darkcerulean}0}
+          \end{bmatrix}^{\top}.
+    \]
+
+    This is \myalert{zero padding}: values outside the input are set to zero.
+
+    \begin{tcolorbox}
+        For an odd kernel size $s$, padding $k=(s-1)/2$ zeros on each side
+        preserves the original size when evaluating every position.
+    \end{tcolorbox}
+
+    In 2D, pad each border with $k$ rows or columns: one for a $3 \times 3$
+    kernel, two for a $5 \times 5$ kernel.
+
+\end{frame}
+
 \begin{frame}{Running example}
 
     For our four-element sequence, take a kernel of size $3$ and omit the
@@ -211,9 +237,6 @@
 
     This is a \myalert{Toeplitz} matrix: its diagonals repeat the same weights.
     We learn three coefficients, instead of sixteen.
-
-    At the boundaries, use $x_0=x_5=0$ (\myalert{zero padding}). This keeps
-    the four output positions.
 
 \end{frame}
 
@@ -266,7 +289,7 @@
         \shape{\widetilde{Z}}{(c',hw)}
         = \shape{\vc{W}^{\top}}{(c',s^2c)}\,
           \shape{U(X)}{(s^2c,hw)}
-          + \vc{b}\vc{1}^{\top}.
+          + \vc{b}.
     \]
 
     \begin{python}[gobble=4,aboveskip=5pt,belowskip=5pt]
@@ -276,8 +299,8 @@
     Z = conv(X)  # (1, 100, 64, 64)
     \end{python}
 
-    \texttt{im2col} copies overlapping inputs. NVIDIA's \textit{implicit GEMM}
-    evaluates the matrix product without storing $U(X)$.
+    In practice, \verb+nn.Conv2d+ uses an implementation specialized for the
+    hardware, so we do not construct $U(X)$ explicitly. More in the lab session.
 
     \blfootnote{\href{https://docs.pytorch.org/docs/stable/generated/torch.nn.Unfold.html}{PyTorch: Unfold}
         and \href{https://docs.nvidia.com/deeplearning/performance/dl-performance-convolutional/index.html}{NVIDIA: convolution implementations}.}
