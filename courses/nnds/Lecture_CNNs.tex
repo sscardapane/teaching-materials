@@ -307,10 +307,10 @@
 	For example, for $s=2$, we have:
 	%
 	\[
-		\shape{\idx{H}{i,j}}{\color{darkred}(h/2,w/2,c')} = \phi( \vc{W}^{\top} \cdot \operatorname{vect}(P_k({\color{darkred}2i-1,2j-1}))) \,,
+		\shape{\idx{H}{i,j}}{\color{darkred}(h/2,w/2,c')} = \phi( \vc{W} \cdot \text{vect}(P_{\color{darkred}2i-1,2j-1,k})) \,,
 	\]
 	%
-	The \verb+torch.nn.Conv2d+ layer also accepts a stride parameter.
+	The \verb+tf.nn.conv2d+ function we saw before requires, in fact, a stride parameter.
 	
 \end{frame}
 
@@ -415,7 +415,7 @@
 	The result is a \myalert{depth-wise} (separable) convolution:
 	%
 	$$
-	H_{ij{\color{drawred}c}} = \sum_{i^\prime=1}^{2k+1}\sum_{j^\prime = 1}^{2k+1} W_{i^\prime, j^\prime,{\color{drawred}c}}X_{i+i^\prime-k-1,j+j^\prime-k-1,{\color{drawred}c}}
+	H_{ij{\color{drawred}c}} = \sum_{i^\prime=1}^{2k+1}\sum_{j^\prime = 1}^{2k+1} W_{i^\prime, j^\prime,{\color{drawred}c}}X_{i^\prime +t(i),j^\prime+t(j),{\color{drawred}c}}
 	$$
 	%
 	This idea can also be extended to \myalert{group} convolution. A depthwise convolution followed by a pointwise convolution is called a \myalert{depthwise-separable convolution} and it is extremely common for modeling efficient architectures.

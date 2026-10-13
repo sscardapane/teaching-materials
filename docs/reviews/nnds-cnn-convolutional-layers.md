@@ -31,10 +31,9 @@ next subsection. Memory-stride views remain a possible spoken or lab aside.
 
 These are changes to this finite set of slides. No shared template changes or
 HTML conversion form part of this candidate. The accepted opening is identical.
-Later changes are limited to dependency repairs: **Stride** uses the same
-transposed weights and neighborhood notation, and refers to `torch.nn.Conv2d`.
-**Depth-wise convolutional layer** expands the old offset function inline because
-its defining slide has been removed. The operations themselves are unchanged.
+Everything from **Defining the network** to the end remains identical to the
+previous source. Simone asked to check those slides only when their turn comes;
+notation and implementation references there remain for that later review.
 
 ## Original-slide coverage
 
@@ -96,8 +95,7 @@ The displayed PyTorch example runs and returns shape `(1,100,64,64)`. Its
 `Unfold` plus matrix-product equivalent agrees with `Conv2d` within floating-point
 tolerance (maximum absolute error `7.15e-7`). The retained Toeplitz matrix agrees
 with zero-padded `Conv1d`. Source checks verify that the accepted opening is
-unchanged and that later edits are limited to the documented notation, offset
-and API-reference repairs.
+unchanged and that everything after this subsection is unchanged.
 All ten imported figure exports still match their recorded source hashes; removed
 figures remain in the repository for provenance.
 
