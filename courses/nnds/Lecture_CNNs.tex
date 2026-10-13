@@ -131,257 +131,157 @@
 \section{Convolutional neural networks}
 \subsection{Convolutional layers}
 
-\begin{frame}{What we want}
-	
-	We want a layer of the form:
-	%
-	\begin{equation*}
-		\shape{H}{(h,w,c')} = \shape{f\left( X \right)}{(h,w,c)} \,,
-	\end{equation*}
-	%
-	with the following properties:
-	%
-	\begin{itemize}
-		\item the output tensor must exploit the `spatial information' contained in the image;
-		\item It must be efficient (with a small number of parameters);
-		\item It must be \textit{composable} and \textit{differentiable}, i.e., we want to do:
-		%
-		\[
-			Y = (f_l \circ \ldots \circ f_2 \circ f_1) (X)
-		\] 
-	\end{itemize}
-	
-\end{frame}
+% Written by Codex (2026-10-13): convolutional-layers review candidate.
+\begin{whiteframe}{Local neighborhoods}
 
-\begin{frame}{Distance between pixels}
-	
-	We can define many distances between two pixels $i,j$ and $i',j'$, e.g.:
-	%
-	\[
-		d(i,j,i',j') = \max \left\{ \lvert i - i' \rvert, \lvert j - j' \rvert \right\} \,.
-	\]
-	%
-	Fix an odd number $s=2k+1$. A \myalert{patch} is a sub-image centered at $(i,j)$, containing all pixels $(i',j')$ under distance $k$:
-	%
-	\begin{equation}
-		\shape{P_k(i,j)}{(s,s,c)} = \idx{X}{i-k:i+k,j-k:j+k,:} \,.
-	\end{equation}
-	
-\end{frame}
+    \begin{columns}[c,onlytextwidth]
+        \begin{column}{0.54\textwidth}
+            With a \myalert{kernel size} $s=2k+1$, take the $s \times s$
+            neighborhood centered at $(i,j)$, including all $c$ channels.
 
-\begin{whiteframe}{Visualizing a patch}
-	
-	We can think of a patch as a small slice of the original tensor:
-	%
-	\begin{figure}
-		\includegraphics{images/cnn/book/patch.pdf}
-	\end{figure}
-	%
-	The size of the patch will be called the \myalert{filter size} or \myalert{kernel size}.
-	
+            We write this local tensor as:
+            \[
+                P_k(i,j) \sim (s,s,c).
+            \]
+        \end{column}
+        \begin{column}{0.42\textwidth}
+            \centering
+            \includegraphics[width=\linewidth,height=0.46\textheight,keepaspectratio]{images/cnn/book/patch.pdf}
+        \end{column}
+    \end{columns}
+
+    \vspace{0.5em}
+    \begin{tcolorbox}
+        A layer is \myalert{local} if $\idx{H}{i,j,:}$ depends only on $P_k(i,j)$.
+    \end{tcolorbox}
+
 \end{whiteframe}
-
-\begin{frame}{Locality}
-	
-	\begin{tcolorbox}
-		An image layer is \myalert{local} if $\idx{H}{i,j}$ only depends on $P_k(i,j)$ for some $k$.
-	\end{tcolorbox}
-	
-	We can achieve this by restricting the linear operation to the single patch:
-	
-	\vspace{1em}
-	$$
-	H_{ij} =\phi\left(\eqnmarkbox[drawgreen]{node2}{\mathbf{W}_{ij}}\cdot\eqnmarkbox[drawred]{node}{\text{vect}(P_{k}(i,j))}\right)
-	$$
-	\annotate[yshift=1em]{above,left}{node}{Flattened patch (of shape $s^2 c$)}
-	\annotate[yshift=-1em]{below,right}{node2}{Position-dependent weight matrix}
-	\vspace{1em}
-	
-	where we have a separate weight matrix $\shape{\vc{W}_{i,j}}{(c',ssc)}$ for each location. These are called \myalert{locally-connected} layers.
-	
-\end{frame}
-
-\begin{frame}{Running example}
-
-	Considering our toy example, assuming for example $k=1$ (hence $s=3$) we can write the resulting operation as:
-
-	$$
-	\begin{bmatrix} h_1 \\ h_2 \\ h_3 \\ h_4 \end{bmatrix}=\begin{bmatrix}W_{12} & W_{13} & {\color{drawred}0} & {\color{drawred}0} \\ W_{21} & W_{22} & W_{23} & {\color{drawred}0} \\ {\color{drawred}0} & W_{31} & W_{32} & W_{33} \\ {\color{drawred}0} & {\color{drawred}0} & W_{41} & W_{42} \end{bmatrix} \begin{bmatrix} x_1 \\ x_2 \\ x_3 \\ x_4 \end{bmatrix}
-	$$
-	
-\end{frame}
-
-\begin{frame}{Zero-padding}
-	The operation is not defined for $x_1$ and $x_4$. Instead of shortening the output, we can add $0$ on the border whenever necessary:
-	
-	$$
-	\begin{bmatrix} h_1 \\ h_2 \\ h_3 \\ h_4 \end{bmatrix}=\begin{bmatrix}W_{11} & W_{12} & W_{13} & 0 & 0 & {\color{drawred}0}\\ {\color{drawred}0} & W_{21} & W_{22} & W_{23} & 0 & {\color{drawred}0}\\ {\color{drawred}0} & 0 & W_{31} & W_{32} & W_{33} & {\color{drawred}0} \\ {\color{drawred}0} & 0 & 0 & W_{41} & W_{42} & W_{43} \end{bmatrix} \begin{bmatrix} {\color{drawred}0} \\ x_1 \\ x_2 \\ x_3 \\ x_4 \\ {\color{drawred}0} \end{bmatrix}
-	$$
-
-	This is called \myalert{zero padding}.
-
-\end{frame}
-
-\begin{whiteframe}{Image padding}
-		
-	\vspace{1em}
-	\begin{figure}
-		\centering
-		\includegraphics[width=0.8\columnwidth]{images/cnn/source/Zero_padding.pdf}
-	\end{figure}
-	
-\end{whiteframe}
-
-\begin{frame}{Translational equivariance}
-	
-	The previous layer keeps the spatial information, but it is definitely not efficient: in total, it requires $o \cdot ssc \cdot h \cdot w$ parameters.
-	
-	Fortunately, there is another nice property we can exploit.
-	
-	\begin{tcolorbox}
-		An image layer is \myalert{translational equivariant} if $P_k(i,j) = P_k(i',j')$ implies $\idx{H}{i,j} = \idx{H}{i',j'}$.
-	\end{tcolorbox}
-	%
-	Informally, we want to recognize something \textit{irrespective} of where it appears in the image, i.e., if something moves (the patch) we want the output feature to move `with it'.
-	
-\end{frame}
 
 \begin{frame}{Convolutional layer}
-	
-	We can achieve translational equivariance easily by \textit{sharing} the same weights across all locations, i.e., $\vc{W}_{i,j} = \vc{W}$:
-	%
-	\begin{equation}
-		\idx{H}{i,j} = \phi( {\color{darkred}\vc{W}} \cdot \text{vect}(P_{i,j,k})) \,,
-	\end{equation}
-	%
-	The resulting layer is called a \myalert{convolutional layer}. It has all the properties we were looking for, including efficiency (we have only $c' \cdot ssc$ parameters).
-	
-	Remember that in general we always consider a version with bias:
-	%
-	\begin{equation}
-		\idx{H}{i,j} = \phi( \vc{W} \cdot \text{vect}(P_{i,j,k}) {\color{blue} + \shape{\vc{b}}{(c')}}) \,.
-	\end{equation}
-	
+
+    Apply the same affine map to every neighborhood, followed by an activation:
+    \[
+        \idx{H}{i,j,:}
+        = \phi\!\left(
+            {\color{darkgreen}\vc{W}^{\top}}\,
+            \shape{\operatorname{vect}(P_k(i,j))}{(s^2c)}
+            + {\color{darkcerulean}\vc{b}}
+        \right).
+    \]
+
+    The weights $\vc{W} \sim (s^2c,c')$ and bias $\vc{b} \sim (c')$ are
+    \textbf{shared across all locations}.
+
+    This is a \myalert{convolutional layer}. It has $s^2cc' + c'$ parameters,
+    independently of the image height and width.
+
+    The convolution is the affine map inside the parentheses. We apply
+    the usual pointwise activation $\phi$ to its output.
+
 \end{frame}
+
+\begin{whiteframe}{Filters and output channels}
+
+    Each column of $\vc{W}$ defines a \myalert{filter}, producing one output
+    channel. A spatial slice $\idx{H}{:,:,a}$ is an \myalert{activation map}.
+
+    \begin{figure}
+        \centering
+        \includegraphics[width=0.7\columnwidth]{images/cnn/source/Convolutive_layer.pdf}
+    \end{figure}
+
+\end{whiteframe}
 
 \begin{frame}{Running example}
 
-	The final convolutional layer in our toy example is:
-	
-	\begin{equation}
-	\begin{bmatrix} h_1 \\ h_2 \\ h_3 \\ h_4 \end{bmatrix}=\begin{bmatrix}{\color{drawred}W_2} & {\color{drawred}W_3} & 0 & 0 \\ {\color{drawred}W_1} & {\color{drawred}W_2} & {\color{drawred}W_3} & 0 \\ 0 & {\color{drawred}W_1} & {\color{drawred}W_2} & {\color{drawred}W_3} \\ 0 & 0 & {\color{drawred}W_1} & {\color{drawred}W_2} \end{bmatrix} \begin{bmatrix} x_1 \\ x_2 \\ x_3 \\ x_4 \end{bmatrix}
-	\label{eq:convolution_example}
-	\end{equation}
-	
-	where we now have only three weights $\mathbf{W} = \left[W_1, W_2, W_3\right]^\top$. Note the special (\myalert{Toeplitz}) structure of the matrix -- the convolutional layer remains a linear transformation.
+    For our four-element sequence, take a kernel of size $3$ and omit the
+    bias and activation:
+    \[
+        \begin{bmatrix} h_1 \\ h_2 \\ h_3 \\ h_4 \end{bmatrix}
+        =
+        \begin{bmatrix}
+            {\color{darkgreen}W_2} & {\color{darkgreen}W_3} & 0 & 0 \\
+            {\color{darkgreen}W_1} & {\color{darkgreen}W_2} & {\color{darkgreen}W_3} & 0 \\
+            0 & {\color{darkgreen}W_1} & {\color{darkgreen}W_2} & {\color{darkgreen}W_3} \\
+            0 & 0 & {\color{darkgreen}W_1} & {\color{darkgreen}W_2}
+        \end{bmatrix}
+        \begin{bmatrix} x_1 \\ x_2 \\ x_3 \\ x_4 \end{bmatrix}.
+        \label{eq:convolution_example}
+    \]
+
+    This is a \myalert{Toeplitz} matrix: its diagonals repeat the same weights.
+    We learn three coefficients, instead of sixteen.
+
+    At the boundaries, use $x_0=x_5=0$ (\myalert{zero padding}). This keeps
+    the four output positions.
 
 \end{frame}
 
-\begin{frame}{Equivalent formulation}
-	
-	An equivalent way to define convolution is to consider a $4$-dimensional weight tensor $\shape{W}{(s,s,c,c')}$, with a scalar function to convert between offsets:
-	%
-	\begin{equation}
-	t(i) = i - k - 1
-	\label{eq:convolutive_offset}
-	\end{equation}
-	%
-	We now rewrite the output of the layer with explicit summations across the axes:
-	%
-	\begin{equation}
-	H_{ijz} = \sum_{i^\prime=1}^{2k+1}\sum_{j^\prime = 1}^{2k+1}\sum_{d=1}^{c} \idx{W}{i^\prime, j^\prime, z, d}\idx{X}{i^\prime+t(i),j^\prime+t(j), d}
-	\label{eq:convolution_full_indexing}
-	\end{equation}
-	
-	In signal processing terminology, this is a filtering operation exploiting a \myalert{finite impulse response} filter.
+\begin{frame}{Translation equivariance}
+
+    Shared weights give the same response to the same neighborhood,
+    wherever it appears in the image.
+
+    Let $T_{\delta}$ shift a tensor by $\delta$ pixels.
+    \begin{tcolorbox}
+        A layer $f$ is \myalert{translation equivariant} if shifting the
+        input shifts its output by the same amount:
+        \[
+            f(T_{\delta}X)=T_{\delta}f(X).
+        \]
+    \end{tcolorbox}
+
+    For convolution evaluated at every pixel, this holds away from image
+    boundaries. Zero padding can change the response near an edge.
 
 \end{frame}
-
-\begin{frame}{Terminology time!}
-	
-	\begin{itemize}
-		\item $s=2k+1$ is called the \myalert{kernel size} or \myalert{filter size}. It is a hyper-parameter of the layer, together with the number $c'$ of output channels.
-		\item In accordance with signal processing, the elements of the matrix $\vc{W}$ (or the equivalent tensor $W$) are called \myalert{filters}.
-		\item A single slice $\idx{H}{:,:,a}$ is called an \myalert{activation map}. Sometimes, we distinguish between pre-activation (before $\phi$) and post-activation.
-	\end{itemize}
-	
-\end{frame}
-
-\begin{whiteframe}{Filter operation 1/3}
-	
-	\begin{figure}
-		\centering
-		\includegraphics[width=0.9\columnwidth]{images/cnn/source/Convolution_1.pdf}
-		\vspace{-1em}\caption{Start from the first patch, filling the first element of the activation map.}
-	\end{figure}
-	
-\end{whiteframe}
-
-\begin{whiteframe}{Filter operation 2/3}
-	
-	\begin{figure}
-		\centering
-		\includegraphics[width=0.9\columnwidth]{images/cnn/source/Convolution_2.pdf}
-		\vspace{-1em}	\caption{The window is moved one pixel, and we compute a different activation.}
-	\end{figure}
-	
-\end{whiteframe}
-
-\begin{whiteframe}{Filter operation 3/3}
-	
-	\begin{figure}
-		\centering
-		\includegraphics[width=0.9\columnwidth]{images/cnn/source/Convolution_3.pdf}
-		\vspace{-1em}\caption{At the end, we obtain an activation map for the entire image.}
-	\end{figure}
-	
-\end{whiteframe}
-
-\begin{whiteframe}{Convolutional layer}
-	
-	The previous operation is shown for a single filter. Stacking many filters together gives us the complete \myalert{convolutional layer}.
-	
-	\begin{figure}
-		\centering
-		\includegraphics[width=0.7\columnwidth]{images/cnn/source/Convolutive_layer.pdf}
-	\end{figure}
-	
-\end{whiteframe}
 
 \begin{frame}{Receptive field}
-	
-	Suppose we stack several convolutional layers:
-	%
-	\[
-		H = (f_3 \circ f_2 \circ f_1) (X)
-	\]
-	%
-	\begin{tcolorbox}
-		The \myalert{receptive field} of $\idx{H}{i,j}$ is the subset of $X$ that contributed to its computation.
-	\end{tcolorbox}
-	
-	For one layer, the receptive field is just $P_{i,j,k}$. For two layers, however (with the same kernel size), it becomes $P_{i,j,2k}$. This justifies our choice of locality: even if a \textit{single} layer is highly localized, \textit{many} layers can still process the entire image at once, since the receptive field increases linearly.
-	
+
+    Stacking local layers lets information travel across the image.
+
+    \begin{tcolorbox}
+        The \myalert{receptive field} of $\idx{H}{i,j,:}$ is the region
+        of the input that can affect that output.
+    \end{tcolorbox}
+
+    For $L$ layers with kernel size $s$, evaluated at every pixel,
+    the receptive field has width:
+    \[
+        R_L=1+L(s-1).
+    \]
+
+    With $3 \times 3$ kernels, one layer sees a $3 \times 3$ region,
+    two layers see $5 \times 5$, and three layers see $7 \times 7$.
+
 \end{frame}
 
 \begin{frame}[fragile]{Implementation}
-	
-	Most frameworks, including TensorFlow, provide a primitive with an efficient low-level implementation:
-	%
-	\begin{python}
-	 # Image (with mini-batch dimension)
-	 X = tf.random.normal((1, 64, 64, 3))
-	
-	 # Filters (filter size = 5, output filters = 100)
-	 W = tf.random.normal((5, 5, 3, 100))
-	
-	 # Convolution
-	 H = tf.nn.conv2d(X, W, 1, 'SAME')
-	 print(H.shape) # (1, 64, 64, 100)
-	\end{python}
-	
-	\blfootnote{\url{https://www.tensorflow.org/api_docs/python/tf/nn/conv2d}.}
-	
+    \setlength{\parskip}{3pt}
+    \setlength{\abovedisplayskip}{7pt}
+    \setlength{\belowdisplayskip}{7pt}
+
+    Before activation, unfold the neighborhoods into columns of $U(X)$:
+    \[
+        \shape{\widetilde{Z}}{(c',hw)}
+        = \shape{\vc{W}^{\top}}{(c',s^2c)}\,
+          \shape{U(X)}{(s^2c,hw)}
+          + \vc{b}\vc{1}^{\top}.
+    \]
+
+    \begin{python}[gobble=4,aboveskip=5pt,belowskip=5pt]
+    import torch
+    X = torch.randn(1, 3, 64, 64)  # (B, C, H, W)
+    conv = torch.nn.Conv2d(3, 100, 5, padding=2)
+    Z = conv(X)  # (1, 100, 64, 64)
+    \end{python}
+
+    \texttt{im2col} copies overlapping inputs. NVIDIA's \textit{implicit GEMM}
+    evaluates the matrix product without storing $U(X)$.
+
+    \blfootnote{\href{https://docs.pytorch.org/docs/stable/generated/torch.nn.Unfold.html}{PyTorch: Unfold}
+        and \href{https://docs.nvidia.com/deeplearning/performance/dl-performance-convolutional/index.html}{NVIDIA: convolution implementations}.}
+
 \end{frame}
 
 \subsection{Defining the network}
@@ -407,10 +307,10 @@
 	For example, for $s=2$, we have:
 	%
 	\[
-		\shape{\idx{H}{i,j}}{\color{darkred}(h/2,w/2,c')} = \phi( \vc{W} \cdot \text{vect}(P_{\color{darkred}2i-1,2j-1,k})) \,,
+		\shape{\idx{H}{i,j}}{\color{darkred}(h/2,w/2,c')} = \phi( \vc{W}^{\top} \cdot \operatorname{vect}(P_k({\color{darkred}2i-1,2j-1}))) \,,
 	\]
 	%
-	The \verb+tf.nn.conv2d+ function we saw before requires, in fact, a stride parameter.
+	The \verb+torch.nn.Conv2d+ layer also accepts a stride parameter.
 	
 \end{frame}
 
@@ -515,7 +415,7 @@
 	The result is a \myalert{depth-wise} (separable) convolution:
 	%
 	$$
-	H_{ij{\color{drawred}c}} = \sum_{i^\prime=1}^{2k+1}\sum_{j^\prime = 1}^{2k+1} W_{i^\prime, j^\prime,{\color{drawred}c}}X_{i^\prime +t(i),j^\prime+t(j),{\color{drawred}c}}
+	H_{ij{\color{drawred}c}} = \sum_{i^\prime=1}^{2k+1}\sum_{j^\prime = 1}^{2k+1} W_{i^\prime, j^\prime,{\color{drawred}c}}X_{i+i^\prime-k-1,j+j^\prime-k-1,{\color{drawred}c}}
 	$$
 	%
 	This idea can also be extended to \myalert{group} convolution. A depthwise convolution followed by a pointwise convolution is called a \myalert{depthwise-separable convolution} and it is extremely common for modeling efficient architectures.
