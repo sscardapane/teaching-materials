@@ -16,24 +16,37 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('course', nargs='?', choices=['all', *DECKS], default='all')
     parser.add_argument('--export', action='store_true', help='Copy reviewed builds to tracked pdf/<course>/ downloads')
+    parser.add_argument('--file', type=Path, help='Build one registered course wrapper (for editor recipes)')
+    parser.add_argument('--outdir', type=Path, help='Override the build output directory')
+    parser.add_argument('--synctex', action='store_true', help='Generate source/PDF navigation data')
     args = parser.parse_args()
-    for course in DECKS if args.course == 'all' else [args.course]:
-        for name in DECKS[course]:
-            build(course, name)
-            if args.export:
-                destination = ROOT / "pdf" / course
-                destination.mkdir(parents=True, exist_ok=True)
-                shutil.copy2(ROOT / "build" / course / f"{name}.pdf", destination / f"{name}.pdf")
+    selected = [(course, name)
+                for course in DECKS if args.course in ('all', course)
+                for name in DECKS[course]]
+    if args.file:
+        selected = [(course, name) for course, name in selected
+                    if (ROOT / 'courses' / course / f'{name}.tex').resolve() == args.file.resolve()]
+        if not selected:
+            parser.error('--file must be a registered course wrapper from decks.json')
+    for course, name in selected:
+        output = build(course, name, outdir=args.outdir, synctex=args.synctex)
+        if args.export:
+            destination = ROOT / 'pdf' / course
+            destination.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(output, destination / output.name)
 
 
-def build(course, name):
+def build(course, name, *, outdir=None, synctex=False):
     engine = ENGINES[course]
-    output = ROOT / 'build' / course
+    output = outdir.resolve() if outdir else ROOT / 'build' / course
     output.mkdir(parents=True, exist_ok=True)
     env = os.environ.copy()
     env.pop('PROJECT_ROOT', None)
     command = ['latexmk', '-norc', engine, '-interaction=nonstopmode',
-               '-halt-on-error', '-bibtex-', '-recorder', f'-outdir={output}', f'{name}.tex']
+               '-halt-on-error', '-file-line-error', '-bibtex-', '-recorder',
+               f'-outdir={output}', f'{name}.tex']
+    if synctex:
+        command.insert(2, '-synctex=1')
     log = output / f'{name}-build.log'
     with log.open('w') as stream:
         result = subprocess.run(command, cwd=ROOT / 'courses' / course,
@@ -41,7 +54,9 @@ def build(course, name):
     if result.returncode:
         print(log.read_text()[-6000:])
         raise SystemExit(result.returncode)
-    print(output / f'{name}.pdf')
+    pdf = output / f'{name}.pdf'
+    print(pdf)
+    return pdf
 
 
 if __name__ == '__main__':

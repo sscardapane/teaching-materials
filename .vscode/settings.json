@@ -1,0 +1,26 @@
+{
+  "latex-workshop.latex.recipe.default": "first",
+  "latex-workshop.latex.outDir": "%WORKSPACE_FOLDER%/build/editor/%RELATIVE_DIR%",
+  "latex-workshop.latex.recipes": [
+    {
+      "name": "Course deck (automatic engine)",
+      "tools": [
+        "course-deck"
+      ]
+    }
+  ],
+  "latex-workshop.latex.tools": [
+    {
+      "name": "course-deck",
+      "command": "python3",
+      "args": [
+        "%WORKSPACE_FOLDER%/scripts/build.py",
+        "--file",
+        "%DOC_EXT%",
+        "--outdir",
+        "%OUTDIR%",
+        "--synctex"
+      ]
+    }
+  ]
+}

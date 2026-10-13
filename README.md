@@ -30,13 +30,34 @@ Use a full TeX installation with `latexmk`, pdfLaTeX, LuaLaTeX and the packages
 and fonts required by the templates. The migration was checked with TeX Live 2024.
 
 ```sh
-python3 scripts/build.py       # all seven LaTeX decks
+python3 scripts/build.py       # all registered LaTeX decks
 python3 scripts/build.py nn    # NN only; use nnds for NNDS
 ```
 
 Outputs and logs go to `build/<course>/`. After reviewing a deliberate slide
 revision, add `--export` to copy the resulting PDFs into the tracked `pdf/`
 download folders. The deck list is in `decks.json`.
+
+### Visual Studio Code / LaTeX Workshop
+
+> [!note] Written by Codex (2026-10-13)
+
+Open the repository root as the VS Code folder. The workspace recipe builds the
+active lecture `.tex` file through `scripts/build.py`. It uses LuaLaTeX for NNDS
+and pdfLaTeX for NN. Use **LaTeX Workshop: Build LaTeX project**, then
+**LaTeX Workshop: View LaTeX PDF file**. SyncTeX links source lines to the PDF.
+
+Editor PDFs, logs and auxiliary files go to `build/editor/courses/<course>/`;
+for example, the CNN PDF is `build/editor/courses/nnds/Lecture_CNNs.pdf`.
+Command-line PDFs go to `build/<course>/`. The editor recipe builds only the
+selected deck; updating the published PDF downloads requires `--export`.
+
+The extension's default pdfLaTeX recipe cannot compile the NNDS template because
+it uses `fontspec`. If VS Code was already open, reload its window to pick up the
+workspace recipe. Start a build from the lecture `.tex` file under `courses/`.
+Shared content and figure fragments are included by those lecture files.
+
+### Interactive slides
 
 To build the interactive site locally:
 
