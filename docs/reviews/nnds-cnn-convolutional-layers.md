@@ -35,6 +35,19 @@ It comes before the Toeplitz matrix so its boundary zeros have already been
 introduced. For the odd, contiguous kernels evaluated at every position in this
 section, padding is `(s-1)/2` on each side.
 
+On the next review, Simone asked to show this padding in the running example
+itself. Its product now uses the explicit six-element padded input and a
+`4 x 6` Toeplitz matrix. The operation and the three learned coefficients are
+unchanged. The sixteen-coefficient comparison refers to the earlier dense layer
+on the original four-element input.
+
+He also asked for consistent first-person plural wording. Instructional actions
+now use "we take", "we apply", "we add" and similar constructions. Definitions
+remain direct statements. The complete eight-slide section received a wording
+review for grammar, notation and precision, including the boundary condition on
+the receptive-field width formula. The voice convention is recorded in
+`docs/NNDS_AUTHORING.md` for subsequent revisions.
+
 He also requested `+b` with implicit broadcasting, matching the MLP convention.
 The implementation slide now uses that notation. Its explanation follows his
 suggested wording: `nn.Conv2d` uses a hardware-specific implementation, so our
@@ -62,7 +75,7 @@ Each original slide has one preservation status.
 | Image padding | remove | The boundary example covers padding. |
 | Translational equivariance | substantial edit | Define translation equivariance by shifting input and output; state the finite-boundary qualification. |
 | Convolutional layer (equations) | substantial edit | Keep one affine-plus-activation equation with transposed weights, correct shapes and the bias-inclusive parameter count. |
-| Running example (shared weights) | light edit | Preserve the matrix and Toeplitz interpretation; introduce padding on the preceding slide and state that bias and activation are omitted. |
+| Running example (shared weights) | substantial edit | Show the padded six-element input and its rectangular Toeplitz matrix explicitly; retain the coefficient comparison and omit bias and activation. |
 | Equivalent formulation | remove | The vectorized-neighborhood equation defines the operation; omit the duplicate indexing/FIR formulation. |
 | Terminology time! | substantial edit | Introduce kernel size, filters and activation maps where they are used. |
 | Filter operation 1/3 | remove | Explicitly requested. |
@@ -101,16 +114,16 @@ Each original slide has one preservation status.
 
 `python3 scripts/build.py nnds` builds all five NNDS decks. Every changed slide
 has been rendered and inspected in full. The neighborhood figure's height and
-implementation spacing were adjusted after the first render. The restored
-zero-padding slide uses local paragraph and equation spacing to fit at the
-existing font size. The final eight
-slides have no overfull box warnings. The title and later unreviewed slides
+implementation spacing were adjusted after the first render. The zero-padding and receptive-field slides use local paragraph spacing, and
+zero-padding also uses local equation spacing, to fit at the existing font size.
+The final eight slides have no overfull box warnings. The title and later unreviewed slides
 retain their existing warnings.
 
 The displayed PyTorch example runs and returns shape `(1,100,64,64)`. Its
 `Unfold` plus matrix-product equivalent agrees with `Conv2d` within floating-point
-tolerance (maximum absolute error `7.15e-7`). The retained Toeplitz matrix agrees
-with zero-padded `Conv1d`. Additional checks confirm that padding one cell for
+tolerance (maximum absolute error `7.15e-7`). The rectangular Toeplitz matrix
+acting on the explicit padded input agrees with both the previous reduced
+matrix and zero-padded `Conv1d`. Additional checks confirm that padding one cell for
 a size-3 kernel and two for a size-5 kernel preserve both sequence length and
 2D spatial dimensions; without padding, the four-element size-3 example has
 two outputs. Source checks verify that the accepted opening is

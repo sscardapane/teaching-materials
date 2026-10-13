@@ -52,6 +52,12 @@ pass su Lecture N").
   relevant SNAIL topics, papers, projects, and thesis/PhD paths visible to
   students. This should be a real connection, not a generic promotional slide.
 
+> [!note] Written by Codex (2026-10-13)
+> Simone confirmed the voice convention for instructional actions: use first-person
+> plural ("we apply", "we take", "we add") rather than imperatives ("apply", "take",
+> "add"). Keep factual definitions as direct statements. Check the wording across
+> the complete section, rather than changing verbs in isolation.
+
 ## For each unit: two broad passes first
 
 First identify the authoritative source deck. Then complete and approve two

@@ -136,7 +136,7 @@
 
     \begin{columns}[c,onlytextwidth]
         \begin{column}{0.54\textwidth}
-            With a \myalert{kernel size} $s=2k+1$, take the $s \times s$
+            With a \myalert{kernel size} $s=2k+1$, we take the $s \times s$
             neighborhood centered at $(i,j)$, including all $c$ channels.
 
             We write this local tensor as:
@@ -159,7 +159,7 @@
 
 \begin{frame}{Convolutional layer}
 
-    Apply the same affine map to every neighborhood, followed by an activation:
+    We apply the same affine map and activation to every neighborhood:
     \[
         \idx{H}{i,j,:}
         = \phi\!\left(
@@ -169,11 +169,11 @@
         \right).
     \]
 
-    The weights $\vc{W} \sim (s^2c,c')$ and bias $\vc{b} \sim (c')$ are
-    \textbf{shared across all locations}.
+    We share the weights $\vc{W} \sim (s^2c,c')$ and bias $\vc{b} \sim (c')$
+    \textbf{across all locations}.
 
     This is a \myalert{convolutional layer}. It has $s^2cc' + c'$ parameters,
-    independently of the image height and width.
+    regardless of the image height and width.
 
     The convolution is the affine map inside the parentheses. We apply
     the usual pointwise activation $\phi$ to its output.
@@ -197,8 +197,8 @@
     \setlength{\abovedisplayskip}{9pt}
     \setlength{\belowdisplayskip}{9pt}
 
-    In our four-element sequence, a size-$3$ kernel has only two complete
-    neighborhoods. Add a zero on each side to keep four output positions:
+    For our four-element sequence, a size-$3$ kernel produces only two outputs
+    without padding. We add one zero at each end to obtain four outputs:
     \[
         \widetilde{\vc{x}}
         = \begin{bmatrix}
@@ -206,37 +206,40 @@
           \end{bmatrix}^{\top}.
     \]
 
-    This is \myalert{zero padding}: values outside the input are set to zero.
+    With \myalert{zero padding}, we treat values outside the input as zero.
 
     \begin{tcolorbox}
-        For an odd kernel size $s$, padding $k=(s-1)/2$ zeros on each side
-        preserves the original size when evaluating every position.
+        For an odd kernel size $s$, we add $k=(s-1)/2$ zeros at each end to
+        preserve the input length when evaluating every position.
     \end{tcolorbox}
 
-    In 2D, pad each border with $k$ rows or columns: one for a $3 \times 3$
+    In 2D, we pad each border with $k$ rows or columns: one for a $3 \times 3$
     kernel, two for a $5 \times 5$ kernel.
 
 \end{frame}
 
 \begin{frame}{Running example}
+    \setlength{\arraycolsep}{7pt}
 
-    For our four-element sequence, take a kernel of size $3$ and omit the
-    bias and activation:
+    We apply a size-$3$ kernel to the padded sequence, without bias or activation:
     \[
         \begin{bmatrix} h_1 \\ h_2 \\ h_3 \\ h_4 \end{bmatrix}
         =
         \begin{bmatrix}
-            {\color{darkgreen}W_2} & {\color{darkgreen}W_3} & 0 & 0 \\
-            {\color{darkgreen}W_1} & {\color{darkgreen}W_2} & {\color{darkgreen}W_3} & 0 \\
-            0 & {\color{darkgreen}W_1} & {\color{darkgreen}W_2} & {\color{darkgreen}W_3} \\
-            0 & 0 & {\color{darkgreen}W_1} & {\color{darkgreen}W_2}
+            {\color{darkgreen}W_1} & {\color{darkgreen}W_2} & {\color{darkgreen}W_3} & 0 & 0 & 0 \\
+            0 & {\color{darkgreen}W_1} & {\color{darkgreen}W_2} & {\color{darkgreen}W_3} & 0 & 0 \\
+            0 & 0 & {\color{darkgreen}W_1} & {\color{darkgreen}W_2} & {\color{darkgreen}W_3} & 0 \\
+            0 & 0 & 0 & {\color{darkgreen}W_1} & {\color{darkgreen}W_2} & {\color{darkgreen}W_3}
         \end{bmatrix}
-        \begin{bmatrix} x_1 \\ x_2 \\ x_3 \\ x_4 \end{bmatrix}.
+        \begin{bmatrix}
+            {\color{darkcerulean}0} \\ x_1 \\ x_2 \\ x_3 \\ x_4 \\ {\color{darkcerulean}0}
+        \end{bmatrix}.
         \label{eq:convolution_example}
     \]
 
-    This is a \myalert{Toeplitz} matrix: its diagonals repeat the same weights.
-    We learn three coefficients, instead of sixteen.
+    This is a \myalert{Toeplitz} matrix: the weights are constant along each
+    diagonal. We learn three coefficients, compared with sixteen for the
+    earlier dense layer.
 
 \end{frame}
 
@@ -245,7 +248,7 @@
     Shared weights give the same response to the same neighborhood,
     wherever it appears in the image.
 
-    Let $T_{\delta}$ shift a tensor by $\delta$ pixels.
+    We write $T_{\delta}$ for a shift by $\delta$ pixels.
     \begin{tcolorbox}
         A layer $f$ is \myalert{translation equivariant} if shifting the
         input shifts its output by the same amount:
@@ -260,22 +263,23 @@
 \end{frame}
 
 \begin{frame}{Receptive field}
+    \setlength{\parskip}{3pt}
 
-    Stacking local layers lets information travel across the image.
+    We combine information across larger regions by stacking local layers.
 
     \begin{tcolorbox}
         The \myalert{receptive field} of $\idx{H}{i,j,:}$ is the region
         of the input that can affect that output.
     \end{tcolorbox}
 
-    For $L$ layers with kernel size $s$, evaluated at every pixel,
-    the receptive field has width:
+    Away from the boundaries, $L$ layers with kernel size $s$, evaluated
+    at every pixel, give a receptive field of width:
     \[
         R_L=1+L(s-1).
     \]
 
-    With $3 \times 3$ kernels, one layer sees a $3 \times 3$ region,
-    two layers see $5 \times 5$, and three layers see $7 \times 7$.
+    With $3 \times 3$ kernels, the receptive field grows from $3 \times 3$
+    to $5 \times 5$ to $7 \times 7$ over the first three layers.
 
 \end{frame}
 
@@ -284,7 +288,7 @@
     \setlength{\abovedisplayskip}{7pt}
     \setlength{\belowdisplayskip}{7pt}
 
-    Before activation, unfold the neighborhoods into columns of $U(X)$:
+    We can collect flattened, padded neighborhoods as columns of $U(X)$:
     \[
         \shape{\widetilde{Z}}{(c',hw)}
         = \shape{\vc{W}^{\top}}{(c',s^2c)}\,
@@ -299,8 +303,8 @@
     Z = conv(X)  # (1, 100, 64, 64)
     \end{python}
 
-    In practice, \verb+nn.Conv2d+ uses an implementation specialized for the
-    hardware, so we do not construct $U(X)$ explicitly. More in the lab session.
+    In practice, \verb+nn.Conv2d+ uses a specialized implementation for the
+    hardware, so we do not construct $U(X)$ explicitly. We will see more in the lab.
 
     \blfootnote{\href{https://docs.pytorch.org/docs/stable/generated/torch.nn.Unfold.html}{PyTorch: Unfold}
         and \href{https://docs.nvidia.com/deeplearning/performance/dl-performance-convolutional/index.html}{NVIDIA: convolution implementations}.}
