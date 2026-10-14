@@ -110,6 +110,10 @@
 % Style commands
 \newcommand{\myalert}[1]{{\color{darkred}\textbf{#1}}}
 
+% White background on every slide, so figures with a white canvas blend in
+% (Simone, 2026-10-14). whiteframe is kept as an alias for existing slides.
+\setbeamercolor{background canvas}{bg=white}
+
 % White frame (for images)
 \newenvironment{whiteframe}[1]{
 	\setbeamercolor{background canvas}{bg=white}
