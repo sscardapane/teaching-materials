@@ -18,18 +18,25 @@ def main():
     parser.add_argument('--export', action='store_true', help='Copy reviewed builds to tracked pdf/<course>/ downloads')
     parser.add_argument('--file', type=Path, help='Build one registered course wrapper (for editor recipes)')
     parser.add_argument('--outdir', type=Path, help='Override the build output directory')
+    parser.add_argument('--outdir-base', type=Path, help='Write each course to <dir>/<course> (editor layout)')
+    parser.add_argument('--whole-course', action='store_true', help='With --file, build every deck of that course')
     parser.add_argument('--synctex', action='store_true', help='Generate source/PDF navigation data')
     args = parser.parse_args()
     selected = [(course, name)
                 for course in DECKS if args.course in ('all', course)
                 for name in DECKS[course]]
     if args.file:
-        selected = [(course, name) for course, name in selected
-                    if (ROOT / 'courses' / course / f'{name}.tex').resolve() == args.file.resolve()]
-        if not selected:
+        matches = [(course, name) for course, name in selected
+                   if (ROOT / 'courses' / course / f'{name}.tex').resolve() == args.file.resolve()]
+        if not matches:
             parser.error('--file must be a registered course wrapper from decks.json')
+        if args.whole_course:
+            selected = [(course, name) for course, name in selected if course == matches[0][0]]
+        else:
+            selected = matches
     for course, name in selected:
-        output = build(course, name, outdir=args.outdir, synctex=args.synctex)
+        outdir = args.outdir_base / course if args.outdir_base else args.outdir
+        output = build(course, name, outdir=outdir, synctex=args.synctex)
         if args.export:
             destination = ROOT / 'pdf' / course
             destination.mkdir(parents=True, exist_ok=True)
@@ -55,7 +62,8 @@ def build(course, name, *, outdir=None, synctex=False):
         print(log.read_text()[-6000:])
         raise SystemExit(result.returncode)
     pdf = output / f'{name}.pdf'
-    print(pdf)
+    overfull = (output / f'{name}.log').read_text(errors='replace').count('Overfull \\vbox')
+    print(f'{pdf}  ({overfull} overfull vbox warnings)' if overfull else pdf)
     return pdf
 
 

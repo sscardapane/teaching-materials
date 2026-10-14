@@ -49,8 +49,18 @@ and pdfLaTeX for NN. Use **LaTeX Workshop: Build LaTeX project**, then
 
 Editor PDFs, logs and auxiliary files go to `build/editor/courses/<course>/`;
 for example, the CNN PDF is `build/editor/courses/nnds/Lecture_CNNs.pdf`.
-Command-line PDFs go to `build/<course>/`. The editor recipe builds only the
-selected deck; updating the published PDF downloads requires `--export`.
+Command-line PDFs go to `build/<course>/`. Updating the published PDF downloads
+requires `--export`.
+
+> [!note] Written by Claude (2026-10-14)
+
+Three recipes are available from **LaTeX Workshop: Build with recipe**:
+**Course deck** (the default) builds the active deck; **All decks of this
+course** builds every deck of the active file's course; **All NN and NNDS
+decks** builds everything. All three write to `build/editor/courses/<course>/`
+with SyncTeX, so View and source/PDF navigation work for every deck, and a PDF
+already open in a viewer tab refreshes. The build output prints each PDF with
+its count of overfull vertical boxes, a quick hint of which decks to inspect.
 
 The extension's default pdfLaTeX recipe cannot compile the NNDS template because
 it uses `fontspec`. If VS Code was already open, reload its window to pick up the

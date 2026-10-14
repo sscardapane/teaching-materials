@@ -7,6 +7,18 @@
       "tools": [
         "course-deck"
       ]
+    },
+    {
+      "name": "All decks of this course",
+      "tools": [
+        "course-all-decks"
+      ]
+    },
+    {
+      "name": "All NN and NNDS decks",
+      "tools": [
+        "every-deck"
+      ]
     }
   ],
   "latex-workshop.latex.tools": [
@@ -19,6 +31,30 @@
         "%DOC_EXT%",
         "--outdir",
         "%OUTDIR%",
+        "--synctex"
+      ]
+    },
+    {
+      "name": "course-all-decks",
+      "command": "python3",
+      "args": [
+        "%WORKSPACE_FOLDER%/scripts/build.py",
+        "--file",
+        "%DOC_EXT%",
+        "--whole-course",
+        "--outdir-base",
+        "%WORKSPACE_FOLDER%/build/editor/courses",
+        "--synctex"
+      ]
+    },
+    {
+      "name": "every-deck",
+      "command": "python3",
+      "args": [
+        "%WORKSPACE_FOLDER%/scripts/build.py",
+        "all",
+        "--outdir-base",
+        "%WORKSPACE_FOLDER%/build/editor/courses",
         "--synctex"
       ]
     }
