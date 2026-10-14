@@ -313,148 +313,116 @@
 
 \subsection{Defining the network}
 
-% Written by Codex (2026-10-14): light defining-the-network review candidate.
+% Written by Codex (2026-10-14): minimal corrections following instructor feedback.
 \begin{frame}{Reducing dimensionality}
+	
+	We can define a convolutional block by composing convolutional layers $f_i$, each including its activation function:
+	%
+	$$
+	H = (f_l \circ \ldots \circ f_2 \circ f_1)(X)
+	$$
 
-    We can define a convolutional block by interleaving convolutions with
-    activation functions:
-    \[
-        H = (\phi \circ \text{Conv}\circ\ldots\circ\phi\circ\text{Conv})(X).
-    \]
-
-    With the padding introduced earlier, evaluating every position preserves
-    the spatial resolution $(h,w)$. These blocks can still change the number of
-    channels. We can reduce the resolution between blocks to save computation
-    and memory.
-
-    This also connects to \myalert{multi-resolution} filter banks in signal
-    processing, where we process a signal at different resolutions.
+	With the padding introduced earlier, convolutional blocks can modify the number of channels, but they keep the spatial resolution $(h,w)$ constant. We might want to reduce the resolution in-between blocks, to make the networks faster and more efficient.
+	
+	This is also justified from a signal processing perspective, where \myalert{multi-resolution} filter banks are common.
 
 \end{frame}
 
 \begin{frame}[fragile]{Stride}
-    \setlength{\parskip}{3pt}
-    \setlength{\abovedisplayskip}{7pt}
-    \setlength{\belowdisplayskip}{7pt}
-
-    With \myalert{stride} $r$, we move the kernel by $r$ pixels along each
-    spatial axis. Using zero-based indices, we compute:
-    \[
-        \idx{H}{i,j,:}
-        = \phi\!\left(\vc{W}^{\top}\operatorname{vect}(P_k(ri,rj))+\vc{b}\right).
-    \]
-
-    For the odd kernels with padding $k$ introduced earlier, the output has shape
-    \[
-        H \sim (\lceil h/r \rceil,\lceil w/r \rceil,c').
-    \]
-    With $r=2$, this is $(h/2,w/2,c')$ when $h$ and $w$ are even.
-
-    In PyTorch, we set \verb+stride=2+ in \verb+nn.Conv2d+.
-
+	
+	In a convolution with \myalert{stride}, we evaluate every $r$-th position along each spatial axis, where $r$ is the stride parameter.
+	
+	For example, for $r=2$, using zero-based indices, we have:
+	%
+	\[
+		\idx{H}{i,j,:} = \phi(\vc{W}^{\top}\operatorname{vect}(P_k({\color{darkred}2i,2j}))+\vc{b}) \,.
+	\]
+	%
+	With the padding introduced earlier, $H \sim (\lceil h/2\rceil,\lceil w/2\rceil,c')$, which becomes $(h/2,w/2,c')$ when $h$ and $w$ are even.
+	
+	The \verb+nn.Conv2d+ layer we saw before has a \verb+stride+ parameter.
+	
 \end{frame}
 
 \begin{whiteframe}{Convolution with a larger stride}
-
-    \vspace{1.5em}
-    \begin{figure}
-        \centering
-        \includegraphics[width=0.95\columnwidth]{images/cnn/source/stride.jpg}
-        \caption{Stride $1$ on the left, stride $2$ on the right.
-            Image source: \href{https://cs231n.github.io/convolutional-networks/}{CS231n}.}
-    \end{figure}
-
+	
+	\vspace{1.5em}
+	\begin{figure}
+		\centering
+		\includegraphics[width=0.95\columnwidth]{images/cnn/source/stride.jpg}
+		\caption{Left figure has stride = 1, right figure has stride = 2. Image source is \url{http://cs231n.github.io/convolutional-networks/}.}
+	\end{figure}
+	
 \end{whiteframe}
 
 \begin{frame}{Max-pooling}
-
-    We can also reduce the resolution with a \myalert{max-pooling} or
-    \myalert{average-pooling} layer. We take the maximum or average over small
-    windows, independently in each channel.
-
-    We can use $2 \times 2$ or $4 \times 4$ windows.
-    With a $2 \times 2$ window and stride $2$, we halve each spatial dimension
-    when the input height and width are even.
-
+	
+	Alternatively, a \myalert{max-pooling} (or an \myalert{average-pooling}) layer can be used. It computes the maximum (or the average) from small blocks of the input tensor.
+	
+	Differently from convolutional layers, it is common to consider even-dimensional blocks (2x2, 4x4, ...). It acts on each channel separately.
+	
 \end{frame}
 
 \begin{whiteframe}{Visualization of max-pooling}
-
-    \vspace{1.5em}
-    \begin{figure}
-        \centering
-        \includegraphics[width=0.7\columnwidth]{images/cnn/book/max_pooling.pdf}
-        \caption{Max-pooling on a $4 \times 4$ image, with $2 \times 2$ windows
-            and stride $2$. We can replace the maximum with an average or another
-            differentiable aggregation.}
-    \end{figure}
-
+	
+	\vspace{1em}
+	\begin{figure}
+		\centering
+		\includegraphics[width=0.7\columnwidth]{images/cnn/book/max_pooling.pdf}
+		\caption{Visualization of max-pooling on a $4 \times 4$ image with windows of size $2 \times 2$. Note that the maximum operation can be replaced with any differentiable aggregation (e.g., average).}
+	\end{figure}
+	
 \end{whiteframe}
 
 \begin{frame}{Complete architecture of a CNN (1)}
-    \setlength{\parskip}{3pt}
+	
+	A standard CNN for classification is then composed by:
+	%
+	\begin{itemize}
+		\item Interleaving convolutional and pooling layers;
+		\item Flattening (or \myalert{global pooling});
+		\item A classification block.
+	\end{itemize}
 
-    A standard CNN for classification combines:
-    \begin{itemize}
-        \item Convolutional blocks, with strided convolutions or pooling
-            to reduce the resolution.
-        \item Flattening or \myalert{global pooling}.
-        \item A classification block.
-    \end{itemize}
+	Note: with global pooling, the final layer is roughly \myalert{invariant} to a translation. Image boundaries and downsampling can break exact invariance.
 
-    Global pooling is \myalert{invariant} to shifts that only rearrange the
-    feature map. Image boundaries and downsampling can prevent exact translation
-    invariance of the complete CNN.
-
-    More recent CNNs vary this basic architecture. Choosing the blocks and
-    their hyperparameters remains a \textit{model selection} problem.
+	More recent CNNs add many variations on this basic architecture. How to choose the sequence of layers and their hyper-parameters is still an open \textit{model selection} research issue.
 
 \end{frame}
 
 \begin{frame}{Complete architecture of a CNN (2)}
-    \setlength{\arraycolsep}{3pt}
-
-    We choose either flattening (Block 2a) or global average pooling
-    (Block 2b) before the classifier:
-    \[
-        \begin{array}{rclr}
-            \textrm{Block 1:} & \shape{H}{(h',w',c')} = &
-                (f_l \circ \ldots \circ f_2 \circ f_1)(X) &
-                \text{(\color{darkred}convolution/pooling)} \\[0.8em]
-            \textrm{Block 2a:} & \shape{\vc{h}}{(h'w'c')} = &
-                \operatorname{vect}(H) & \text{(\color{darkgreen}flattening)} \\[0.8em]
-            \textrm{Block 2b:} & \shape{\vc{h}}{(c')} = &
-                \frac{1}{h'w'}\sum_{i,j}\idx{H}{i,j,:} &
-                \text{(\color{darkgreen}global pooling)} \\[0.8em]
-            \textrm{Block 3:} & \vc{y} = &
-                \operatorname{softmax}(g(\vc{h})) &
-                \text{(\color{darkcerulean}e.g., logistic regression)}
-        \end{array}
-    \]
-
+	\setlength{\arraycolsep}{2pt}
+	
+	\begin{equation*}
+	\begin{array}{rclr}
+		\textrm{Block 1:} & \shape{H}{(h',w',c')} = &  (f_l \circ \ldots \circ f_2 \circ f_1)(X) & \text{(\color{darkred}convolutional or pooling layers)} \\
+		\textrm{Block 2a:} & \shape{\vc{h}}{(h'w'c')} = &  \text{vect}(H) & \text{(\color{darkgreen}flattening)} \\
+		\textrm{Block 2b:} & \shape{\vc{h}}{(c')} = & \frac{1}{h'w'}\sum_{i,j} \idx{H}{i,j,:} & \text{(\color{darkgreen}global pooling)} \\
+		\textrm{Block 3:} & \vc{y} = & \text{softmax}(g(\vc{h})) & \text{(\color{blue}e.g., logistic regression)}
+	\end{array}
+	\end{equation*}
+	
 \end{frame}
 
 \begin{whiteframe}{Example of a simple CNN specification}
-    \setlength{\abovecaptionskip}{5pt}
-    \begin{figure}
-        \centering
-        \includegraphics[width=0.79\columnwidth]{images/cnn/book/CNN_architecture.pdf}
-        \caption{Pooling reduces the spatial resolution between convolutions.
-            Global pooling gives one value per channel before classification.}
-    \end{figure}
-
+	\setlength{\abovecaptionskip}{5pt}
+	\begin{figure}
+		\centering
+		\includegraphics[width=0.79\columnwidth]{images/cnn/book/CNN_architecture.pdf}
+		\caption{Down-sampling reduces the cost of subsequent layers. Global pooling makes the final classification dimensionality manageable.}
+	\end{figure}
+	
 \end{whiteframe}
 
 \begin{whiteframe}{Designing in blocks}
-
-    \vspace{1em}
-    \begin{figure}
-        \centering
-        \includegraphics[width=0.8\columnwidth]{images/cnn/book/CNN_blocks.pdf}
-        \caption{For deeper CNNs, we can group repeated components into
-            \textit{blocks} and compose the blocks as layers.}
-    \end{figure}
-
+	
+	\vspace{1em}
+	\begin{figure}
+		\centering
+		\includegraphics[width=0.8\columnwidth]{images/cnn/book/CNN_blocks.pdf}
+		\caption{When CNNs tends to become deep, it is simpler to reason in repeating \textit{blocks} made of multiple components. This is easy using the layering abstraction.}
+	\end{figure}
+	
 \end{whiteframe}
 
 \subsection{Other notable types of convolutions}
