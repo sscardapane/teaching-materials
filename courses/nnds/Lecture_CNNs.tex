@@ -385,24 +385,23 @@
     \setlength{\parskip}{5pt}
 
     \begin{columns}[c,onlytextwidth]
-        \begin{column}{0.5\textwidth}
+        \begin{column}{0.38\textwidth}
             A \myalert{max-pooling} layer takes the maximum over small blocks
             of the input. With $2\times2$ blocks:
             \[
                 \idx{Y}{i,j,a}=\max_{u,v\in\{0,1\}}\idx{X}{2i+u,\,2j+v,\,a}.
             \]
-
-            It acts on each channel separately and has no parameters. With the
-            mean instead of the maximum, we obtain \myalert{average pooling}.
-
-            Unlike convolutions, we usually take even block sizes ($2\times2$,
-            $4\times4$, \ldots).
         \end{column}
-        \begin{column}{0.45\textwidth}
+        \begin{column}{0.58\textwidth}
             \centering
             \includegraphics[width=\linewidth]{images/cnn/book/max_pooling.pdf}
         \end{column}
     \end{columns}
+
+    \medskip
+    It acts on each channel separately and has no parameters. With the mean
+    instead of the maximum, we obtain \myalert{average pooling}. Unlike
+    convolutions, we usually take even block sizes ($2\times2$, $4\times4$, \ldots).
 
 \end{whiteframe}
 
@@ -481,11 +480,10 @@
 \end{whiteframe}
 
 \begin{whiteframe}{Example of a simple CNN specification}
-    \setlength{\abovecaptionskip}{8pt}
-    \vspace{1em}
+    \setlength{\abovecaptionskip}{4pt}
     \begin{figure}
         \centering
-        \includegraphics[width=\columnwidth]{images/cnn/book/CNN_architecture.pdf}
+        \includegraphics[width=\columnwidth,height=0.68\textheight,keepaspectratio]{images/cnn/book/CNN_architecture.pdf}
         \caption{Down-sampling reduces the cost of subsequent layers. Global pooling makes the final classification dimensionality manageable.}
     \end{figure}
 
@@ -779,33 +777,35 @@
 
 \begin{whiteframe}{Causal convolutions}
     \setlength{\parskip}{3pt}
-    \setlength{\abovedisplayskip}{6pt}
-    \setlength{\belowdisplayskip}{6pt}
+    \setlength{\abovedisplayskip}{4pt}
+    \setlength{\belowdisplayskip}{4pt}
+    \setlength{\abovecaptionskip}{2pt}
 
     \begin{tcolorbox}[nndsblue]
         For a sequence $X\sim(T,C)$, a \myalert{causal model} $Y=f(X)$ is such
         that $\idx{Y}{t,:}$ depends only on $\idx{X}{t',:}$ for $t'\le t$.
     \end{tcolorbox}
 
-    \medskip
+    We pad with $s-1$ zeros on the left only. The window $\causalP(t)\sim(s,C)$
+    covers positions $t-s+1,\ldots,t$:
+
     \begin{columns}[c,onlytextwidth]
-        \begin{column}{0.5\textwidth}
-            We pad with $s-1$ zeros on the left only. The window
-            $\causalP(t)\sim(s,C)$ covers positions $t-s+1,\ldots,t$:
+        \begin{column}{0.46\textwidth}
             \[
                 \idx{Y}{t,:}=\phi\!\left(\vc{W}^{\top}\operatorname{vect}(\causalP(t))+\vc{b}\right).
             \]
+            Equivalently, we zero the weights of a centered kernel that read
+            the future.
         \end{column}
-        \begin{column}{0.46\textwidth}
+        \begin{column}{0.5\textwidth}
             \centering
             \includegraphics[width=\linewidth]{images/cnn/sequences/Causal_convolutions.pdf}
 
-            {\footnotesize Kernel size $s=2$: one zero on the left.}
+            {\footnotesize Kernel size $s=2$, with one zero on the left.}
         \end{column}
     \end{columns}
 
     \medskip
-    Equivalently, we zero the weights of a centered kernel that read the future.
     The prediction of $z_{t+1}$ must not already depend on that token.
 
 \end{whiteframe}

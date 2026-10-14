@@ -53,7 +53,7 @@ to streamline the lecture; the brief brings it back as an addition.
 | Convolution with a larger stride | substantial edit | cs231n screenshot replaced by `assets/images/cnn/stride.tex` |
 | Max-pooling + Visualization of max-pooling | merged | One slide with the 2×2 formula and the existing figure |
 | Complete architecture (1) + (2) | merged | Backbone / head / classifier cards; invariance in a green card; raw `\color{blue}` removed |
-| Example of a simple CNN specification | light edit | Draw.io source redrawn with horizontal, larger labels and backbone/head/classifier braces |
+| Example of a simple CNN specification | light edit | Draw.io source redrawn in two rows (backbone, then head and classifier) with horizontal, larger labels |
 | Designing in blocks | light edit | Draw.io source redrawn; caption grammar fixed |
 | Spatial mixing and channel mixing | light edit | "Each layer of a positionwise MLP is a 1×1 convolution"; depthwise output named `Y` |
 | Temporal sequences | light edit | `(T, C)` |
@@ -66,7 +66,7 @@ to streamline the lecture; the brief brings it back as an addition.
 | Visualizing the embedding procedure | leave | |
 | Sequence padding | light edit | `(T, D)` |
 | Two tasks on a sequence | light edit | Position `t` |
-| Masked convolutions + Causal convolutions | merged | Causal card; left-only padding with `s-1` zeros; mask kept as one line; figure redrawn with labels and the padding zero |
+| Masked convolutions + Causal convolutions | merged | Causal card; left-only padding with `s-1` zeros; mask kept as one line; figure redrawn with labels and the padding zero, placed beside the layer equation |
 | Training a next-token predictor | light edit | Position `t` |
 | Autoregressive models | light edit | Temperature sentence closing the linear lecture's promise |
 | Autoregressive generation | leave | |
