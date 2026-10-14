@@ -1,0 +1,32 @@
+% Written by Claude (2026-10-14): initialization, first of three
+% training-in-practice slides. Figure: shared/assets/images/lecture_4/init/.
+\begin{frame}{Initializing the weights}
+	\MLPTrainingFont
+	\setlength{\abovedisplayskip}{4pt}\setlength{\belowdisplayskip}{4pt}
+	\begin{columns}[T,onlytextwidth]
+		\begin{column}{0.50\textwidth}
+			\begin{tcolorbox}[nndsorange,boxsep=1mm,top=1mm,bottom=1mm]
+				If all the weights of a layer start equal, all its hidden units stay identical during training. We break this \myalert{symmetry} with random weights.
+			\end{tcolorbox}
+
+			The scale also matters. With weights of variance $\sigma^2$, each ReLU layer multiplies the mean square of the activations by $\sigma^2 D_{\ell-1}/2$.
+
+			\begin{tcolorbox}[nndsblue,boxsep=1mm,top=1mm,bottom=1mm]
+				\textbf{\color{darkcerulean}He initialization}
+				\[
+					W^{(\ell)}_{ij}\sim\mathcal{N}\!\left(0,\frac{2}{D_{\ell-1}}\right),
+					\qquad \vc{b}^{(\ell)}=\vc{0}.
+				\]
+			\end{tcolorbox}
+		\end{column}
+		\begin{column}{0.46\textwidth}
+			\centering
+			\textbf{\color{darkcerulean}Root mean square of $\vc{h}^{(\ell)}$}\par
+			{\scriptsize\color{drawgray}ReLU MLP, width $D_\ell=512$}\par
+			\medskip
+			\input{../../shared/assets/images/lecture_4/init/activation-scale.tex}
+		\end{column}
+	\end{columns}
+	\vfill
+	{\scriptsize\color{drawgray}The same reasoning applies to gradients flowing backward, as we will see in the autodiff lecture. For other activations, see \href{https://proceedings.mlr.press/v9/glorot10a.html}{Glorot and Bengio (2010)}; \href{https://arxiv.org/abs/1502.01852}{He et al. (2015)}.\par}
+\end{frame}

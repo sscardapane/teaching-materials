@@ -1,8 +1,9 @@
 # ReLU geometry figures
 
-Original editable TikZ figures for the NN-only MLP addition (October 1, 2026).
-No external image assets are used. Colors and typography come from NN26 and
-`nn-content.tex`.
+Original editable TikZ figures for the MLP lecture, added to NN on October 1, 2026
+and shared with NNDS on October 14, 2026.
+No external image assets are used. Colors and typography come from each
+course's theme and color definitions.
 
 - `regions.tex`: the exact activation partition of
   `f(x_1,x_2) = ReLU(x_1) + ReLU(x_2-x_1)` on the displayed square `[-2,2]^2`.
