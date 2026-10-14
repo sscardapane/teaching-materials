@@ -58,5 +58,20 @@
         "--synctex"
       ]
     }
-  ]
+  ],
+  "files.exclude": {
+    "build/**/*.aux": true,
+    "build/**/*.fdb_latexmk": true,
+    "build/**/*.fls": true,
+    "build/**/*.log": true,
+    "build/**/*.nav": true,
+    "build/**/*.out": true,
+    "build/**/*.snm": true,
+    "build/**/*.toc": true,
+    "build/**/*.vrb": true,
+    "build/**/*.synctex.gz": true,
+    "build/**/*.xdv": true,
+    "build/**/*.bbl": true,
+    "build/**/*.blg": true
+  }
 }
