@@ -9,7 +9,8 @@
     "dev:lecture2-tensors": "slidev slides/Lecture_2_tensors.md",
     "dev:lecture2-optimization": "slidev slides/Lecture_2_optimization.md",
     "dev:theme-kit": "slidev slides/Theme_kit_test.md",
-    "dev": "npm run dev:lecture0"
+    "dev": "npm run dev:lecture0",
+    "dev:demos": "slidev slides/NNDS_demos.md"
   },
   "devDependencies": {
     "@slidev/cli": "^52.18.0",
