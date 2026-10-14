@@ -14,7 +14,7 @@
 				\[
 					{\color{darkcerulean}\vc{h}} = \phi(\vc{W}\vc{x}+\vc{b})
 				\]
-				\small $\phi$ is an elementwise \textbf{activation function}.
+				\small\RaggedRight $\phi$ is an elementwise \textbf{activation function}.
 			\end{tcolorbox}
 		\end{column}
 		\begin{column}{0.49\textwidth}
@@ -23,7 +23,7 @@
 				\[
 					{\color{darkgreen}f(\vc{x})} = \vc{w}^{\top}{\color{darkcerulean}\vc{h}}+c
 				\]
-				\small A linear model applied to the learned features $\vc{h}$.
+				\small\RaggedRight A linear model applied to the learned features $\vc{h}$.
 			\end{tcolorbox}
 		\end{column}
 	\end{columns}
@@ -91,8 +91,8 @@
 
 \begin{frame}{Universal approximation}
 	\setlength{\abovedisplayskip}{6pt}\setlength{\belowdisplayskip}{6pt}
-	\begin{tcolorbox}[nndsblue]
-		\small
+	\MLPSlideFont
+	\begin{tcolorbox}[nndsblue,fontupper=\MLPSlideFont]
 		Let $g:K\to\mathbb{R}$ be continuous on a compact set $K\subset\mathbb{R}^{d}$, and let $\phi$ be continuous and non-polynomial.
 
 		For any $\varepsilon>0$, there exists an MLP with \textbf{one hidden layer}, sufficiently large width, and biases such that:
@@ -100,7 +100,6 @@
 			\sup_{\vc{x}\in K}\left|g(\vc{x})-f_{\boldsymbol{\theta}}(\vc{x})\right|<\varepsilon.
 		\]
 	\end{tcolorbox}
-	\small
 	This is an \textbf{existence result}. It does not tell us how much width or data we need, or whether training will find suitable parameters.
 
 	A single hidden layer can be sufficient for approximation, but it need not be an efficient choice. We will see shortly how depth can help.
@@ -153,7 +152,7 @@
 
 		\href{https://playground.tensorflow.org/}{\textbf{playground.tensorflow.org}}
 	\end{center}
-	\small Change the number and width of the hidden layers. How do the learned representations and the decision boundary change?
+	\small What happens to the learned representations and the decision boundary as we change the number and width of the hidden layers?
 \end{frame}
 
 \subsection{ReLU and depth}
@@ -224,7 +223,7 @@
 \begin{frame}{Depth through composition}
   \MLPGeometryFont
   \setlength{\abovedisplayskip}{5pt}\setlength{\belowdisplayskip}{5pt}
-  Three ReLUs make a triangular function. Apply the same function repeatedly:
+  Three ReLUs make a triangular function. We apply the same function repeatedly:
   \[
     T(x)=2\operatorname{ReLU}(x)-4\operatorname{ReLU}\!\left(x-\tfrac12\right)
          +2\operatorname{ReLU}(x-1),\qquad x\in[0,1].
@@ -271,54 +270,53 @@
 
 \subsection{Sharing a block}
 
+% Design pass by Claude (2026-10-14): course fonts, cards and a hand-over
+% to the convolutional lecture.
 \begin{frame}{Sharing parameters and looping a block}
-	\small
-	\setlength{\parskip}{3pt}
-	\setlength{\abovedisplayskip}{5pt}
-	\setlength{\belowdisplayskip}{5pt}
-	A stack can use different parameters at each layer, or repeatedly apply
-	the same block. The latter gives a \textbf{looped model}:\vspace{0.5em}
+	\MLPSlideFont
+	\setlength{\abovedisplayskip}{4pt}\setlength{\belowdisplayskip}{4pt}
+	We can use different parameters at each layer, or apply the same block
+	repeatedly. The latter gives a \myalert{looped model}.
 
+	\smallskip
 	\begin{columns}[c,onlytextwidth]
 		\begin{column}{0.60\textwidth}
-			\textbf{Separate parameters}
-			\begin{center}
-				\input{../../shared/assets/images/lecture_4/untied.tex}
-			\end{center}
-			\textbf{Shared parameters}
-			\begin{center}
-				\input{../../shared/assets/images/lecture_4/shared.tex}
-			\end{center}
+			\textbf{\color{darkcerulean}Separate parameters}\par\smallskip
+			\centering\input{../../shared/assets/images/lecture_4/untied.tex}\par\smallskip
+			\raggedright\textbf{\color{darkcerulean}Shared parameters}\par\smallskip
+			\centering\input{../../shared/assets/images/lecture_4/shared.tex}
 		\end{column}
-		\begin{column}{0.38\textwidth}
+		\begin{column}{0.37\textwidth}
 			\centering
 			\input{../../shared/assets/images/lecture_4/loop.tex}
 		\end{column}
 	\end{columns}
 
-	The shared block computes $\vc{h}^{(\ell+1)}=f_{\boldsymbol{\theta}}(\vc{h}^{(\ell)})$,
-	with matching input and output shapes. For a block with $P$ parameters,
-	sharing reduces the count from $LP$ to $P$, but still requires $L$ evaluations.
+	\medskip
+	\begin{tcolorbox}[nndsgreen,boxsep=1mm,top=1mm,bottom=1mm,fontupper=\MLPSlideFont]
+		The shared block computes $\vc{h}^{(\ell)}=f_{\boldsymbol{\theta}}(\vc{h}^{(\ell-1)})$, with matching input and output shapes. A block with $P$ parameters needs $P$ instead of $LP$, but still $L$ evaluations.
+	\end{tcolorbox}
+
+	We will meet looped blocks again with recurrent networks.
 	\vfill
-	{\tiny\color{drawgray}
-		The unrolled example shows three applications.
-		\href{https://arxiv.org/abs/1807.03819}{Dehghani et al., Universal Transformers (2019)}.\par}
+	{\scriptsize\color{drawgray}\href{https://arxiv.org/abs/1807.03819}{Dehghani et al., Universal Transformers (2019)}.\par}
 \end{frame}
 
 \begin{frame}{Shared MLPs on structured data}
-	\small
-	\setlength{\parskip}{3pt}
-	\setlength{\abovedisplayskip}{5pt}
-	\setlength{\belowdisplayskip}{5pt}
-	An MLP can process each position of \MLPSequenceDescription{} independently,
-	using the same parameters:
+	\MLPSlideFont
+	\setlength{\abovedisplayskip}{4pt}\setlength{\belowdisplayskip}{4pt}
+	We can also share an MLP across the positions of \MLPSequenceDescription{},
+	applying it to each position independently:
+
+	\medskip
 	\begin{columns}[c,onlytextwidth]
-		\begin{column}{0.51\textwidth}
+		\begin{column}{0.50\textwidth}
 			\[
 				\MLPPositionMapping{}
 			\]
-			This mixes features within a position, but does not exchange
-			information between positions.
+			The number of parameters does not depend on the sequence length,
+			and the same holds for the pixels of an image.
+			Transformers use these \textbf{positionwise MLPs} in every block.
 		\end{column}
 		\begin{column}{0.46\textwidth}
 			\centering
@@ -326,12 +324,13 @@
 		\end{column}
 	\end{columns}
 
-	The same idea applies to image pixels or patch vectors. Flattening the
-	whole image instead allows global mixing, but ties the weights to a fixed layout.
+	\medskip
+	\begin{tcolorbox}[nndsorange,boxsep=1mm,top=1mm,bottom=1mm,fontupper=\MLPSlideFont]
+		A positionwise MLP mixes the features within a position, but no information moves between positions.
+	\end{tcolorbox}
 
-	Transformers use these \textbf{positionwise MLPs} alongside attention.
-	Communication between positions requires another operation, such as
-	convolution over neighborhoods, attention, or a recurrent state.
+	To exchange information, we need another operation: convolutions over
+	neighborhoods (the next lecture), attention, or a recurrent state.
 \end{frame}
 
 \subsection{Training can be weird}
