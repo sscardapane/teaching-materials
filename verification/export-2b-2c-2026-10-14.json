@@ -1,0 +1,48 @@
+{
+  "baseline_id": "nnds-2b-2c-export-2026-10-14",
+  "approval": "Simone checked decks 2b and 2c and requested their export on 2026-10-14.",
+  "scope": "Export the approved NNDS derivatives/optimization and optimization-in-practice decks; correct continuation numbering only.",
+  "reference_policy": "Earlier migration and export baselines remain unchanged.",
+  "decks": {
+    "Lecture_2_preliminaries": {
+      "file": "pdf/nnds/Lecture_2_preliminaries.pdf",
+      "source": "courses/nnds/Lecture_2_preliminaries.tex",
+      "source_sha256": "7ce0b5ae2b85511014e5f593f570286c2ac47a2953167384bc43a7a66c589db0",
+      "sha256": "83f3fb3579bc2aae49cd776fc9c372f1a07d5d0f781330a1ebd0f4a1dab0749c",
+      "pages": 34,
+      "all_pages_rendered": true,
+      "visual_review": "All complete slides inspected; no export clipping, overlap or missing assets observed.",
+      "link_count": 11
+    },
+    "Lecture_2_optimization": {
+      "file": "pdf/nnds/Lecture_2_optimization.pdf",
+      "source": "html/slides/Lecture_2_optimization.md",
+      "source_sha256": "eeb9f6cf908f37db4a331f4f5a26f6b932068679812c79dedd9ddc4def19cfea",
+      "sha256": "dde0539ec74fc5286e2b45800efd287c42f67fc189f8e349509620fa4ec41817",
+      "pages": 4,
+      "all_pages_rendered": true,
+      "visual_review": "All complete slides inspected; no export clipping, overlap or missing assets observed.",
+      "link_count": 0
+    }
+  },
+  "numbering": {
+    "2b_final_numbered_slide": 30,
+    "2c_page_offset": 29,
+    "2c_numbered_slides": [
+      31,
+      32,
+      33
+    ]
+  },
+  "build_notes": {
+    "2b": "Existing title-page overfull vbox warning only; no content overflow warnings.",
+    "2c": "Slidev per-slide PDF export; headless browser export succeeded outside the sandbox. Browser wake-lock rejection did not affect rendering."
+  },
+  "site_build": {
+    "all_five_html_decks_built": true,
+    "packaged_pdfs_match_export_hashes": true,
+    "all_local_download_index_links_resolve": true,
+    "optimization_pdf_listed_in_download_index": true
+  },
+  "publication": "PDFs prepared for the authorized Pages publication; deployment and live hashes must be verified after publication."
+}
