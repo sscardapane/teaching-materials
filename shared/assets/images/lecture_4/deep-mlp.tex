@@ -1,19 +1,15 @@
 % Written by Claude (2026-10-14): a deep MLP as a chain of layers, in the
 % block style of the gating and sharing diagrams (styles set in mlps.tex).
-\begin{tikzpicture}[x=1cm]
-	\node (x) at (0.45,0) {$\vc{x}$};
-	\node[nnblock] (l1) at (1.9,0) {layer $1$};
-	\node (h1) at (3.55,0) {$\vc{h}^{(1)}$};
-	\node (dots) at (4.75,0) {$\cdots$};
-	\node[nnblock] (lL) at (6.1,0) {layer $L$};
-	\node (hL) at (7.75,0) {$\vc{h}^{(L)}$};
-	\node[nnother] (out) at (9.5,0) {output};
-	\node (y) at (11.15,0) {$f_{\boldsymbol{\theta}}(\vc{x})$};
-	\draw[nnedge] (x)--(l1);
-	\draw[nnedge] (l1)--(h1);
-	\draw[nnedge] (h1)--(dots);
-	\draw[nnedge] (dots)--(lL);
-	\draw[nnedge] (lL)--(hL);
-	\draw[nnedge] (hL)--(out);
-	\draw[nnedge] (out)--(y);
+% Every arrow has the same length.
+\begin{tikzpicture}[node distance=5mm, every node/.append style={inner xsep=2pt}]
+	\node (x) {$\vc{x}$};
+	\node[nnblock, right=of x] (l1) {layer $1$};
+	\node[right=of l1] (h1) {$\vc{h}^{(1)}$};
+	\node[right=of h1] (dots) {$\cdots$};
+	\node[nnblock, right=of dots] (lL) {layer $L$};
+	\node[right=of lL] (hL) {$\vc{h}^{(L)}$};
+	\node[nnother, right=of hL] (out) {output};
+	\node[right=of out] (y) {$f_{\boldsymbol{\theta}}(\vc{x})$};
+	\foreach \a/\b in {x/l1, l1/h1, h1/dots, dots/lL, lL/hL, hL/out, out/y}
+		\draw[nnedge] (\a)--(\b);
 \end{tikzpicture}

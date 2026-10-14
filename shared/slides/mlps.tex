@@ -71,7 +71,7 @@
 
 \begin{frame}{Adding hidden layers}
 	\small
-	\setlength{\abovedisplayskip}{3pt}\setlength{\belowdisplayskip}{3pt}
+	\setlength{\abovedisplayskip}{4pt}\setlength{\belowdisplayskip}{4pt}
 	Nothing prevents us from stacking $L$ \textbf{hidden} layers before the linear output:
 
 	\begin{center}
@@ -79,22 +79,22 @@
 	\end{center}
 
 	\begin{columns}[T,onlytextwidth]
-		\begin{column}{0.58\textwidth}
-			\begin{tcolorbox}[nndsblue,courseheight={mlp-hidden}{0.30\textheight},fontupper=\small]
+		\begin{column}{0.49\textwidth}
+			\begin{tcolorbox}[nndsblue,courseheight={mlp-hidden}{0.32\textheight},fontupper=\small]
 				\textbf{\color{darkcerulean}Hidden layers}
 				\[
-					\vc{h}^{(0)}=\vc{x},\qquad
-					{\color{darkcerulean}\vc{h}^{(\ell)}}=\phi_{\ell}\!\left(\vc{W}^{(\ell)}\vc{h}^{(\ell-1)}+\vc{b}^{(\ell)}\right),
+					{\color{darkcerulean}\vc{h}^{(\ell)}}=\phi_{\ell}\!\left(\vc{W}^{(\ell)}\vc{h}^{(\ell-1)}+\vc{b}^{(\ell)}\right)
 				\]
-				\centering\vspace{-2pt} for $\ell=1,\ldots,L$.
+				\small\raggedright Each layer $\ell=1,\ldots,L$ has its own weights and activation; $\vc{h}^{(0)}=\vc{x}$.
 			\end{tcolorbox}
 		\end{column}
-		\begin{column}{0.39\textwidth}
-			\begin{tcolorbox}[nndsgreen,courseheight={mlp-hidden}{0.30\textheight},fontupper=\small]
+		\begin{column}{0.49\textwidth}
+			\begin{tcolorbox}[nndsgreen,courseheight={mlp-hidden}{0.32\textheight},fontupper=\small]
 				\textbf{\color{darkgreen}Linear output}
 				\[
 					{\color{darkgreen}f_{\boldsymbol{\theta}}(\vc{x})}=\vc{w}^{\top}\vc{h}^{(L)}+c
 				\]
+				\small\raggedright The same linear model as before, applied to the last representation.
 			\end{tcolorbox}
 		\end{column}
 	\end{columns}

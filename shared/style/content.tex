@@ -47,6 +47,18 @@
 	nndsred/.style={colback=drawred_l!12!white,colframe=drawred,boxrule=0.8pt,arc=1mm}
 }
 
+% Fixed display spacing inside cards. When parallel cards share a height,
+% stretchable skips would otherwise spread the content unevenly.
+\tcbset{
+	nndscard/.style={before upper={%
+		\setlength{\abovedisplayskip}{6pt}\setlength{\belowdisplayskip}{6pt}%
+		\setlength{\abovedisplayshortskip}{6pt}\setlength{\belowdisplayshortskip}{6pt}}},
+	nndsblue/.append style={nndscard},
+	nndsgreen/.append style={nndscard},
+	nndsorange/.append style={nndscard},
+	nndsred/.append style={nndscard}
+}
+
 % Parallel cards share a group name and get equal heights; the second argument
 % (a fixed height used by older NNDS slides) is ignored.
 \tcbset{courseheight/.style 2 args={equal height group=#1}}
