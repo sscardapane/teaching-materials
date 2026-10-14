@@ -9,7 +9,7 @@ fonts:
 colorSchema: light
 routerMode: hash
 themeConfig:
-  pageOffset: 38
+  pageOffset: 27
 ---
 
 <style>@import '../styles/index.css';</style>

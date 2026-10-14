@@ -37,11 +37,11 @@
 
 	For a dataset $\left\{(\vc{x}_i, y_i)\right\}_{i=1}^N$ (more on this next lecture), let $\boldsymbol{\theta}$ denote the trainable parameters of a model $f_{\boldsymbol{\theta}}(\vc{x})$ (e.g., for a linear layer $\boldsymbol{\theta}=\{\vc{W},\vc{b}\}$) and define:
 	%
-	\begin{equation}
+	\[
 		\mathcal{L}(\boldsymbol{\theta}) =
 		\frac{1}{N}\sum_{i=1}^{N}
 		\ell\Bigl(f_{\boldsymbol{\theta}}(\vc{x}_i),y_i\Bigr)\,,
-	\end{equation}
+	\]
 	%
 	where $\ell$ is some per-example loss. Training is the optimization problem:
 	%
@@ -49,7 +49,7 @@
 		\boldsymbol{\theta}^* = \argmin_{\boldsymbol{\theta}}\mathcal{L}(\boldsymbol{\theta})\,.
 	\end{equation*}
 
-	How does $\mathcal{L}$ change when we perturb $\boldsymbol{\theta}$? This is what derivatives tell us.
+	Maximizing is the same as minimizing $-\mathcal{L}$. How does $\mathcal{L}$ change when we perturb $\boldsymbol{\theta}$? This is what derivatives tell us.
 
 \end{frame}
 
@@ -98,16 +98,12 @@
 \begin{frame}{Gradient}
 
 	For $f:\mathbb{R}^D\rightarrow\mathbb{R}$, the \myalert{gradient} $\nabla f(\vc{x})$ is a $D$-dimensional vector defined as:%
-	\begin{equation}
+	\[
 		\idx{\nabla f(\vc{x})}{i} = \frac{\partial f(\vc{x})}{\partial x_i} = \lim_{h \rightarrow 0} \frac{f(\vc{x} + h\vc{e}_i) - f(\vc{x})}{h} \,,
-	\end{equation}
+	\]
 	%
-	where $\vc{e}_i$ is the $i$th standard basis vector:
-	%
-	\begin{equation*}
-		\idx{\vc{e}_i}{j} = \begin{cases} 1 & \text{ if } i=j \\ 0 & \text{otherwise} \end{cases}
-	\end{equation*}
-	%
+	where $\vc{e}_i$ is the $i$th standard basis vector, with a $1$ in position $i$ and $0$ elsewhere.
+
 	Each entry is the derivative along one coordinate, keeping the others fixed.
 
 \end{frame}
@@ -123,9 +119,9 @@
 	%
 	It is easy to prove that:
 	%
-	\begin{equation}
+	\[
 		\mathrm{D}_{\vc{u}}f(\vc{x}) = \langle \nabla f(\vc{x}), \vc{u} \rangle \,.
-	\end{equation}
+	\]
 	%
 	A partial derivative is a directional derivative in the direction of a standard basis vector.
 
@@ -258,22 +254,6 @@
 
 \section{Optimization}
 \subsection{Gradient descent and convexity}
-
-\begin{frame}{Optimizing a function}
-
-	We can use gradients to solve generic problems of the form:
-	%
-	\begin{equation}
-		\boldsymbol{\theta}^* = \argmin_{\boldsymbol{\theta}} \mathcal{L}(\boldsymbol{\theta})
-	\end{equation}
-	%
-	Note that maximizing/minimizing are equivalent in the sense that:
-	%
-	\begin{equation}
-		\boldsymbol{\theta}^* = \argmax_{\boldsymbol{\theta}} \mathcal{L}(\boldsymbol{\theta}) = \argmin_{\boldsymbol{\theta}} {\color{darkred} -} \mathcal{L}(\boldsymbol{\theta})
-	\end{equation}
-
-\end{frame}
 
 \begin{frame}{Minima and stationary points}
 
@@ -598,10 +578,11 @@
 	\setlength{\abovedisplayskip}{4pt}
 	\setlength{\belowdisplayskip}{4pt}
 
+	\myalert{Momentum} keeps a running displacement $\vc{u}_t$, with
+	$\vc{u}_0=\vc{0}$ and $0\le\lambda<1$:
+
 	\begin{columns}[c,onlytextwidth]
 		\begin{column}{0.47\textwidth}
-			\myalert{Momentum} keeps a running displacement $\vc{u}_t$, with
-			$\vc{u}_0=\vc{0}$ and $0\le\lambda<1$:
 			\[
 				\begin{aligned}
 					\vc{u}_t              & = {\color{darkpastelblue}\lambda\vc{u}_{t-1}} {\color{darkred}\;-\;\eta_t\nabla\widetilde{\mathcal{L}}_t(\boldsymbol{\theta}_{t-1})}\,, \\

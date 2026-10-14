@@ -45,3 +45,11 @@ data-parallel figures are unchanged, as decided in July.
 `python3 scripts/build.py --file courses/nnds/Lecture_2_preliminaries.tex` builds
 with the pre-existing title-page warning only. Every slide was rendered and
 checked at full size.
+
+## Follow-up (same day)
+
+Simone approved a second round: equation numbers removed throughout, "Optimizing
+a function" removed (its max/min point is now one line on Empirical risk
+minimization), the basis vector defined inline, and the momentum intro moved
+above its columns. The 2c sub-deck's `pageOffset` is now `27`, so its pages
+continue from 2b (last page 28); the old value `38` predated the July trims.
