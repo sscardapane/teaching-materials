@@ -75,6 +75,50 @@
         "courses/nnds/assets/images/cnn/book/CNN_blocks.xml"
       ],
       "sha256": "2c486a1f64e56f93f74378224ac77df09a2eb662cdb15ce40f797dc3ebddb529"
+    },
+    {
+      "original_deck": "7_CNN_Beyond_Images/Lecture_7_CNNs_beyond_images.tex",
+      "original_export": "Book figures/text_tokenization.pdf",
+      "export": "courses/nnds/assets/images/cnn/sequences/text_tokenization.pdf",
+      "native_sources": [
+        "courses/nnds/assets/images/cnn/sequences/text_tokenization.xml"
+      ],
+      "native_page": "Page-1",
+      "sha256": "ec7cb29d0e9e90a7d51e5177f52bb1c382458ac795a7403646a8153b7b5422f1"
+    },
+    {
+      "original_deck": "7_CNN_Beyond_Images/Lecture_7_CNNs_beyond_images.tex",
+      "original_export": "Book figures/trainable_embeddings-Page-2.pdf",
+      "export": "courses/nnds/assets/images/cnn/sequences/trainable_embeddings.pdf",
+      "native_sources": [
+        "courses/nnds/assets/images/cnn/sequences/trainable_embeddings.xml"
+      ],
+      "native_page": "Page-2",
+      "sha256": "1082bc2b7bb82a86336442cb01b50c6de71499a14172d3501af9e34025bcd9db"
+    },
+    {
+      "original_deck": "7_CNN_Beyond_Images/Lecture_7_CNNs_beyond_images.tex",
+      "original_export": "7_CNN_Beyond_Images/draw.io/Causal_convolutions.pdf",
+      "export": "courses/nnds/assets/images/cnn/sequences/Causal_convolutions.pdf",
+      "native_sources": [
+        "courses/nnds/assets/images/cnn/sequences/Causal_convolutions.xml"
+      ],
+      "native_page": "Page-1",
+      "sha256": "d7e670f081082ee015bcd5eab514e2f8691cfb1edc96a8afc8b905a1b08bb8d8"
+    },
+    {
+      "original_deck": "7_CNN_Beyond_Images/Lecture_7_CNNs_beyond_images.tex",
+      "original_export": "Book figures/forecasting-Pagina-3.pdf",
+      "export": "courses/nnds/assets/images/cnn/sequences/autoregressive_generation.pdf",
+      "native_sources": [
+        "courses/nnds/assets/images/cnn/sequences/forecasting.drawio"
+      ],
+      "native_page": "Pagina-3",
+      "sha256": "a78b004c2f422103e162ac372342f8a7de5f8b441ac15628a6a660e42b453c31"
     }
-  ]
+  ],
+  "continuation_source": {
+    "original_deck": "7_CNN_Beyond_Images/Lecture_7_CNNs_beyond_images.tex",
+    "original_sha256": "02ea602f675181dd739c95fcdf23473be2ea50935d8f94a69403272fa8ffc3cc"
+  }
 }

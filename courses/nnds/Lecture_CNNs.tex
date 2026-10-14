@@ -427,29 +427,286 @@
 
 \subsection{Other notable types of convolutions}
 
-\begin{frame}{1x1 convolutions}
-	
-	One important type of convolutional layer is a 1x1 layer, i.e., a layer with a kernel size of 1 ($k=0$), also called a \myalert{pointwise convolution}.
-	
-	This can be understood as a pixel-wise operation, which is applied independently at every pixel, with no contribution from the neighbours.
-	
-	It is especially important when we desire to simply modify the number of channels.
-	
+% Written by Codex (2026-10-14): approved CNN-to-sequences continuation candidate.
+\begin{frame}{Spatial mixing and channel mixing}
+    \setlength{\parskip}{3pt}
+    \setlength{\abovedisplayskip}{6pt}
+    \setlength{\belowdisplayskip}{6pt}
+
+    A $1\times1$ \myalert{pointwise convolution} uses the same channel map
+    at every pixel, as in the positionwise MLP we already discussed.
+
+    With a \myalert{depthwise convolution}, each channel has its own spatial
+    filter. For $K\sim(s,s,c)$ and $s=2k+1$, the layer is:
+    \[
+        \idx{D}{i,j,a}
+        = \phi\!\left(
+            \sum_{u=-k}^{k}\sum_{v=-k}^{k}
+            \idx{K}{u+k,v+k,a}\,\idx{X}{i+u,j+v,a}+b_a
+        \right).
+    \]
+
+    A depthwise convolution followed by a pointwise convolution is called a
+    \myalert{depthwise-separable convolution}: we separate spatial mixing
+    from channel mixing.
+
+    We can also process groups of channels independently (\textit{group convolution}).
+
 \end{frame}
 
-\begin{frame}{Depth-wise convolutional layer}
-	
-	An orthogonal idea is to apply a convolution to each channel \textit{independently}, by combining only information across the spatial dimensions.
-	
-	The result is a \myalert{depth-wise} (separable) convolution:
-	%
-	$$
-	H_{ij{\color{drawred}c}} = \sum_{i^\prime=1}^{2k+1}\sum_{j^\prime = 1}^{2k+1} W_{i^\prime, j^\prime,{\color{drawred}c}}X_{i^\prime +t(i),j^\prime+t(j),{\color{drawred}c}}
-	$$
-	%
-	This idea can also be extended to \myalert{group} convolution. A depthwise convolution followed by a pointwise convolution is called a \myalert{depthwise-separable convolution} and it is extremely common for modeling efficient architectures.
-	
+\section{Convolutions beyond images}
+\subsection{From images to sequences}
+
+\begin{frame}{Temporal sequences}
+    \setlength{\parskip}{3pt}
+
+    CNNs can be extended easily to other domains having grid-like structure
+    of various dimensions.
+
+    For example, consider $n$ steps of a time-series
+    $\vc{x}_0,\ldots,\vc{x}_{n-1}\in\mathbb{R}^c$, each step having $c$
+    features (e.g., readings from $c$ different sensors).
+
+    We represent it using a matrix:
+    \vspace{1.5em}
+    \[
+        X\sim(\eqnmarkbox[drawred]{seqlength}{n},
+                \eqnmarkbox[drawgreen]{seqfeatures}{c}).
+    \]
+    \annotate[yshift=1em]{above,left}{seqlength}{Length of the sequence}
+    \annotate[yshift=1em]{above,right}{seqfeatures}{Features}
+
+    We have a similar format for, e.g., text and DNA sequences.
+
 \end{frame}
+
+\begin{frame}{1D convolutional layers}
+    \setlength{\parskip}{4pt}
+    \setlength{\abovedisplayskip}{7pt}
+    \setlength{\belowdisplayskip}{7pt}
+
+    With kernel size $s=2k+1$, we take the neighborhood $P_k(i)\sim(s,c)$
+    around position $i$, including all $c$ features.
+
+    The same definition now gives a \myalert{1D convolutional layer}:
+    \[
+        \idx{H}{i,:}
+        =\phi\!\left(\vc{W}^{\top}\operatorname{vect}(P_k(i))+\vc{b}\right),
+        \qquad H\sim(n,c').
+    \]
+
+    We share $\vc{W}\sim(sc,c')$ and $\vc{b}\sim(c')$ across positions.
+    With stride $1$ and $k$ zeros at each end, the sequence length stays $n$.
+
+    Like in the 2D case, the layer is local and translation equivariant away
+    from the boundaries.
+
+\end{frame}
+
+\subsection{Representing text}
+
+\begin{frame}{Handling text data}
+
+    Text must be preprocessed properly to be handled by a neural network.
+    At the very least we need to perform two basic operations:
+    \begin{enumerate}
+        \item We \myalert{tokenize} the text to split it into basic units
+            (\myalert{tokens}) that form a sequence.
+        \item We \myalert{embed} each token, converting its integer ID into
+            numerical features usable by a neural network.
+    \end{enumerate}
+
+    By the end of this procedure we have a matrix $X\sim(n,d)$ of $n$ tokens,
+    each represented by $d$ features.
+
+    We will use ``Check this out'' as a running example, with a simple
+    word-level tokenizer.
+
+\end{frame}
+
+\begin{whiteframe}{Text tokenization}
+    \setlength{\abovecaptionskip}{5pt}
+
+    \begin{figure}
+        \centering
+        \includegraphics[width=0.85\linewidth,height=0.64\textheight,keepaspectratio]{images/cnn/sequences/text_tokenization.pdf}
+        \caption{Character, subword and word tokenization. Subword tokenizers
+            learn reusable pieces from a corpus, for example with
+            \myalert{byte pair encoding} (BPE).}
+    \end{figure}
+
+\end{whiteframe}
+
+\begin{frame}{Dense embeddings}
+    \setlength{\parskip}{4pt}
+    \setlength{\abovedisplayskip}{7pt}
+    \setlength{\belowdisplayskip}{7pt}
+
+    We learn an \myalert{embedding table} $\vc{E}\sim(V,d)$, with one row for each
+    of the $V$ tokens in the vocabulary, shared across positions.
+
+    For ``Check this out'', suppose the token IDs are $z=(2,16,3)$. We look up:
+    \[
+        \idx{X}{i,:}=\idx{\vc{E}}{z_i,:},
+        \qquad X\sim(3,d).
+    \]
+
+    A one-hot token vector would select the same row. In practice, we use a
+    lookup: the IDs are integers, while $\vc{E}$ and $X$ contain floating-point values.
+
+    We initialize the embeddings randomly and train them with the network.
+    They can also reflect biases in the training data.
+
+    \blfootnote{Bolukbasi et al. (2016), \textit{Debiasing word embeddings}, NeurIPS.}
+
+\end{frame}
+
+\begin{whiteframe}{Visualizing the embedding procedure}
+    \setlength{\abovecaptionskip}{3pt}
+
+    \begin{figure}
+        \centering
+        \includegraphics[width=0.85\columnwidth,height=0.72\textheight,keepaspectratio]{images/cnn/sequences/trainable_embeddings.pdf}
+        \caption{Using custom embeddings for text classification.}
+    \end{figure}
+
+\end{whiteframe}
+
+\begin{frame}{Sequence padding}
+    \setlength{\parskip}{4pt}
+    \setlength{\abovedisplayskip}{7pt}
+    \setlength{\belowdisplayskip}{7pt}
+
+    Two texts may have different lengths. Their embedded matrices
+    $X_1\sim(n_1,d)$ and $X_2\sim(n_2,d)$ share the same feature dimension $d$.
+
+    For $n_1>n_2$, we can build a padded mini-batch:
+    \[
+        X=\operatorname{stack}\!\left(
+            X_1,\begin{bmatrix}X_2\\\vc{0}\end{bmatrix}
+        \right),
+        \qquad X\sim(2,n_1,d).
+    \]
+
+    We pad to the maximum sequence length in the mini-batch.
+    The added zero rows are placeholders.
+
+    We keep a \myalert{validity mask} of real positions, so padded positions
+    do not contribute to pooling or to the loss.
+
+\end{frame}
+
+\subsection{Prediction and generation}
+
+\begin{frame}{Two tasks on a sequence}
+    \setlength{\parskip}{4pt}
+
+    From the embedded input $X\sim(n,d)$, the convolutional network produces
+    features $H\sim(n,c')$. We can use them in two ways:
+    \begin{itemize}
+        \item For \myalert{sequence classification}, we pool over the valid
+            positions and apply a classifier. We obtain one prediction for the
+            whole text, such as its topic or sentiment.
+        \item For \myalert{next-token prediction}, we keep the positions and
+            apply the same vocabulary classifier at each one:
+            \[
+                \vc{p}_i=\operatorname{softmax}(g(\idx{H}{i,:}))\sim(V).
+            \]
+    \end{itemize}
+
+    At position $i$, $\vc{p}_i$ predicts token $z_{i+1}$. Which input positions
+    can we let it use?
+
+\end{frame}
+
+\begin{whiteframe}{Causal convolutions}
+    \setlength{\parskip}{3pt}
+    \setlength{\abovecaptionskip}{4pt}
+
+    For a temporal sequence $X\sim(n,d)$, a \myalert{causal model}
+    $H=f(X)$ is such that $\idx{H}{i,:}$ depends only on $\idx{X}{j,:}$
+    for $j\le i$.
+
+    \begin{figure}
+        \centering
+        \includegraphics[width=0.72\linewidth,height=0.34\textheight,keepaspectratio]{images/cnn/sequences/Causal_convolutions.pdf}
+        \caption{Outputs can use the current input and past inputs.
+            Connections from future inputs are removed.}
+    \end{figure}
+
+    In a convolution, we mask the weights that would read future positions.
+    The prediction of $z_{i+1}$ must not already depend on that token.
+
+\end{whiteframe}
+
+\begin{frame}{Training a next-token predictor}
+    \setlength{\parskip}{3pt}
+    \setlength{\abovedisplayskip}{6pt}
+    \setlength{\belowdisplayskip}{6pt}
+
+    We train on a \myalert{shifted target}. For our three-token text:
+    \[
+        \begin{array}{rcl}
+            \text{Input:} & \texttt{Check}\quad\texttt{this} & (2,16)\\
+            \text{Target:} & \texttt{this}\quad\texttt{out} & (16,3)
+        \end{array}
+    \]
+
+    For $n$ valid input positions, we apply the cross-entropy loss at every valid
+    position:
+    \[
+        \mathcal{L}=-\frac{1}{n}\sum_{i=0}^{n-1}
+            \log\idx{\vc{p}_i}{z_{i+1}}.
+    \]
+
+    During training, we provide the true input tokens (\myalert{teacher forcing}).
+    With a causal CNN, all these predictions can be computed in parallel,
+    without leaking the future targets.
+
+\end{frame}
+
+\begin{frame}{Autoregressive models}
+    \setlength{\parskip}{4pt}
+    \setlength{\abovedisplayskip}{7pt}
+    \setlength{\belowdisplayskip}{7pt}
+
+    The same next-token predictor can generate text in an
+    \myalert{autoregressive} way.
+
+    We prompt it with the beginning of the sequence and sample the next token
+    from the predicted distribution. We concatenate its ID to the input and
+    call the model again, continuing one token at a time. For example:
+    \[
+        \texttt{Check}
+        \quad\longrightarrow\quad
+        \texttt{Check this}
+        \quad\longrightarrow\quad
+        \texttt{Check this out}\quad\ldots
+    \]
+
+    The input now includes the model's own sampled tokens.
+
+    Training can compute many next-token predictions in parallel. Generation
+    must wait for each sampled token before predicting the following one.
+
+\end{frame}
+
+\begin{whiteframe}{Autoregressive generation}
+    \setlength{\abovecaptionskip}{5pt}
+    \setlength{\parskip}{4pt}
+
+    \begin{figure}
+        \centering
+        \includegraphics[width=0.95\textwidth,height=0.44\textheight,keepaspectratio]{images/cnn/sequences/autoregressive_generation.pdf}
+        \caption{Generated values are fed back as new inputs. For text, we feed back sampled token IDs. Gray circles
+            mark unused positions.}
+    \end{figure}
+
+    Convolutions exchange information through fixed neighborhoods.
+    What if the interactions between positions could depend on the input?
+    This will lead us to \myalert{attention}.
+
+\end{whiteframe}
 
 \begin{frame}{Further readings}
 	
