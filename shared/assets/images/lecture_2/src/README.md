@@ -11,7 +11,9 @@ Keep each source versioned beside its exported figure.
 | `plot_full_vs_minibatch.py` | `../full_vs_minibatch.pdf` | Native 2026 replacement for the former external raster screenshot |
 | `plot_stationary_points.py` | `../stationary_points.pdf` | Native 2026 replacement for the former external Wikimedia raster; includes a stationary inflection on the same curve |
 | `plot_epoch_batches.py` | `../epoch_batches.pdf` | Native 2026 candidate with explicit batch-size and updates-per-epoch notation |
-| `plot_conditioning.py` | `../conditioning.pdf`, `../momentum_path.pdf` | Native 2026 figures for the conditioning and momentum slides (Claude, 2026-10-14) |
+| `plot_conditioning.py` | `../conditioning.pdf`, `../momentum_path.pdf`, `../adam_path.pdf` | Native 2026 figures for the conditioning and momentum slides (Claude, 2026-10-14) |
+| `plot_saddle_2d.py` | `../saddle_2d.pdf` | Native 2026 two-dimensional saddle (Claude, 2026-10-14) |
+| `plot_directional_derivative.py` | `../directional_derivative.pdf` | Native 2026 gradient, direction and level set (Claude, 2026-10-14) |
 | `stochastic_optimization.drawio` | `../stochastic_optimization.pdf` | Authoritative source from NNDS 2024 `Book figures`; current PDF matches the archived export |
 | `mini_batch.drawio` | `../mini_batch.pdf` | Authoritative source from NNDS 2024 `Book figures`; current PDF matches the archived export |
 | `tensors.drawio` | no current export | Non-empty source from NNDS 2024 `Book figures`; retained for possible reuse |

@@ -1,0 +1,35 @@
+% Editable receptive-field cone: three stacked size-3 convolutions on a 1D
+% sequence; the highlighted units can affect the top output.
+% Written by Claude (2026-10-14).
+\begingroup
+\begin{tikzpicture}[x=1cm,y=1cm,
+        unit/.style={circle,minimum size=0.42cm,inner sep=0pt,line width=0.8pt},
+        idle/.style={unit,draw=drawgray!60,fill=white},
+        used/.style={unit,draw=drawblue,fill=drawblue_l},
+        tap/.style={drawblue,line width=1.0pt}]
+    \def\dx{0.62}
+    \def\dy{0.78}
+    \foreach \l in {0,...,3}{
+        \foreach \t in {0,...,8}{
+            \node[idle] (u\l-\t) at (\dx*\t,\dy*\l) {};
+        }
+    }
+    % layer l reads t-1, t, t+1 from layer l-1, starting from the top output at 4
+    \foreach \l/\lo/\hi in {3/4/4, 2/3/5, 1/2/6}{
+        \pgfmathtruncatemacro{\below}{\l-1}
+        \foreach \t in {\lo,...,\hi}{
+            \foreach \d in {-1,0,1}{
+                \pgfmathtruncatemacro{\src}{\t+\d}
+                \draw[tap] (u\below-\src) -- (u\l-\t);
+            }
+        }
+    }
+    \foreach \l/\lo/\hi in {3/4/4, 2/3/5, 1/2/6, 0/1/7}{
+        \foreach \t in {\lo,...,\hi}{ \node[used] at (u\l-\t) {}; }
+    }
+    \node[anchor=east,font=\small] at (-0.3,0) {Input};
+    \foreach \l/\r in {1/3,2/5,3/7}{
+        \node[anchor=west,font=\small,text=drawgray] at (8*\dx+0.35,\dy*\l) {layer \l: $R_\l=\r$};
+    }
+\end{tikzpicture}
+\endgroup

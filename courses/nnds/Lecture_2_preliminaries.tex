@@ -108,7 +108,11 @@
 
 \end{frame}
 
-\begin{frame}{Directional derivative}
+% Figure: shared/assets/images/lecture_2/src/plot_directional_derivative.py
+\begin{whiteframe}{Directional derivative}
+	\setlength{\parskip}{3pt}
+	\setlength{\abovedisplayskip}{4pt}
+	\setlength{\belowdisplayskip}{4pt}
 
 	\begin{tcolorbox}[nndsblue]
 		More generally, the \myalert{directional derivative} of $f:\mathbb{R}^D\rightarrow\mathbb{R}$ in the direction $\vc{u}$ is:
@@ -116,16 +120,23 @@
 			\mathrm{D}_{\vc{u}}f(\vc{x}) = \lim_{h \rightarrow 0} \frac{f(\vc{x} + h\vc{u}) - f(\vc{x})}{h} \,.
 		\]
 	\end{tcolorbox}
-	%
-	It is easy to prove that:
-	%
-	\[
-		\mathrm{D}_{\vc{u}}f(\vc{x}) = \langle \nabla f(\vc{x}), \vc{u} \rangle \,.
-	\]
-	%
-	A partial derivative is a directional derivative in the direction of a standard basis vector.
 
-\end{frame}
+	\begin{columns}[c,onlytextwidth]
+		\begin{column}{0.55\textwidth}
+			It is easy to prove that:
+			\[
+				\mathrm{D}_{\vc{u}}f(\vc{x}) = \langle \nabla f(\vc{x}), \vc{u} \rangle \,.
+			\]
+			It is largest along the gradient and zero along the level set.
+			A partial derivative is a directional derivative in the direction of a standard basis vector.
+		\end{column}
+		\begin{column}{0.42\textwidth}
+			\centering
+			\includegraphics[width=\linewidth,height=0.5\textheight,keepaspectratio]{images/lecture_2/directional_derivative.pdf}
+		\end{column}
+	\end{columns}
+
+\end{whiteframe}
 
 \begin{frame}{Gradients and Jacobians}
 
@@ -281,6 +292,22 @@
 			\myalert{global} extrema, or \myalert{saddle points}; here, the saddle
 			is a stationary inflection.}
 	\end{figure}
+
+\end{whiteframe}
+
+% Figure: shared/assets/images/lecture_2/src/plot_saddle_2d.py
+\begin{whiteframe}{Saddle points in more dimensions}
+	\setlength{\parskip}{3pt}
+
+	For $\mathcal{L}(\boldsymbol{\theta})=\theta_1^2-\theta_2^2$, the gradient vanishes at $\vc{0}$, a {\color{darkgreen}minimum along $\theta_1$} and a {\color{darkred}maximum along $\theta_2$}:
+
+	\begin{center}
+		\includegraphics[height=0.47\textheight]{images/lecture_2/saddle_2d.pdf}
+	\end{center}
+
+	A minimum must curve upwards in \textit{every} direction, so with millions of parameters most stationary points are saddles. GD slows down near them; gradient noise helps to escape.
+
+	\SlideSource{Dauphin et al. (2014), \href{https://arxiv.org/abs/1406.2572}{\textit{Identifying and attacking the saddle point problem in high-dimensional non-convex optimization}}, NeurIPS.}
 
 \end{whiteframe}
 
@@ -631,6 +658,19 @@
 	\end{tcolorbox}
 
 \end{frame}
+
+\begin{whiteframe}{Comparing the three methods}
+	\setlength{\parskip}{3pt}
+
+	On the same quadratic and for the same number of steps:
+
+	\begin{center}
+		\includegraphics[height=0.5\textheight]{images/lecture_2/adam_path.pdf}
+	\end{center}
+
+	Adam's steps have similar size in both coordinates, so it heads along the valley. Adam (with weight decay) is the default optimizer for most networks.
+
+\end{whiteframe}
 
 \begin{frame}{What comes next}
 	\setlength{\parskip}{6pt}

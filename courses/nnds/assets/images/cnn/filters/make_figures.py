@@ -63,6 +63,33 @@ def edge_filters():
     plt.close(fig)
 
 
+def equivariance():
+    x = load_gray()
+    # Shift down and right, filling the uncovered border with zeros.
+    shifted = np.zeros_like(x)
+    shifted[30:, 45:] = x[:-30, :-45]
+    vertical = np.array([[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]], dtype=float)
+    panels = [
+        (x, "Input $X$", "gray"),
+        (np.abs(conv2d(x, vertical)), "$f(X)$", "Greys"),
+        (shifted, "$T_\\delta X$", "gray"),
+        (np.abs(conv2d(shifted, vertical)), "$f(T_\\delta X)$", "Greys"),
+    ]
+    fig, axes = plt.subplots(2, 2, figsize=(5.6, 6.2))
+    for ax, (img, title, cmap) in zip(axes.ravel(), panels):
+        vmax = img.max() if cmap == "gray" else np.percentile(img, 99)
+        ax.imshow(img, cmap=cmap, vmin=0, vmax=vmax)
+        ax.set_title(title, pad=6, fontsize=18)
+        ax.set_xticks([])
+        ax.set_yticks([])
+        for spine in ax.spines.values():
+            spine.set_color("#999999")
+    fig.tight_layout(pad=0.6, h_pad=1.2)
+    fig.savefig(OUT / "equivariance.pdf", transparent=True, metadata={"CreationDate": None},
+                bbox_inches="tight", pad_inches=0.05)
+    plt.close(fig)
+
+
 def augmentation():
     rng = np.random.default_rng(0)
     img = transform.resize(data.astronaut(), (256, 256), anti_aliasing=True)
@@ -95,4 +122,5 @@ def augmentation():
 
 if __name__ == "__main__":
     edge_filters()
+    equivariance()
     augmentation()

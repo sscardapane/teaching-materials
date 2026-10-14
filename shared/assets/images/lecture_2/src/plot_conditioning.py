@@ -1,7 +1,7 @@
-"""Gradient descent and momentum on a poorly conditioned quadratic.
+"""Gradient descent, momentum and Adam on a poorly conditioned quadratic.
 
-Writes ../conditioning.pdf (gradient descent alone) and ../momentum_path.pdf
-(gradient descent and momentum from the same start). Written by Claude
+Writes ../conditioning.pdf (gradient descent alone), ../momentum_path.pdf
+(gradient descent and momentum) and ../adam_path.pdf (all three, same start). Written by Claude
 (2026-10-14) for the NNDS derivatives and optimization deck.
 
     .venv/bin/python shared/assets/images/lecture_2/src/plot_conditioning.py
@@ -15,7 +15,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 OUT = Path(__file__).resolve().parent.parent
-RED, BLUE, GRAY = "#B85450", "#6C8EBF", "#999999"
+RED, BLUE, GREEN, GRAY = "#B85450", "#6C8EBF", "#82B366", "#999999"
 plt.rcParams.update({"font.family": "sans-serif", "font.size": 19, "pdf.fonttype": 42})
 
 KAPPA = 20.0
@@ -31,6 +31,17 @@ def run(eta, lam=0.0, steps=15):
     for _ in range(steps):
         u = lam * u - eta * grad(theta)
         theta = theta + u
+        path.append(theta.copy())
+    return np.array(path)
+
+
+def adam(eta, steps=15, b1=0.9, b2=0.999, eps=1e-8):
+    theta, m, v, path = START.copy(), np.zeros(2), np.zeros(2), [START.copy()]
+    for t in range(1, steps + 1):
+        g = grad(theta)
+        m = b1 * m + (1 - b1) * g
+        v = b2 * v + (1 - b2) * g * g
+        theta = theta - eta * (m / (1 - b1 ** t)) / (np.sqrt(v / (1 - b2 ** t)) + eps)
         path.append(theta.copy())
     return np.array(path)
 
@@ -72,3 +83,11 @@ draw(ax, gd, RED, "Gradient descent")
 draw(ax, run(eta=0.04, lam=0.7), BLUE, "Momentum")
 ax.legend(loc="lower center", bbox_to_anchor=(0.5, 1.0), ncol=2, frameon=False)
 save(fig, "momentum_path.pdf")
+
+fig, ax = plt.subplots(figsize=(7, 3.4))
+base(ax)
+draw(ax, gd, RED, "GD")
+draw(ax, run(eta=0.04, lam=0.7), BLUE, "Momentum")
+draw(ax, adam(eta=0.3), GREEN, "Adam")
+ax.legend(loc="lower center", bbox_to_anchor=(0.5, 1.0), ncol=3, frameon=False)
+save(fig, "adam_path.pdf")

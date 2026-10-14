@@ -255,27 +255,39 @@
 
 \end{frame}
 
-\begin{frame}{Translation equivariance}
+% Figure: assets/images/cnn/filters/make_figures.py
+\begin{whiteframe}{Translation equivariance}
+    \setlength{\parskip}{4pt}
 
-    Shared weights give the same response to the same neighborhood,
-    wherever it appears in the image.
+    \begin{columns}[c,onlytextwidth]
+        \begin{column}{0.6\textwidth}
+            Shared weights give the same response to the same neighborhood,
+            wherever it appears in the image.
 
-    We write $T_{\delta}$ for a shift by $\delta$ pixels.
-    \begin{tcolorbox}[nndsblue]
-        A layer $f$ is \myalert{translation equivariant} if shifting the
-        input shifts its output by the same amount:
-        \[
-            f(T_{\delta}X)=T_{\delta}f(X).
-        \]
-    \end{tcolorbox}
+            We write $T_{\delta}$ for a shift by $\delta$ pixels.
+            \begin{tcolorbox}[nndsblue]
+                A layer $f$ is \myalert{translation equivariant} if shifting the
+                input shifts its output by the same amount:
+                \[
+                    f(T_{\delta}X)=T_{\delta}f(X).
+                \]
+            \end{tcolorbox}
 
-    For convolution evaluated at every pixel, this holds away from image
-    boundaries. Zero padding can change the response near an edge.
+            For convolution evaluated at every pixel, this holds away from image
+            boundaries. Zero padding can change the response near an edge.
+        \end{column}
+        \begin{column}{0.37\textwidth}
+            \centering
+            \includegraphics[width=\linewidth,height=0.78\textheight,keepaspectratio]{images/cnn/filters/equivariance.pdf}
+        \end{column}
+    \end{columns}
 
-\end{frame}
+\end{whiteframe}
 
-\begin{frame}{Receptive field}
+\begin{whiteframe}{Receptive field}
     \setlength{\parskip}{3pt}
+    \setlength{\abovedisplayskip}{4pt}
+    \setlength{\belowdisplayskip}{4pt}
 
     We combine information across larger regions by stacking local layers.
 
@@ -284,16 +296,21 @@
         of the input that can affect that output.
     \end{tcolorbox}
 
-    Away from the boundaries, $L$ layers with kernel size $s$, evaluated
-    at every pixel, give a receptive field of width:
-    \[
-        R_L=1+L(s-1).
-    \]
+    \begin{columns}[c,onlytextwidth]
+        \begin{column}{0.44\textwidth}
+            Away from the boundaries, $L$ layers with kernel size $s$, evaluated
+            at every pixel, give a receptive field of width:
+            \[
+                R_L=1+L(s-1).
+            \]
+        \end{column}
+        \begin{column}{0.53\textwidth}
+            \centering
+            \scalebox{0.8}{\input{assets/images/cnn/receptive_field.tex}}
+        \end{column}
+    \end{columns}
 
-    With $3 \times 3$ kernels, the receptive field grows from $3 \times 3$
-    to $5 \times 5$ to $7 \times 7$ over the first three layers.
-
-\end{frame}
+\end{whiteframe}
 
 \begin{frame}[fragile]{Implementation}
     \setlength{\parskip}{3pt}
