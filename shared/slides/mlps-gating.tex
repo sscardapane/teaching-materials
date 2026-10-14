@@ -2,7 +2,7 @@
 % former course-specific "ReLU as a gate"/"Smooth activation weights" slides
 % with "Learning the negative slope"; MoE split from the highway/MoE slide.
 \begin{frame}{ReLU as a gate}
-	\MLPSlideFont\setlength{\parskip}{4pt}\setlength{\abovedisplayskip}{6pt}\setlength{\belowdisplayskip}{6pt}
+	\small\setlength{\parskip}{4pt}\setlength{\abovedisplayskip}{6pt}\setlength{\belowdisplayskip}{6pt}
 	\begin{columns}[T,onlytextwidth]
 		\begin{column}{0.58\textwidth}
 			ReLU multiplies its input by a \textbf{gate} that depends on the input itself:
@@ -31,7 +31,7 @@
 \end{frame}
 
 \begin{frame}{Smooth gates: SiLU and GELU}
-	\MLPSlideFont\setlength{\parskip}{4pt}\setlength{\abovedisplayskip}{6pt}\setlength{\belowdisplayskip}{6pt}
+	\small\setlength{\parskip}{4pt}\setlength{\abovedisplayskip}{6pt}\setlength{\belowdisplayskip}{6pt}
 	\begin{columns}[c,onlytextwidth]
 		\begin{column}{0.54\textwidth}
 
@@ -61,7 +61,7 @@
 \end{frame}
 
 \begin{frame}{Gating with a second projection: GLU and SwiGLU}
-	\MLPSlideFont
+	\small
 	\setlength{\parskip}{3pt}
 	\setlength{\abovedisplayskip}{5pt}
 	\setlength{\belowdisplayskip}{5pt}
@@ -86,7 +86,7 @@
 \end{frame}
 
 \begin{frame}{Mixtures of experts}
-	\MLPSlideFont\setlength{\parskip}{3pt}\setlength{\abovedisplayskip}{5pt}\setlength{\belowdisplayskip}{5pt}
+	\small\setlength{\parskip}{3pt}\setlength{\abovedisplayskip}{5pt}\setlength{\belowdisplayskip}{5pt}
 	\begin{columns}[c,onlytextwidth]
 		\begin{column}{0.56\textwidth}
 			A gate can also choose between whole blocks. A \myalert{mixture of experts} (MoE) combines $E$ \textbf{experts} $f_1,\ldots,f_E$ with the same output shape, weighted by a \textbf{router}:
@@ -98,7 +98,7 @@
 		\end{column}
 		\begin{column}{0.40\textwidth}
 			\centering
-			\scalebox{\MLPMoEScale}{\input{../../shared/assets/images/lecture_4/moe.tex}}
+			\scalebox{0.9}{\input{../../shared/assets/images/lecture_4/moe.tex}}
 		\end{column}
 	\end{columns}
 	\medskip

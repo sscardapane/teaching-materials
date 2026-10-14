@@ -78,7 +78,7 @@
 
 	\begin{figure}
 		\centering
-		\includegraphics[width=1.0\columnwidth]{images/lecture_3/Lecture_2_different_translations}
+		\includegraphics[width=\columnwidth,height=0.76\textheight,keepaspectratio]{images/lecture_3/Lecture_2_different_translations}
 	\end{figure}
 
 \end{whiteframe}
@@ -275,6 +275,7 @@
 
 	\justifying
 	\small
+	\setlength{\abovedisplayskip}{5pt}\setlength{\belowdisplayskip}{5pt}
 	With strongly correlated features, the fitted weights can be unstable.
 
 	\begin{tcolorbox}[nndsorange,boxsep=1mm,top=1mm,bottom=1mm]
@@ -363,10 +364,10 @@
 	The same temperature controls the sharpness of token distributions in language models.
 
 	\begin{figure}
-		\subfloat[Logits]{\includegraphics[width=0.19\columnwidth]{images/lecture_3/softmax_1.pdf}}\qquad
-		\subfloat[$\tau=1$]{\includegraphics[width=0.19\columnwidth]{images/lecture_3/softmax_2.pdf}}\qquad
-		\subfloat[$\tau=10$]{\includegraphics[width=0.19\columnwidth]{images/lecture_3/softmax_3.pdf}}\qquad
-		\subfloat[$\tau=100$]{\includegraphics[width=0.19\columnwidth]{images/lecture_3/softmax_4.pdf}}
+		\subfloat[Logits]{\includegraphics[width=0.16\columnwidth]{images/lecture_3/softmax_1.pdf}}\qquad
+		\subfloat[$\tau=1$]{\includegraphics[width=0.16\columnwidth]{images/lecture_3/softmax_2.pdf}}\qquad
+		\subfloat[$\tau=10$]{\includegraphics[width=0.16\columnwidth]{images/lecture_3/softmax_3.pdf}}\qquad
+		\subfloat[$\tau=100$]{\includegraphics[width=0.16\columnwidth]{images/lecture_3/softmax_4.pdf}}
 	\end{figure}
 
 \end{whiteframe}
@@ -464,7 +465,7 @@
 
 	\begin{figure}
 		\centering
-		\includegraphics[width=0.6\columnwidth]{images/lecture_3/sigmoid.pdf}
+		\includegraphics[width=0.6\columnwidth,height=0.64\textheight,keepaspectratio]{images/lecture_3/sigmoid.pdf}
 		\vspace{-0.5em}\caption{The sigmoid approaches $0$ and $1$ asymptotically.}
 	\end{figure}
 
@@ -505,7 +506,7 @@
 
 	\vspace{0.5em}
 	\centering
-	\includegraphics[width=0.38\columnwidth]{images/lecture_3/reliability_plot.pdf}
+	\includegraphics[width=0.34\columnwidth]{images/lecture_3/reliability_plot.pdf}
 	\par\vspace{-0.2em}
 	This is a \myalert{reliability plot}, see the book for more details.
 
@@ -515,7 +516,7 @@
 
 % NN addition, September 30, 2026: fixed nonlinear features as a bridge to MLPs.
 \begin{frame}{Linear in what?}
-	\LinearMotivationLayout
+	\setlength{\abovedisplayskip}{4pt}\setlength{\belowdisplayskip}{4pt}
 	\begin{columns}[c,onlytextwidth]
 		\begin{column}{0.36\textwidth}
 			\centering
@@ -537,7 +538,7 @@
 			\]
 			This model is \myalert{nonlinear in $\vc{x}$}, but \myalert{linear in $\vc{w}$}.
 
-			\medskip
+			\smallskip
 			For example, $\vc{w}=(0,0,0,-1)^{\top}$ gives
 			\[
 				f_{\vc{w}}(\vc{x})=-x_1x_2=
@@ -550,23 +551,23 @@
 		\end{column}
 	\end{columns}
 
-	\vspace{0.8em}
+	\medskip
 	\begin{tcolorbox}[nndsgreen,boxsep=1mm,top=1mm,bottom=1mm]
 		A linear model on transformed inputs can produce a nonlinear decision boundary in the original input space.
 	\end{tcolorbox}
 \end{frame}
 
 \begin{frame}{Fixed nonlinear features}
-	\LinearFeaturesLayout
+	\setlength{\abovedisplayskip}{5pt}\setlength{\belowdisplayskip}{5pt}
 	Generalizing this, we can fix a nonlinear feature map $\boldsymbol{\phi}$ and train only the coefficients:
 	\[
 		f_{\vc{w}}(\vc{x})=\vc{w}^{\top}\boldsymbol{\phi}(\vc{x}).
 	\]
-	\LinearFeaturesGap
+	\medskip
 	However, \textbf{polynomial features grow quickly.} For $d$ inputs, degree-two terms alone
 	give $d(d+1)/2$ features. Higher degrees can make explicit enumeration infeasible.
 
-	\LinearFeaturesGap
+	\medskip
 	\begin{columns}[T,onlytextwidth]
 		\begin{column}{0.48\textwidth}
 			\textbf{\color{darkcerulean}Random Fourier features}
@@ -584,7 +585,7 @@
 		\end{column}
 	\end{columns}
 
-	\LinearFeaturesGap
+	\medskip
 	\begin{tcolorbox}[nndsgreen,boxsep=1mm,top=1mm,bottom=1mm]
 		\textbf{Next lecture:} can we learn the features themselves?
 	\end{tcolorbox}

@@ -1,7 +1,7 @@
 % Written by Claude (2026-10-14): training-in-practice slides
 % (initialization, weight decay). Figure: shared/assets/images/lecture_4/init/.
 \begin{frame}{Initializing the weights}
-	\MLPSlideFont
+	\small
 	\setlength{\abovedisplayskip}{4pt}\setlength{\belowdisplayskip}{4pt}
 	\begin{tcolorbox}[nndsorange,boxsep=1mm,top=1mm,bottom=1mm]
 		If all the weights of a layer start equal, all its hidden units stay identical during training. We break this \myalert{symmetry} by sampling the weights at random, $W_{ij}\sim\mathcal{N}(0,\sigma^2)$.
@@ -23,7 +23,7 @@
 \end{frame}
 
 \begin{frame}{He initialization}
-	\MLPSlideFont
+	\small
 	\setlength{\abovedisplayskip}{4pt}\setlength{\belowdisplayskip}{4pt}
 	\begin{columns}[c,onlytextwidth]
 		\begin{column}{0.48\textwidth}
@@ -51,7 +51,7 @@
 \end{frame}
 
 \begin{frame}[fragile]{Weight decay}
-	\MLPSlideFont
+	\small
 	\setlength{\abovedisplayskip}{4pt}\setlength{\belowdisplayskip}{4pt}
 	In ridge regression we penalized large weights. We can add the same penalty to the loss of any network:
 	\begin{tcolorbox}[nndsblue,boxsep=1mm,top=1mm,bottom=1mm]
