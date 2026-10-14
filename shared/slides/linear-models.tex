@@ -114,7 +114,7 @@
 					\vphantom{\sum_{i=1}^{N}}% same height as the empirical risk
 					\mathcal{R}(\boldsymbol{\theta})
 					=\mathbb{E}_{p(x,y)}\!\left[
-					\ell\left(f_{\boldsymbol{\theta}}(x),y\right)\right] \,.
+						\ell\left(f_{\boldsymbol{\theta}}(x),y\right)\right] \,.
 				\end{equation}
 				This is the \myalert{expected risk}, but $p(x,y)$ is unknown.
 			\end{tcolorbox}
@@ -148,14 +148,14 @@
 		f(x) =
 		\begin{cases}
 			{\color{darkred}y_i}
-			& \text{if } x=x_i \text{ for some } (x_i,y_i)\in\mathcal{S}_{\mathrm{train}}, \\
+			 & \text{if } x=x_i \text{ for some } (x_i,y_i)\in\mathcal{S}_{\mathrm{train}}, \\
 			{\color{darkpastelblue}\bar{y}}
-			& \text{otherwise}.
+			 & \text{otherwise}.
 		\end{cases}
 		\label{eq:lookup_table}
 	\end{equation}
 
-	It predicts every training target exactly. For any new input, however, it returns the same default value $\bar{y}$.
+	It predicts every training target exactly, and returns the same default value $\bar{y}$ for a new input.
 
 	\begin{tcolorbox}[nndsorange,boxsep=1mm,top=1mm,bottom=1mm]
 		Zero training risk does not imply small expected risk:
@@ -179,13 +179,13 @@
 		\begin{column}{0.43\textwidth}
 			\begin{itemize}
 				\item \textcolor{drawred}{\textbf{Squared loss}}:
-				${\color{drawred}\ell(e)=e^2}$. Smooth, but gives large errors more weight.
+				      ${\color{drawred}\ell(e)=e^2}$. Smooth, but gives large errors more weight.
 
 				\item \textcolor{drawgreen}{\textbf{Absolute loss}}:
-				${\color{drawgreen}\ell(e)=\lvert e\rvert}$. Less sensitive to outliers, but not differentiable at $e=0$.
+				      ${\color{drawgreen}\ell(e)=\lvert e\rvert}$. Less sensitive to outliers, but not differentiable at $e=0$.
 
 				\item \textcolor{drawblue}{\textbf{Huber loss}}:
-				quadratic near zero and linear for large $\lvert e\rvert$.
+				      quadratic near zero and linear for large $\lvert e\rvert$.
 			\end{itemize}
 		\end{column}
 		\begin{column}{0.54\textwidth}
@@ -209,7 +209,7 @@
 		\begin{equation}
 			f_{\boldsymbol{\theta}}(\vc{x})
 			= {\color{darkpastelblue}\vc{w}^{\top}\vc{x}}
-			  {\color{darkred}+\,b}
+			{\color{darkred}+\,b}
 			= \sum_{j=1}^{D}w_jx_j+b \,.
 		\end{equation}
 		The parameters are $\vc{w}\in\mathbb{R}^{D}$ and $b\in\mathbb{R}$, with $\boldsymbol{\theta}=\{\vc{w},b\}$. The scalar $b$ is the \myalert{bias}; we will sometimes omit it to simplify the notation. We call each component $x_j$ a \myalert{feature}, and datasets of this form \myalert{tabular}.
@@ -254,7 +254,9 @@
 	\end{tcolorbox}
 
 	\begin{tcolorbox}[nndsgreen]
-		\textbf{\color{darkgreen}If $\vc{X}$ has full column rank}
+		\textbf{\color{darkgreen}Closed-form solution}
+
+		If $\vc{X}$ has full column rank (i.e. $\vc{X}^\top\vc{X}$ is invertible):
 		\begin{equation}
 			\vc{w}^{*}=\left(\vc{X}^{\top}\vc{X}\right)^{-1}
 			\vc{X}^{\top}\vc{y} \,.
@@ -276,7 +278,7 @@
 	With strongly correlated features, the fitted weights can be unstable.
 
 	\begin{tcolorbox}[nndsorange,boxsep=1mm,top=1mm,bottom=1mm]
-		\myalert{Regularization} modifies the training objective to favour solutions with useful properties. \myalert{Ridge regression} favours smaller weights:
+		\myalert{Regularization} modifies the training objective to favour solutions with useful properties. \myalert{Ridge regression} is a common type of regularization that favours smaller weights:
 		\begin{equation}
 			\mathcal{L}_{\mathrm{ridge}}(\vc{w})
 			= \frac{1}{N}\left(
@@ -372,9 +374,9 @@
 
 	\justifying
 	\small
-	Let $\vc{p}_i=f_{\boldsymbol{\theta}}(\vc{x}_i)$, with $\boldsymbol{\theta}=\{\vc{W},\vc{b}\}$.
+
 	\begin{tcolorbox}[nndsblue]
-		The \myalert{cross-entropy loss} is the negative log-probability assigned to the correct class:
+		Let $\vc{p}_i=f_{\boldsymbol{\theta}}(\vc{x}_i)$, with $\boldsymbol{\theta}=\{\vc{W},\vc{b}\}$. The \myalert{cross-entropy loss} is the negative log-probability assigned to the correct class:
 		\begin{equation}
 			\ell\left(f_{\boldsymbol{\theta}}(\vc{x}_i),y_i\right)
 			=-\log p_{i,y_i} \,.
@@ -449,7 +451,7 @@
 	\end{columns}
 
 	\begin{tcolorbox}[nndsgreen,boxsep=1mm,top=1mm,bottom=1mm]
-		Softmax and sigmoid are nonlinear, but the resulting decision boundaries are linear in the input. Transforming the inputs lets us construct nonlinear decision boundaries.
+		Softmax and sigmoid are nonlinear, but the resulting decision boundaries are linear in the input.
 	\end{tcolorbox}
 
 \end{frame}
@@ -535,8 +537,8 @@
 			\[
 				f_{\vc{w}}(\vc{x})=-x_1x_2=
 				\begin{cases}
-					\phantom{-}1 & \text{\color{darkcerulean}blue circles},\\
-					-1 & \text{\color{darkred}red crosses}.
+					\phantom{-}1 & \text{\color{darkcerulean}blue circles}, \\
+					-1           & \text{\color{darkred}red crosses}.
 				\end{cases}
 			\]
 			Thresholding this score at zero solves XOR.

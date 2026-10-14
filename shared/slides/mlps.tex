@@ -57,18 +57,6 @@
 		\]}
 \end{frame}
 
-\begin{frame}{Embedding the data}
-	\begin{columns}[c,onlytextwidth]
-		\begin{column}{0.36\textwidth}
-			The hidden representation provides new coordinates for the input, in which a linear output layer can distinguish the classes.
-		\end{column}
-		\begin{column}{0.60\textwidth}
-			\centering
-			\includegraphics[height=0.80\textheight]{images/lecture_3/embedding.pdf}
-		\end{column}
-	\end{columns}
-\end{frame}
-
 \begin{frame}{Adding hidden layers}
 	\small
 	\setlength{\abovedisplayskip}{4pt}\setlength{\belowdisplayskip}{4pt}
@@ -101,8 +89,20 @@
 
 	\smallskip
 	{\raggedright
-	With widths $D_0,\ldots,D_L$ ($D_0$ is the input dimension), $\vc{W}^{(\ell)}\in\mathbb{R}^{D_\ell\times D_{\ell-1}}$ and $\vc{b}^{(\ell)}\in\mathbb{R}^{D_\ell}$: layer $\ell$ has $D_\ell(D_{\ell-1}+1)$ parameters, and the output adds $D_L+1$.\par
-	The parameters are $\boldsymbol{\theta}=\{\vc{W}^{(\ell)},\vc{b}^{(\ell)}\}_{\ell=1}^{L}\cup\{\vc{w},c\}$.\par}
+		With widths $D_0,\ldots,D_L$ ($D_0$ is the input dimension), $\vc{W}^{(\ell)}\in\mathbb{R}^{D_\ell\times D_{\ell-1}}$ and $\vc{b}^{(\ell)}\in\mathbb{R}^{D_\ell}$: layer $\ell$ has $D_\ell(D_{\ell-1}+1)$ parameters, and the output adds $D_L+1$.\par
+		The parameters are $\boldsymbol{\theta}=\{\vc{W}^{(\ell)},\vc{b}^{(\ell)}\}_{\ell=1}^{L}\cup\{\vc{w},c\}$.\par}
+\end{frame}
+
+\begin{frame}{Embedding the data}
+	\begin{columns}[c,onlytextwidth]
+		\begin{column}{0.36\textwidth}
+			The hidden representation provides new coordinates for the input, in which a linear output layer can distinguish the classes.
+		\end{column}
+		\begin{column}{0.60\textwidth}
+			\centering
+			\includegraphics[height=0.80\textheight]{images/lecture_3/embedding.pdf}
+		\end{column}
+	\end{columns}
 \end{frame}
 
 \begin{frame}{Training the network}
@@ -217,53 +217,53 @@
 % NN addition, October 1, 2026, shared with NNDS on October 14, 2026.
 % Figures and mathematical checks: shared/assets/images/lecture_4/relu/.
 \begin{frame}{One network, many affine maps}
-  \small
-  \setlength{\abovedisplayskip}{6pt}\setlength{\belowdisplayskip}{6pt}
-  \begin{columns}[c,onlytextwidth]
-    \begin{column}{0.56\textwidth}
-      Each ReLU either passes its input or sets it to zero:
-      \[
-        \vc{h}=\vc{D}(\vc{x})(\vc{W}\vc{x}+\vc{b}),
-        \qquad D_{ii}(\vc{x})\in\{0,1\}.
-      \]
-      The diagonal entries of $\vc{D}$ indicate which units are active. With an affine output,
-      \begin{align*}
-        f(\vc{x})&=\vc{w}^{\top}\vc{D}(\vc{x})(\vc{W}\vc{x}+\vc{b})+c\\
-                 &=\vc{a}(\vc{x})^{\top}\vc{x}+\beta(\vc{x}).
-      \end{align*}
-      Within each region, the gates stay fixed: the network is \myalert{exactly affine}.
+	\small
+	\setlength{\abovedisplayskip}{6pt}\setlength{\belowdisplayskip}{6pt}
+	\begin{columns}[c,onlytextwidth]
+		\begin{column}{0.56\textwidth}
+			Each ReLU either passes its input or sets it to zero:
+			\[
+				\vc{h}=\vc{D}(\vc{x})(\vc{W}\vc{x}+\vc{b}),
+				\qquad D_{ii}(\vc{x})\in\{0,1\}.
+			\]
+			The diagonal entries of $\vc{D}$ indicate which units are active. With an affine output,
+			\begin{align*}
+				f(\vc{x}) & =\vc{w}^{\top}\vc{D}(\vc{x})(\vc{W}\vc{x}+\vc{b})+c \\
+				          & =\vc{a}(\vc{x})^{\top}\vc{x}+\beta(\vc{x}).
+			\end{align*}
+			Within each region, the gates stay fixed: the network is \myalert{exactly affine}.
 
-      \medskip
-      This holds at any depth. Training learns both the regions and their affine maps.
-    \end{column}
-    \begin{column}{0.41\textwidth}
-      \centering
-      $f(\vc{x})=\operatorname{ReLU}(x_1)+\operatorname{ReLU}(x_2-x_1)$\par
-      \smallskip
-      \input{../../shared/assets/images/lecture_4/relu/regions.tex}
-    \end{column}
-  \end{columns}
-  \SlideSource{For ReLU hidden layers, before any output sigmoid or softmax. \href{https://arxiv.org/abs/1402.1869}{Mont\'ufar et al. (2014)}.}
+			\medskip
+			This holds at any depth. Training learns both the regions and their affine maps.
+		\end{column}
+		\begin{column}{0.41\textwidth}
+			\centering
+			$f(\vc{x})=\operatorname{ReLU}(x_1)+\operatorname{ReLU}(x_2-x_1)$\par
+			\smallskip
+			\input{../../shared/assets/images/lecture_4/relu/regions.tex}
+		\end{column}
+	\end{columns}
+	\SlideSource{For ReLU hidden layers, before any output sigmoid or softmax. \href{https://arxiv.org/abs/1402.1869}{Mont\'ufar et al. (2014)}.}
 \end{frame}
 
 \begin{frame}{Depth through composition}
-  \small
-  \setlength{\abovedisplayskip}{5pt}\setlength{\belowdisplayskip}{5pt}
-  Three ReLUs make a triangular function. We apply the same function repeatedly:
-  \[
-    T(x)=2\operatorname{ReLU}(x)-4\operatorname{ReLU}\!\left(x-\tfrac12\right)
-         +2\operatorname{ReLU}(x-1),\qquad x\in[0,1].
-  \]
-  \begin{center}
-    \input{../../shared/assets/images/lecture_4/relu/folding.tex}
-  \end{center}
-  Each composition splits every piece in two: $k$ blocks give $2^k$ pieces using $3k$ ReLU units.
+	\small
+	\setlength{\abovedisplayskip}{5pt}\setlength{\belowdisplayskip}{5pt}
+	Three ReLUs make a triangular function. We apply the same function repeatedly:
+	\[
+		T(x)=2\operatorname{ReLU}(x)-4\operatorname{ReLU}\!\left(x-\tfrac12\right)
+		+2\operatorname{ReLU}(x-1),\qquad x\in[0,1].
+	\]
+	\begin{center}
+		\input{../../shared/assets/images/lecture_4/relu/folding.tex}
+	\end{center}
+	Each composition splits every piece in two: $k$ blocks give $2^k$ pieces using $3k$ ReLU units.
 
-  \smallskip
-  A single hidden layer with $m$ ReLUs has at most $m+1$ pieces in one dimension.
-  \myalert{Depth can make a representation much more compact.}
+	\smallskip
+	A single hidden layer with $m$ ReLUs has at most $m+1$ pieces in one dimension.
+	\myalert{Depth can make a representation much more compact.}
 
-  \SlideSource{An expressivity example, not a guarantee about training or generalization. \href{https://proceedings.mlr.press/v49/telgarsky16.html}{Telgarsky (2016)}.}
+	\SlideSource{An expressivity example, not a guarantee about training or generalization. \href{https://proceedings.mlr.press/v49/telgarsky16.html}{Telgarsky (2016)}.}
 \end{frame}
 
 \section{Training MLPs}

@@ -178,51 +178,51 @@
 	\vspace{0.35cm}
 
 	\begin{center}
-	\begin{tikzpicture}[
-		node distance=0.22cm,
-		every node/.style={font=\normalsize},
-		term/.style={
-			draw=drawgray,
-			line width=0.65pt,
-			rounded corners=2pt,
-			fill=black!1.5,
-			inner xsep=8pt,
-			inner ysep=6pt
-		},
-		result/.style={
-			term,
-			draw=darkred,
-			fill=darkred!3
-		},
-		dim/.style={font=\scriptsize, text=gray}
-	]
-		\node[result] (composition)
+		\begin{tikzpicture}[
+				node distance=0.22cm,
+				every node/.style={font=\normalsize},
+				term/.style={
+						draw=drawgray,
+						line width=0.65pt,
+						rounded corners=2pt,
+						fill=black!1.5,
+						inner xsep=8pt,
+						inner ysep=6pt
+					},
+				result/.style={
+						term,
+						draw=darkred,
+						fill=darkred!3
+					},
+				dim/.style={font=\scriptsize, text=gray}
+			]
+			\node[result] (composition)
 			{$\partial\!\left[f(g(\vc{x}))\right]$};
-		\node[right=0.20cm of composition] (equals) {$=$};
-		\node[term, right=0.20cm of equals] (outer)
+			\node[right=0.20cm of composition] (equals) {$=$};
+			\node[term, right=0.20cm of equals] (outer)
 			{$\partial f(g(\vc{x}))$};
-		\node[term, right=0.12cm of outer] (inner)
+			\node[term, right=0.12cm of outer] (inner)
 			{$\partial g(\vc{x})$};
 
-		\node[dim, below=0.11cm of composition]
+			\node[dim, below=0.11cm of composition]
 			{$(n,o)$};
-		\node[dim, below=0.11cm of outer] (outer-dim)
+			\node[dim, below=0.11cm of outer] (outer-dim)
 			{$(n,\textcolor{draworange}{\boldsymbol{m}})$};
-		\node[dim, below=0.11cm of inner] (inner-dim)
+			\node[dim, below=0.11cm of inner] (inner-dim)
 			{$(\textcolor{draworange}{\boldsymbol{m}},o)$};
 
-		\draw[
-			<->,
-			draworange,
-			line width=0.65pt,
-			shorten <=3pt,
-			shorten >=3pt
-		]
+			\draw[
+				<->,
+				draworange,
+				line width=0.65pt,
+				shorten <=3pt,
+				shorten >=3pt
+			]
 			(outer-dim.south east)
 			to[bend right=18]
 			node[below=1pt, font=\scriptsize, text=draworange] {match}
 			(inner-dim.south west);
-	\end{tikzpicture}
+		\end{tikzpicture}
 	\end{center}
 	\vspace{-0.45cm}
 	%
@@ -315,10 +315,10 @@
 \begin{whiteframe}{Types of stationary points}
 
 	\begin{figure}
-	\centering\includegraphics[width=9.5cm,keepaspectratio]{images/lecture_2/stationary_points.pdf} %
-	\vspace{-1em}\caption{Stationary points can be \myalert{local} or
-		\myalert{global} extrema, or \myalert{saddle points}; here, the saddle
-		is a stationary inflection.}
+		\centering\includegraphics[width=9.5cm,keepaspectratio]{images/lecture_2/stationary_points.pdf} %
+		\vspace{-1em}\caption{Stationary points can be \myalert{local} or
+			\myalert{global} extrema, or \myalert{saddle points}; here, the saddle
+			is a stationary inflection.}
 	\end{figure}
 
 \end{whiteframe}
@@ -349,19 +349,19 @@
 	We restrict to unit directions, $\lVert\vc{p}_t\rVert=1$.
 
 	\begin{tcolorbox}[
-		colback=drawgray_l,
-		colframe=drawgray,
-		boxrule=0.55pt,
-		arc=1.5pt,
-		left=5pt,
-		right=5pt,
-		top=3pt,
-		bottom=3pt
-	]
+			colback=drawgray_l,
+			colframe=drawgray,
+			boxrule=0.55pt,
+			arc=1.5pt,
+			left=5pt,
+			right=5pt,
+			top=3pt,
+			bottom=3pt
+		]
 		\small
 		Recall:
 		$\langle\vc{a},\vc{b}\rangle
-		=\lVert\vc{a}\rVert\lVert\vc{b}\rVert\cos(\theta)$,
+			=\lVert\vc{a}\rVert\lVert\vc{b}\rVert\cos(\theta)$,
 		where $\theta$ is the angle between the vectors.
 	\end{tcolorbox}
 
@@ -372,18 +372,18 @@
 			\small
 			\begin{align*}
 				\mathrm{D}_{\vc{p}_t}\mathcal{L}(\boldsymbol{\theta}_{t-1})
-				&=
+				 & =
 				\left\langle
-					{\color{darkred}\nabla\mathcal{L}(\boldsymbol{\theta}_{t-1})},
-					{\color{darkpastelblue}\vc{p}_t}
+				{\color{darkred}\nabla\mathcal{L}(\boldsymbol{\theta}_{t-1})},
+				{\color{darkpastelblue}\vc{p}_t}
 				\right\rangle
 				\\[0.15em]
-				&=
+				 & =
 				\left\lVert\nabla\mathcal{L}(\boldsymbol{\theta}_{t-1})\right\rVert
 				\underbrace{\lVert\vc{p}_t\rVert}_{=1}
 				{\color{draworange}\cos(\theta)}
 				\\[0.15em]
-				&=
+				 & =
 				\left\lVert\nabla\mathcal{L}(\boldsymbol{\theta}_{t-1})\right\rVert
 				{\color{draworange}\cos(\theta)}.
 			\end{align*}
@@ -399,23 +399,23 @@
 					darkred,
 					line width=1.3pt
 				]
-					(origin) -- (1.7,0)
-					node[below=3pt, text=darkred]
-					{$\nabla\mathcal{L}$};
+				(origin) -- (1.7,0)
+				node[below=3pt, text=darkred]
+				{$\nabla\mathcal{L}$};
 				\draw[
 					->,
 					darkpastelblue,
 					line width=1.3pt
 				]
-					(origin) -- (-1.7,0)
-					node[below=3pt, text=darkpastelblue]
-					{$\vc{p}_t$};
+				(origin) -- (-1.7,0)
+				node[below=3pt, text=darkpastelblue]
+				{$\vc{p}_t$};
 				\draw[
 					->,
 					draworange,
 					line width=0.8pt
 				]
-					(0.70,0.02) arc[start angle=0,end angle=180,radius=0.70];
+				(0.70,0.02) arc[start angle=0,end angle=180,radius=0.70];
 				\node[text=draworange] at (0,0.88) {$\theta=\pi$};
 				\fill[drawgray] (origin) circle (1.2pt);
 			\end{tikzpicture}
@@ -558,7 +558,7 @@
 		\vc{u}_t      & =
 		\underbrace{
 			{\color{darkred}-\eta_t\nabla
-			\widetilde{\mathcal{L}}_t(\vc{\theta}_{t-1})}
+					\widetilde{\mathcal{L}}_t(\vc{\theta}_{t-1})}
 		}_{\text{\scriptsize new gradient}}
 		+
 		\underbrace{
@@ -577,25 +577,25 @@
 
 	{\centering
 		\begin{tikzpicture}[
-			x=1.55cm,
-			y=1cm,
-			>=stealth,
-			every node/.style={font=\small}
-		]
+				x=1.55cm,
+				y=1cm,
+				>=stealth,
+				every node/.style={font=\small}
+			]
 			\draw[->, drawgray, line width=0.6pt]
-				(0,0) -- (4.45,0);
+			(0,0) -- (4.45,0);
 
 			\foreach \x/\power/\time/\opacity in {
-				0/{\lambda^3}/{t-3}/0.28,
-				1/{\lambda^2}/{t-2}/0.43,
-				2/{\lambda}/{t-1}/0.65
+			0/{\lambda^3}/{t-3}/0.28,
+			1/{\lambda^2}/{t-2}/0.43,
+			2/{\lambda}/{t-1}/0.65
 			}{
-				\fill[darkpastelblue, opacity=\opacity]
-					(\x,0) circle (3.2pt);
-				\node[above=5pt, text=darkpastelblue, opacity=\opacity]
-					at (\x,0) {$\power$};
-				\node[below=5pt, text=drawgray]
-					at (\x,0) {$\time$};
+			\fill[darkpastelblue, opacity=\opacity]
+			(\x,0) circle (3.2pt);
+			\node[above=5pt, text=darkpastelblue, opacity=\opacity]
+			at (\x,0) {$\power$};
+			\node[below=5pt, text=drawgray]
+			at (\x,0) {$\time$};
 			}
 
 			\fill[darkred] (3,0) circle (3.2pt);
@@ -617,42 +617,42 @@
 	\begin{columns}[T,onlytextwidth]
 		\begin{column}{0.48\textwidth}
 			\begin{tcolorbox}[
-				colback=drawblue_l!35,
-				colframe=drawblue,
-				boxrule=0.65pt,
-				arc=1.5pt,
-				left=4pt,
-				right=4pt,
-				top=3pt,
-				bottom=4pt
-			]
+					colback=drawblue_l!35,
+					colframe=drawblue,
+					boxrule=0.65pt,
+					arc=1.5pt,
+					left=4pt,
+					right=4pt,
+					top=3pt,
+					bottom=4pt
+				]
 				\centering
 				\textcolor{drawblue}{\textbf{first moment} (direction)}
 				\\[0.2em]
 				$\displaystyle
-				\vc{m}_t=
-				\beta_1\vc{m}_{t-1}+(1-\beta_1)\vc{g}_t$
+					\vc{m}_t=
+					\beta_1\vc{m}_{t-1}+(1-\beta_1)\vc{g}_t$
 			\end{tcolorbox}
 		\end{column}
 
 		\begin{column}{0.48\textwidth}
 			\begin{tcolorbox}[
-				colback=draworange_l!35,
-				colframe=draworange,
-				boxrule=0.65pt,
-				arc=1.5pt,
-				left=4pt,
-				right=4pt,
-				top=3pt,
-				bottom=4pt
-			]
+					colback=draworange_l!35,
+					colframe=draworange,
+					boxrule=0.65pt,
+					arc=1.5pt,
+					left=4pt,
+					right=4pt,
+					top=3pt,
+					bottom=4pt
+				]
 				\centering
 				\textcolor{draworange}{\textbf{second moment} (coordinate scale)}
 				\\[0.2em]
 				$\displaystyle
-				\vc{v}_t=
-				\beta_2\vc{v}_{t-1}
-				+(1-\beta_2)(\vc{g}_t\odot\vc{g}_t)$
+					\vc{v}_t=
+					\beta_2\vc{v}_{t-1}
+					+(1-\beta_2)(\vc{g}_t\odot\vc{g}_t)$
 			\end{tcolorbox}
 		\end{column}
 	\end{columns}
@@ -660,49 +660,49 @@
 	\vspace{0.08cm}
 
 	\begin{center}
-	\begin{tcolorbox}[
-		width=0.72\textwidth,
-		colback=drawgray_l,
-		colframe=drawgray,
-		boxrule=0.5pt,
-		arc=1.5pt,
-		left=4pt,
-		right=4pt,
-		top=2pt,
-		bottom=4pt
-	]
-		\centering
-		{\scriptsize\color{drawgray} bias correction (initialization at 0)}
-		\\[0.15em]
-		$\displaystyle
-		\widehat{\vc{m}}_t=\frac{\vc{m}_t}{1-\beta_1^t}
-		\qquad\qquad
-		\widehat{\vc{v}}_t=\frac{\vc{v}_t}{1-\beta_2^t}$
-	\end{tcolorbox}
+		\begin{tcolorbox}[
+				width=0.72\textwidth,
+				colback=drawgray_l,
+				colframe=drawgray,
+				boxrule=0.5pt,
+				arc=1.5pt,
+				left=4pt,
+				right=4pt,
+				top=2pt,
+				bottom=4pt
+			]
+			\centering
+			{\scriptsize\color{drawgray} bias correction (initialization at 0)}
+			\\[0.15em]
+			$\displaystyle
+				\widehat{\vc{m}}_t=\frac{\vc{m}_t}{1-\beta_1^t}
+				\qquad\qquad
+				\widehat{\vc{v}}_t=\frac{\vc{v}_t}{1-\beta_2^t}$
+		\end{tcolorbox}
 	\end{center}
 
 	\vspace{-0.15cm}
 
 	\begin{center}
-	\begin{tcolorbox}[
-		width=0.62\textwidth,
-		colback=darkred!3,
-		colframe=darkred,
-		boxrule=0.75pt,
-		arc=1.5pt,
-		left=4pt,
-		right=4pt,
-		top=4pt,
-		bottom=4pt
-	]
-		\centering
-		$\displaystyle
-		\vc{\theta}_t=
-		\vc{\theta}_{t-1}
-		-\eta_t
-		\frac{\widehat{\vc{m}}_t}
-		{\sqrt{\widehat{\vc{v}}_t}+\varepsilon}$
-	\end{tcolorbox}
+		\begin{tcolorbox}[
+				width=0.62\textwidth,
+				colback=darkred!3,
+				colframe=darkred,
+				boxrule=0.75pt,
+				arc=1.5pt,
+				left=4pt,
+				right=4pt,
+				top=4pt,
+				bottom=4pt
+			]
+			\centering
+			$\displaystyle
+				\vc{\theta}_t=
+				\vc{\theta}_{t-1}
+				-\eta_t
+				\frac{\widehat{\vc{m}}_t}
+				{\sqrt{\widehat{\vc{v}}_t}+\varepsilon}$
+		\end{tcolorbox}
 	\end{center}
 
 	\vspace{-0.35cm}
@@ -738,7 +738,7 @@
 				\centering
 				\begin{tikzpicture}[x=1.05cm,y=0.82cm]
 					\draw[darkcerulean,very thick,domain=-1.55:1.35,samples=50]
-						plot (\x,{0.58*(\x)^2});
+					plot (\x,{0.58*(\x)^2});
 					\coordinate (xone) at (-1.35,1.057);
 					\coordinate (xtwo) at (1.10,0.702);
 					\coordinate (chordpoint) at (0,0.861);
@@ -746,9 +746,9 @@
 					\draw[darkred,very thick] (xone) -- (xtwo);
 					\draw[densely dashed,gray] (chordpoint) -- (curvepoint);
 					\fill[darkcerulean] (xone) circle (2.1pt)
-						node[above left=-1pt] {\scriptsize $\vc{x}_1$};
+					node[above left=-1pt] {\scriptsize $\vc{x}_1$};
 					\fill[darkcerulean] (xtwo) circle (2.1pt)
-						node[above right=-1pt] {\scriptsize $\vc{x}_2$};
+					node[above right=-1pt] {\scriptsize $\vc{x}_2$};
 					\fill[darkred] (chordpoint) circle (2.1pt);
 					\fill[darkgreen] (curvepoint) circle (2.1pt);
 				\end{tikzpicture}
@@ -765,7 +765,7 @@
 	\small
 
 	\begin{tcolorbox}[colback=light-gray,colframe=gray,
-		top=1.2mm,bottom=1.2mm,left=3mm,right=3mm]
+			top=1.2mm,bottom=1.2mm,left=3mm,right=3mm]
 		\small
 		Under standard regularity and step-size assumptions, suppose (S)GD
 		converges to a stationary point $\vc{\theta}^*$.
@@ -780,7 +780,7 @@
 	\vspace{-0.25cm}
 
 	\begin{tcolorbox}[colback=light-gray,colframe=gray,boxrule=0.7pt,
-		top=0.8mm,bottom=0.8mm,left=3mm,right=3mm,arc=1.5mm]
+			top=0.8mm,bottom=0.8mm,left=3mm,right=3mm,arc=1.5mm]
 		\begin{columns}[onlytextwidth]
 			\begin{column}{0.38\textwidth}
 				\textbf{Generic non-convex}
@@ -793,7 +793,7 @@
 	\end{tcolorbox}
 	\vspace{0.06cm}
 	\begin{tcolorbox}[colback=darkcerulean!6,colframe=darkcerulean,boxrule=0.7pt,
-		top=0.8mm,bottom=0.8mm,left=3mm,right=3mm,arc=1.5mm]
+			top=0.8mm,bottom=0.8mm,left=3mm,right=3mm,arc=1.5mm]
 		\begin{columns}[onlytextwidth]
 			\begin{column}{0.38\textwidth}
 				\textbf{Convex}
@@ -806,7 +806,7 @@
 	\end{tcolorbox}
 	\vspace{0.06cm}
 	\begin{tcolorbox}[colback=darkgreen!6,colframe=darkgreen,boxrule=0.7pt,
-		top=0.8mm,bottom=0.8mm,left=3mm,right=3mm,arc=1.5mm]
+			top=0.8mm,bottom=0.8mm,left=3mm,right=3mm,arc=1.5mm]
 		\begin{columns}[onlytextwidth]
 			\begin{column}{0.38\textwidth}
 				\textbf{Strictly convex}
