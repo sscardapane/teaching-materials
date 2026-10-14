@@ -306,7 +306,7 @@
     In practice, \verb+nn.Conv2d+ uses a specialized implementation for the
     hardware, so we do not construct $U(X)$ explicitly. We will see more in the lab.
 
-    \blfootnote{\href{https://docs.pytorch.org/docs/stable/generated/torch.nn.Unfold.html}{PyTorch: Unfold}
+    \SlideSource{\href{https://docs.pytorch.org/docs/stable/generated/torch.nn.Unfold.html}{PyTorch: Unfold}
         and \href{https://docs.nvidia.com/deeplearning/performance/dl-performance-convolutional/index.html}{NVIDIA: convolution implementations}.}
 
 \end{frame}
@@ -552,7 +552,7 @@
     Unseen words can split into known pieces, and frequent words can stay whole.
     Learned pieces need not match linguistic word parts.
 
-    \blfootnote{Sennrich, Haddow and Birch (2016),
+    \SlideSource{Sennrich, Haddow and Birch (2016),
         \href{https://aclanthology.org/P16-1162/}{\textit{Neural Machine Translation of Rare Words with Subword Units}}, ACL.}
 
 \end{frame}
@@ -582,7 +582,7 @@
     \myalert{Byte-level BPE} starts from $256$ byte values, so it can represent
     any UTF-8 text.
 
-    \blfootnote{\href{https://huggingface.co/learn/llm-course/en/chapter6/5}{Hugging Face: Byte-Pair Encoding tokenization}.}
+    \SlideSource{\href{https://huggingface.co/learn/llm-course/en/chapter6/5}{Hugging Face: Byte-Pair Encoding tokenization}.}
 
 \end{frame}
 
@@ -600,7 +600,7 @@
     We initialize the embeddings randomly and train them with the network, or take them from some pre-trained model or algorithm.
     For example, GloVe and Word2Vec were two classic algorithms for this purpose.
 
-    \blfootnote{Bolukbasi et al. (2016), \textit{Debiasing word embeddings}, NeurIPS.}
+    \SlideSource{Bolukbasi et al. (2016), \textit{Debiasing word embeddings}, NeurIPS.}
 
 \end{frame}
 
