@@ -1,4 +1,22 @@
-\section{Feedforward neural networks}
+% Diagram styles for the block diagrams in this deck.
+\tikzset{
+	nnblock/.style={
+			draw=drawblue, fill=drawblue_l!25!white, rounded corners=2pt,
+			minimum width=1.25cm, minimum height=0.65cm,
+			inner sep=5pt, font=\small
+		},
+	nnother/.style={nnblock, draw=drawgreen, fill=drawgreen_l!25!white},
+	nnmerge/.style={
+			circle, draw=drawgray, fill=white,
+			minimum size=0.55cm, inner sep=1pt, font=\small
+		},
+	nnedge/.style={->, thick, draw=drawgray}
+}
+
+% Sections restructured by Claude (2026-10-14): three sections so the
+% outline is not a single entry; the grokking case study now closes the
+% training section, and the deck ends on the hand-over to convolutions.
+\section{Multilayer perceptrons}
 \subsection{Basic definitions}
 
 % XOR and fixed features now close \MLPLinearReference{}.
@@ -53,27 +71,38 @@
 
 \begin{frame}{Adding hidden layers}
 	\small
-	\setlength{\jot}{1pt}
-	\setlength{\abovedisplayskip}{5pt}\setlength{\belowdisplayskip}{5pt}
-	Nothing prevents us from adding additional \textbf{hidden} (intermediate) layers:
-	\begin{align*}
-		\vc{h}^{(0)}                                       & = \vc{x},                                                                                           \\
-		{\color{darkcerulean}\vc{h}^{(\ell)}}              & = \phi_{\ell}\!\left(\vc{W}^{(\ell)}\vc{h}^{(\ell-1)}+\vc{b}^{(\ell)}\right),\quad \ell=1,\ldots,L, \\
-		{\color{darkgreen}f_{\boldsymbol{\theta}}(\vc{x})} & = \vc{w}^{\top}\vc{h}^{(L)}+c.
-	\end{align*}
-	All weights and biases belong to $\boldsymbol{\theta}=\{\vc{W}^{(\ell)},\vc{b}^{(\ell)}\}_{\ell=1}^{L}\cup\{\vc{w},c\}$.
+	\setlength{\abovedisplayskip}{3pt}\setlength{\belowdisplayskip}{3pt}
+	Nothing prevents us from stacking $L$ \textbf{hidden} layers before the linear output:
 
-	\medskip
-	For widths $D_0,\ldots,D_L$ ($D_0$ is the input dimension),
-	\[
-		\vc{W}^{(\ell)}\in\mathbb{R}^{D_\ell\times D_{\ell-1}},
-		\qquad \vc{b}^{(\ell)}\in\mathbb{R}^{D_\ell}.
-	\]
-	Layer $\ell$ has $D_\ell(D_{\ell-1}+1)$ parameters; the scalar output adds $D_L+1$.
+	\begin{center}
+		\input{../../shared/assets/images/lecture_4/deep-mlp.tex}
+	\end{center}
+
+	\begin{columns}[T,onlytextwidth]
+		\begin{column}{0.58\textwidth}
+			\begin{tcolorbox}[nndsblue,courseheight={mlp-hidden}{0.30\textheight},fontupper=\small]
+				\textbf{\color{darkcerulean}Hidden layers}
+				\[
+					\vc{h}^{(0)}=\vc{x},\qquad
+					{\color{darkcerulean}\vc{h}^{(\ell)}}=\phi_{\ell}\!\left(\vc{W}^{(\ell)}\vc{h}^{(\ell-1)}+\vc{b}^{(\ell)}\right),
+				\]
+				\centering\vspace{-2pt} for $\ell=1,\ldots,L$.
+			\end{tcolorbox}
+		\end{column}
+		\begin{column}{0.39\textwidth}
+			\begin{tcolorbox}[nndsgreen,courseheight={mlp-hidden}{0.30\textheight},fontupper=\small]
+				\textbf{\color{darkgreen}Linear output}
+				\[
+					{\color{darkgreen}f_{\boldsymbol{\theta}}(\vc{x})}=\vc{w}^{\top}\vc{h}^{(L)}+c
+				\]
+			\end{tcolorbox}
+		\end{column}
+	\end{columns}
 
 	\smallskip
-	Widths and activations are layer-specific \textbf{hyperparameters}.
-
+	{\RaggedRight
+	With widths $D_0,\ldots,D_L$ ($D_0$ is the input dimension), $\vc{W}^{(\ell)}\in\mathbb{R}^{D_\ell\times D_{\ell-1}}$ and $\vc{b}^{(\ell)}\in\mathbb{R}^{D_\ell}$: layer $\ell$ has $D_\ell(D_{\ell-1}+1)$ parameters, and the output adds $D_L+1$.\par
+	The parameters are $\boldsymbol{\theta}=\{\vc{W}^{(\ell)},\vc{b}^{(\ell)}\}_{\ell=1}^{L}\cup\{\vc{w},c\}$.\par}
 \end{frame}
 
 \begin{frame}{Training the network}
@@ -237,29 +266,57 @@
   \SlideSource{An expressivity example, not a guarantee about training or generalization. \href{https://proceedings.mlr.press/v49/telgarsky16.html}{Telgarsky (2016)}.}
 \end{frame}
 
+\section{Training MLPs}
 \subsection{Training in practice}
 
 \input{../../shared/slides/mlps-training.tex}
+
+\subsection{Training can be weird}
+
+% September 30, 2026: one empirical case study, followed by topics left outside this lecture.
+\begin{frame}{Training neural networks can be weird}
+	Train a model (transformer, later in the course) to learn division modulo $97$. What happens?
+
+	\smallskip
+	\begin{columns}[T,onlytextwidth]
+		\begin{column}{0.49\textwidth}
+			\centering
+			\textbf{\color{darkcerulean}Loss over training}
+
+			\includegraphics[height=0.28\textheight,width=\linewidth,keepaspectratio]{images/lecture_4/grokking/grokking-loss.png}
+
+		\end{column}
+		\begin{column}{0.49\textwidth}
+			\centering
+			\textbf{\color{darkcerulean}Accuracy in the same experiment}
+
+			\includegraphics[height=0.28\textheight,width=\linewidth,keepaspectratio]{images/lecture_4/grokking/grokking-accuracy.png}
+
+		\end{column}
+	\end{columns}
+
+	\medskip
+	\begin{tcolorbox}[nndsgreen,boxsep=1mm,top=1mm,bottom=1mm]
+		Definitely not intuitive: multiple descents for the validation loss, with accuracy improving long after perfect memorization (\textbf{grokking}).
+	\end{tcolorbox}
+
+	\smallskip
+	\footnotesize
+	Other surprising phenomena we have no time to cover:
+	\href{https://arxiv.org/abs/1611.03530}{fitting random labels},
+	\href{https://arxiv.org/abs/1812.11118}{double descent as model size grows}, and
+	\href{https://proceedings.mlr.press/v238/ferbach24a.html}{low-loss paths connecting different solutions}.
+
+	\SlideSource{Original plots: Power et al. (2022), \href{https://arxiv.org/abs/2201.02177}{\MLPGrokkingCitationTitle}, Figs.~1 and~4.}
+\end{frame}
+
+\section{Designing the block}
 
 % October 14, 2026 restructure: KAF and KAN slides removed (KAN kept as one
 % line), highway and branch combinations deferred to the residual follow-up,
 % recurrence deferred to the recurrent-models deck (figure kept in lecture_4/).
 \subsection{Gating}
 
-% Diagram styles for the gating and sharing slides.
-\tikzset{
-	nnblock/.style={
-			draw=drawblue, fill=drawblue_l!25!white, rounded corners=2pt,
-			minimum width=1.25cm, minimum height=0.65cm,
-			inner sep=5pt, font=\small
-		},
-	nnother/.style={nnblock, draw=drawgreen, fill=drawgreen_l!25!white},
-	nnmerge/.style={
-			circle, draw=drawgray, fill=white,
-			minimum size=0.55cm, inner sep=1pt, font=\small
-		},
-	nnedge/.style={->, thick, draw=drawgray}
-}
 
 \input{../../shared/slides/mlps-gating.tex}
 
@@ -325,43 +382,4 @@
 
 	To exchange information, we need another operation: convolutions over
 	neighborhoods (the next lecture), attention, or a recurrent state.
-\end{frame}
-
-\subsection{Training can be weird}
-
-% September 30, 2026: one empirical case study, followed by topics left outside this lecture.
-\begin{frame}{Training neural networks can be weird}
-	Train a model (transformer, later in the course) to learn division modulo $97$. What happens?
-
-	\smallskip
-	\begin{columns}[T,onlytextwidth]
-		\begin{column}{0.49\textwidth}
-			\centering
-			\textbf{\color{darkcerulean}Loss over training}
-
-			\includegraphics[height=0.28\textheight,width=\linewidth,keepaspectratio]{images/lecture_4/grokking/grokking-loss.png}
-
-		\end{column}
-		\begin{column}{0.49\textwidth}
-			\centering
-			\textbf{\color{darkcerulean}Accuracy in the same experiment}
-
-			\includegraphics[height=0.28\textheight,width=\linewidth,keepaspectratio]{images/lecture_4/grokking/grokking-accuracy.png}
-
-		\end{column}
-	\end{columns}
-
-	\medskip
-	\begin{tcolorbox}[nndsgreen,boxsep=1mm,top=1mm,bottom=1mm]
-		Definitely not intuitive: multiple descents for the validation loss, with accuracy improving long after perfect memorization (\textbf{grokking}).
-	\end{tcolorbox}
-
-	\smallskip
-	\footnotesize
-	Other surprising phenomena we have no time to cover:
-	\href{https://arxiv.org/abs/1611.03530}{fitting random labels},
-	\href{https://arxiv.org/abs/1812.11118}{double descent as model size grows}, and
-	\href{https://proceedings.mlr.press/v238/ferbach24a.html}{low-loss paths connecting different solutions}.
-
-	\SlideSource{Original plots: Power et al. (2022), \href{https://arxiv.org/abs/2201.02177}{\MLPGrokkingCitationTitle}, Figs.~1 and~4.}
 \end{frame}
