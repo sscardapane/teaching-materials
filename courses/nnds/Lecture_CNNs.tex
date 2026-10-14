@@ -28,23 +28,23 @@
 
 \begin{document}
 
-	{\usebackgroundtemplate{\tikz\node[opacity=0.4,inner sep=0]{\includegraphics[width=\paperwidth,height=\paperheight]{images/header}};}%
-	\begin{frame}[plain]
-		\vspace{0.5cm}
-		\title{\large \begin{spacing}{1.0}Neural Networks for Data Science\end{spacing}\vspace{0.25em}
-			\normalsize \begin{spacing}{1.0}\textbf{Master's Degree in Data Science}\end{spacing}\vspace{0.5em}}
-		\subtitle{\Large \textbf{Convolutional neural networks}}
-		\date{
-			{\includegraphics[scale=0.8]{images/Uniroma1}}
-		}
-		\author{
-			\setlength{\tabcolsep}{2pt}
-			\begin{tabular}{rl}
-				\textbf{Lecturer}: & S. Scardapane \\
-			\end{tabular}
-		}\titlepage
-	\end{frame}
-	}
+{\usebackgroundtemplate{\tikz\node[opacity=0.4,inner sep=0]{\includegraphics[width=\paperwidth,height=\paperheight]{images/header}};}%
+\begin{frame}[plain]
+    \vspace{0.5cm}
+    \title{\large \begin{spacing}{1.0}Neural Networks for Data Science\end{spacing}\vspace{0.25em}
+        \normalsize \begin{spacing}{1.0}\textbf{Master's Degree in Data Science}\end{spacing}\vspace{0.5em}}
+    \subtitle{\Large \textbf{Convolutional neural networks}}
+    \date{
+        {\includegraphics[scale=0.8]{images/Uniroma1}}
+    }
+    \author{
+        \setlength{\tabcolsep}{2pt}
+        \begin{tabular}{rl}
+            \textbf{Lecturer}: & S. Scardapane \\
+        \end{tabular}
+    }\titlepage
+\end{frame}
+}
 
 \part{1}
 
@@ -52,17 +52,17 @@
 \subsection{Why fully-connected layers are not enough}
 
 \begin{frame}{Definition of an image}
-	
-	An \myalert{image} is a $3$-dimensional tensor $\stackunder{X}{\sss (h,w,c)}$, where:
-	%
-	\begin{itemize}
-		\item $h$ is the \textbf{height} of the image (e.g., 512 pixels).
-		\item $w$ is the \textbf{width} of the image (e.g., 1024 pixels).
-		\item $c$ is the number of \textbf{channels} (e.g., $3$ channels for a RGB image, $1$ channel for a greyscale image).
-	\end{itemize}
-	%
-	The first two dimensions have a precise \textit{grid} ordering, while the channels do not have a precise ordering (i.e., we can switch RGB to GBR or BRG with no information loss).
-	
+
+    An \myalert{image} is a $3$-dimensional tensor $\stackunder{X}{\sss (h,w,c)}$, where:
+    %
+    \begin{itemize}
+        \item $h$ is the \textbf{height} of the image (e.g., 512 pixels).
+        \item $w$ is the \textbf{width} of the image (e.g., 1024 pixels).
+        \item $c$ is the number of \textbf{channels} (e.g., $3$ channels for a RGB image, $1$ channel for a greyscale image).
+    \end{itemize}
+    %
+    The first two dimensions have a precise \textit{grid} ordering, while the channels do not have a precise ordering (i.e., we can switch RGB to GBR or BRG with no information loss).
+
 \end{frame}
 
 \begin{frame}{An MLP at every pixel}
@@ -108,23 +108,23 @@
 \end{frame}
 
 \begin{frame}{An example to keep in mind}
-\small
-\setlength{\parskip}{2pt}
-\setlength{\arraycolsep}{7pt}
-\setlength{\abovedisplayskip}{5pt}
-\setlength{\belowdisplayskip}{5pt}
+    \small
+    \setlength{\parskip}{2pt}
+    \setlength{\arraycolsep}{7pt}
+    \setlength{\abovedisplayskip}{5pt}
+    \setlength{\belowdisplayskip}{5pt}
 
-	As a running example to visualize what follows, consider a 1D sequence (think of this as “\textit{4 pixels with a single channel}”):
+    As a running example to visualize what follows, consider a 1D sequence (think of this as “\textit{4 pixels with a single channel}”):
 
-	$$
-	\mathbf{x} = \left[x_1, x_2, x_3, x_4\right]
-	$$
-	
-	In this case, we do not need any reshaping operations, and the previous layer (with $c^\prime = 1$) can be written as:
-	
-	$$
-	\begin{bmatrix} h_1 \\ h_2 \\ h_3 \\ h_4 \end{bmatrix}=\begin{bmatrix}W_{11} & W_{12} & W_{13} & W_{14} \\ W_{21} & W_{22} & W_{23} & W_{24} \\ W_{31} & W_{32} & W_{33} & W_{34} \\ W_{41} & W_{42} & W_{43} & W_{44} \end{bmatrix} \begin{bmatrix} x_1 \\ x_2 \\ x_3 \\ x_4 \end{bmatrix}
-	$$
+    $$
+        \mathbf{x} = \left[x_1, x_2, x_3, x_4\right]
+    $$
+
+    In this case, we do not need any reshaping operations, and the previous layer (with $c^\prime = 1$) can be written as:
+
+    $$
+        \begin{bmatrix} h_1 \\ h_2 \\ h_3 \\ h_4 \end{bmatrix}=\begin{bmatrix}W_{11} & W_{12} & W_{13} & W_{14} \\ W_{21} & W_{22} & W_{23} & W_{24} \\ W_{31} & W_{32} & W_{33} & W_{34} \\ W_{41} & W_{42} & W_{43} & W_{44} \end{bmatrix} \begin{bmatrix} x_1 \\ x_2 \\ x_3 \\ x_4 \end{bmatrix}
+    $$
 
 \end{frame}
 
@@ -163,9 +163,9 @@
     \[
         \idx{H}{i,j,:}
         = \phi\!\left(
-            {\color{darkgreen}\vc{W}^{\top}}\,
-            \shape{\operatorname{vect}(P_k(i,j))}{(s^2c)}
-            + {\color{darkcerulean}\vc{b}}
+        {\color{darkgreen}\vc{W}^{\top}}\,
+        \shape{\operatorname{vect}(P_k(i,j))}{(s^2c)}
+        + {\color{darkcerulean}\vc{b}}
         \right).
     \]
 
@@ -203,7 +203,7 @@
         \widetilde{\vc{x}}
         = \begin{bmatrix}
             {\color{darkcerulean}0} & x_1 & x_2 & x_3 & x_4 & {\color{darkcerulean}0}
-          \end{bmatrix}^{\top}.
+        \end{bmatrix}^{\top}.
     \]
 
     With \myalert{zero padding}, we treat values outside the input as zero.
@@ -226,10 +226,10 @@
         \begin{bmatrix} h_1 \\ h_2 \\ h_3 \\ h_4 \end{bmatrix}
         =
         \begin{bmatrix}
-            {\color{darkgreen}W_1} & {\color{darkgreen}W_2} & {\color{darkgreen}W_3} & 0 & 0 & 0 \\
-            0 & {\color{darkgreen}W_1} & {\color{darkgreen}W_2} & {\color{darkgreen}W_3} & 0 & 0 \\
-            0 & 0 & {\color{darkgreen}W_1} & {\color{darkgreen}W_2} & {\color{darkgreen}W_3} & 0 \\
-            0 & 0 & 0 & {\color{darkgreen}W_1} & {\color{darkgreen}W_2} & {\color{darkgreen}W_3}
+            {\color{darkgreen}W_1} & {\color{darkgreen}W_2} & {\color{darkgreen}W_3} & 0                      & 0                      & 0                      \\
+            0                      & {\color{darkgreen}W_1} & {\color{darkgreen}W_2} & {\color{darkgreen}W_3} & 0                      & 0                      \\
+            0                      & 0                      & {\color{darkgreen}W_1} & {\color{darkgreen}W_2} & {\color{darkgreen}W_3} & 0                      \\
+            0                      & 0                      & 0                      & {\color{darkgreen}W_1} & {\color{darkgreen}W_2} & {\color{darkgreen}W_3}
         \end{bmatrix}
         \begin{bmatrix}
             {\color{darkcerulean}0} \\ x_1 \\ x_2 \\ x_3 \\ x_4 \\ {\color{darkcerulean}0}
@@ -292,15 +292,15 @@
     \[
         \shape{\widetilde{Z}}{(c',hw)}
         = \shape{\vc{W}^{\top}}{(c',s^2c)}\,
-          \shape{U(X)}{(s^2c,hw)}
-          + \vc{b}.
+        \shape{U(X)}{(s^2c,hw)}
+        + \vc{b}.
     \]
 
     \begin{python}[gobble=4,aboveskip=5pt,belowskip=5pt]
-    import torch
-    X = torch.randn(1, 3, 64, 64)  # (B, C, H, W)
-    conv = torch.nn.Conv2d(3, 100, 5, padding=2)
-    Z = conv(X)  # (1, 100, 64, 64)
+        import torch
+        X = torch.randn(1, 3, 64, 64)  # (B, C, H, W)
+        conv = torch.nn.Conv2d(3, 100, 5, padding=2)
+        Z = conv(X)  # (1, 100, 64, 64)
     \end{python}
 
     In practice, \verb+nn.Conv2d+ uses a specialized implementation for the
@@ -315,117 +315,115 @@
 
 % Written by Codex (2026-10-14): minimal corrections following instructor feedback.
 \begin{frame}{Reducing dimensionality}
-	
-	We can define a convolutional block by composing convolutional layers $f_i$, each including its activation function:
-	%
-	$$
-	H = (f_l \circ \ldots \circ f_2 \circ f_1)(X)
-	$$
 
-	With the padding introduced earlier, convolutional blocks can modify the number of channels, but they keep the spatial resolution $(h,w)$ constant. We might want to reduce the resolution in-between blocks, to make the networks faster and more efficient.
-	
-	This is also justified from a signal processing perspective, where \myalert{multi-resolution} filter banks are common.
+    We can define a convolutional block by composing convolutional layers $f_i$, each including its activation function:
+    %
+    $$
+        H = (f_l \circ \ldots \circ f_2 \circ f_1)(X)
+    $$
+
+    With the padding introduced earlier, convolutional blocks can modify the number of channels, but they keep the spatial resolution $(h,w)$ constant. We might want to reduce the resolution in-between blocks, to make the networks faster and more efficient.
+
+    This is also justified from a signal processing perspective, where \myalert{multi-resolution} filter banks are common.
 
 \end{frame}
 
 \begin{frame}[fragile]{Stride}
-	
-	In a convolution with \myalert{stride}, we evaluate every $r$-th position along each spatial axis, where $r$ is the stride parameter.
-	
-	For example, for $r=2$, using zero-based indices, we have:
-	%
-	\[
-		\idx{H}{i,j,:} = \phi(\vc{W}^{\top}\operatorname{vect}(P_k({\color{darkred}2i,2j}))+\vc{b}) \,.
-	\]
-	%
-	With the padding introduced earlier, $H \sim (\lceil h/2\rceil,\lceil w/2\rceil,c')$, which becomes $(h/2,w/2,c')$ when $h$ and $w$ are even.
-	
-	The \verb+nn.Conv2d+ layer we saw before has a \verb+stride+ parameter.
-	
+
+    In a convolution with \myalert{stride}, we evaluate every $r$-th position along each spatial axis, where $r$ is the stride parameter.
+
+    For example, for $r=2$, using zero-based indices, we have:
+    %
+    \[
+        \idx{H}{i,j,:} = \phi(\vc{W}^{\top}\operatorname{vect}(P_k({\color{darkred}2i,2j}))+\vc{b}) \,.
+    \]
+    %
+    With the padding introduced earlier, $H \sim (\lceil h/2\rceil,\lceil w/2\rceil,c')$, which becomes $(h/2,w/2,c')$ when $h$ and $w$ are even.
+
+    The \verb+nn.Conv2d+ layer we saw before has a \verb+stride+ parameter.
+
 \end{frame}
 
 \begin{whiteframe}{Convolution with a larger stride}
-	
-	\vspace{1.5em}
-	\begin{figure}
-		\centering
-		\includegraphics[width=0.95\columnwidth]{images/cnn/source/stride.jpg}
-		\caption{Left figure has stride = 1, right figure has stride = 2. Image source is \url{http://cs231n.github.io/convolutional-networks/}.}
-	\end{figure}
-	
+
+    \vspace{1.5em}
+    \begin{figure}
+        \centering
+        \includegraphics[width=0.95\columnwidth]{images/cnn/source/stride.jpg}
+        \caption{Left figure has stride = 1, right figure has stride = 2. Image source is \url{http://cs231n.github.io/convolutional-networks/}.}
+    \end{figure}
+
 \end{whiteframe}
 
 \begin{frame}{Max-pooling}
-	
-	Alternatively, a \myalert{max-pooling} (or an \myalert{average-pooling}) layer can be used. It computes the maximum (or the average) from small blocks of the input tensor.
-	
-	Differently from convolutional layers, it is common to consider even-dimensional blocks (2x2, 4x4, ...). It acts on each channel separately.
-	
+
+    Alternatively, a \myalert{max-pooling} (or an \myalert{average-pooling}) layer can be used. It computes the maximum (or the average) from small blocks of the input tensor.
+
+    Differently from convolutional layers, it is common to consider even-dimensional blocks (2x2, 4x4, ...). It acts on each channel separately.
+
 \end{frame}
 
 \begin{whiteframe}{Visualization of max-pooling}
-	
-	\vspace{1em}
-	\begin{figure}
-		\centering
-		\includegraphics[width=0.7\columnwidth]{images/cnn/book/max_pooling.pdf}
-		\caption{Visualization of max-pooling on a $4 \times 4$ image with windows of size $2 \times 2$. Note that the maximum operation can be replaced with any differentiable aggregation (e.g., average).}
-	\end{figure}
-	
+
+    \vspace{1em}
+    \begin{figure}
+        \centering
+        \includegraphics[width=0.7\columnwidth]{images/cnn/book/max_pooling.pdf}
+        \caption{Visualization of max-pooling on a $4 \times 4$ image with windows of size $2 \times 2$. Note that the maximum operation can be replaced with any differentiable aggregation (e.g., average).}
+    \end{figure}
+
 \end{whiteframe}
 
 \begin{frame}{Complete architecture of a CNN (1)}
-	
-	A standard CNN for classification is then composed by:
-	%
-	\begin{itemize}
-		\item Interleaving convolutional and pooling layers;
-		\item Flattening (or \myalert{global pooling});
-		\item A classification block.
-	\end{itemize}
 
-	Note: with global pooling, the final layer is roughly \myalert{invariant} to a translation. Image boundaries and downsampling can break exact invariance.
+    A standard CNN for classification is then composed by:
+    %
+    \begin{itemize}
+        \item Interleaving convolutional and pooling layers;
+        \item Flattening (or \myalert{global pooling});
+        \item A classification block.
+    \end{itemize}
 
-	More recent CNNs add many variations on this basic architecture. How to choose the sequence of layers and their hyper-parameters is still an open \textit{model selection} research issue.
+    Note: with global pooling, the final layer is roughly \myalert{invariant} to a translation. Image boundaries and downsampling can break exact invariance.
+
+    More recent CNNs add many variations on this basic architecture. How to choose the sequence of layers and their hyper-parameters is still an open \textit{model selection} research issue.
 
 \end{frame}
 
 \begin{frame}{Complete architecture of a CNN (2)}
-	\setlength{\arraycolsep}{2pt}
-	
-	\begin{equation*}
-	\begin{array}{rclr}
-		\textrm{Block 1:} & \shape{H}{(h',w',c')} = &  (f_l \circ \ldots \circ f_2 \circ f_1)(X) & \text{(\color{darkred}convolutional or pooling layers)} \\
-		\textrm{Block 2a:} & \shape{\vc{h}}{(h'w'c')} = &  \text{vect}(H) & \text{(\color{darkgreen}flattening)} \\
-		\textrm{Block 2b:} & \shape{\vc{h}}{(c')} = & \frac{1}{h'w'}\sum_{i,j} \idx{H}{i,j,:} & \text{(\color{darkgreen}global pooling)} \\
-		\textrm{Block 3:} & \vc{y} = & \text{softmax}(g(\vc{h})) & \text{(\color{blue}e.g., logistic regression)}
-	\end{array}
-	\end{equation*}
-	
+    \setlength{\arraycolsep}{2pt}
+
+    \begin{equation*}
+        \begin{array}{rclr}
+            \textrm{Block 1:}  & \shape{H}{(h',w',c')} =    & (f_l \circ \ldots \circ f_2 \circ f_1)(X) & \text{(\color{darkred}convolutional or pooling layers)} \\
+            \textrm{Block 2a:} & \shape{\vc{h}}{(h'w'c')} = & \text{vect}(H)                            & \text{(\color{darkgreen}flattening)}                    \\
+            \textrm{Block 2b:} & \shape{\vc{h}}{(c')} =     & \frac{1}{h'w'}\sum_{i,j} \idx{H}{i,j,:}   & \text{(\color{darkgreen}global pooling)}                \\
+            \textrm{Block 3:}  & \vc{y} =                   & \text{softmax}(g(\vc{h}))                 & \text{(\color{blue}e.g., logistic regression)}
+        \end{array}
+    \end{equation*}
+
 \end{frame}
 
 \begin{whiteframe}{Example of a simple CNN specification}
-	\setlength{\abovecaptionskip}{5pt}
-	\begin{figure}
-		\centering
-		\includegraphics[width=0.79\columnwidth]{images/cnn/book/CNN_architecture.pdf}
-		\caption{Down-sampling reduces the cost of subsequent layers. Global pooling makes the final classification dimensionality manageable.}
-	\end{figure}
-	
+    \setlength{\abovecaptionskip}{5pt}
+    \begin{figure}
+        \centering
+        \includegraphics[width=0.79\columnwidth]{images/cnn/book/CNN_architecture.pdf}
+        \caption{Down-sampling reduces the cost of subsequent layers. Global pooling makes the final classification dimensionality manageable.}
+    \end{figure}
+
 \end{whiteframe}
 
 \begin{whiteframe}{Designing in blocks}
-	
-	\vspace{1em}
-	\begin{figure}
-		\centering
-		\includegraphics[width=0.8\columnwidth]{images/cnn/book/CNN_blocks.pdf}
-		\caption{When CNNs tends to become deep, it is simpler to reason in repeating \textit{blocks} made of multiple components. This is easy using the layering abstraction.}
-	\end{figure}
-	
-\end{whiteframe}
 
-\subsection{Other notable types of convolutions}
+    \vspace{1em}
+    \begin{figure}
+        \centering
+        \includegraphics[width=0.8\columnwidth]{images/cnn/book/CNN_blocks.pdf}
+        \caption{When CNNs tends to become deep, it is simpler to reason in repeating \textit{blocks} made of multiple components. This is easy using the layering abstraction.}
+    \end{figure}
+
+\end{whiteframe}
 
 % Written by Codex (2026-10-14): approved CNN-to-sequences continuation candidate.
 \begin{frame}{Spatial mixing and channel mixing}
@@ -433,16 +431,15 @@
     \setlength{\abovedisplayskip}{6pt}
     \setlength{\belowdisplayskip}{6pt}
 
-    A $1\times1$ \myalert{pointwise convolution} uses the same channel map
-    at every pixel, as in the positionwise MLP we already discussed.
+    The positionwise MLP we saw earlier is equivalent to a $1\times1$ \myalert{pointwise convolution} (same channel map at every pixel).
 
-    With a \myalert{depthwise convolution}, each channel has its own spatial
+    With a \myalert{depthwise convolution}, each channel has instead its own spatial
     filter. For $K\sim(s,s,c)$ and $s=2k+1$, the layer is:
     \[
         \idx{D}{i,j,a}
         = \phi\!\left(
-            \sum_{u=-k}^{k}\sum_{v=-k}^{k}
-            \idx{K}{u+k,v+k,a}\,\idx{X}{i+u,j+v,a}+b_a
+        \sum_{u=-k}^{k}\sum_{v=-k}^{k}
+        \idx{K}{u+k,v+k,a}\,\idx{X}{i+u,j+v,a}+b_a
         \right).
     \]
 
@@ -471,7 +468,7 @@
     \vspace{1.5em}
     \[
         X\sim(\eqnmarkbox[drawred]{seqlength}{n},
-                \eqnmarkbox[drawgreen]{seqfeatures}{c}).
+        \eqnmarkbox[drawgreen]{seqfeatures}{c}).
     \]
     \annotate[yshift=1em]{above,left}{seqlength}{Length of the sequence}
     \annotate[yshift=1em]{above,right}{seqfeatures}{Features}
@@ -507,20 +504,16 @@
 
 \begin{frame}{Handling text data}
 
-    Text must be preprocessed properly to be handled by a neural network.
-    At the very least we need to perform two basic operations:
+    Text must be preprocessed to be handled by a neural network. Commonly:
+
     \begin{enumerate}
-        \item We \myalert{tokenize} the text to split it into basic units
-            (\myalert{tokens}) that form a sequence.
-        \item We \myalert{embed} each token, converting its integer ID into
-            numerical features usable by a neural network.
+        \item We choose how to split (\myalert{tokenize}) the text, e.g., by word, by character, by byte, by \myalert{subword}, and the maximum number $V$ of unique \myalert{tokens} we can handle (e.g., the $V$ most frequent words). The resulting set of tokens is the \myalert{vocabulary} or \myalert{dictionary}.
+        \item Each token in the text is then converted into a discrete ID $z_i \in \{1,\ldots,V\}$, giving us an integer sequence $\vc{z}\sim(n)$.
+        \item We \myalert{embed} each token ID into a dense vector \textit{embedding} in $\mathbb{R}^d$ via a trainable matrix $\vc{E}\sim(V,d)$ (embedding matrix).
     \end{enumerate}
 
     By the end of this procedure we have a matrix $X\sim(n,d)$ of $n$ tokens,
     each represented by $d$ features.
-
-    We will use ``Check this out'' as a running example, with a simple
-    word-level tokenizer.
 
 \end{frame}
 
@@ -542,20 +535,14 @@
     \setlength{\abovedisplayskip}{7pt}
     \setlength{\belowdisplayskip}{7pt}
 
-    We learn an \myalert{embedding table} $\vc{E}\sim(V,d)$, with one row for each
-    of the $V$ tokens in the vocabulary, shared across positions.
+    For embedding we learn an \myalert{embedding matrix} $\vc{E}\sim(V,d)$, with one row for each of the $V$ tokens in the vocabulary. Embedding element $z_i$ of the sequence is just a row lookup:
 
-    For ``Check this out'', suppose the token IDs are $z=(2,16,3)$. We look up:
     \[
-        \idx{X}{i,:}=\idx{\vc{E}}{z_i,:},
-        \qquad X\sim(3,d).
+        \idx{X}{i,:}=\idx{\vc{E}}{z_i,:}
     \]
 
-    A one-hot token vector would select the same row. In practice, we use a
-    lookup: the IDs are integers, while $\vc{E}$ and $X$ contain floating-point values.
-
-    We initialize the embeddings randomly and train them with the network.
-    They can also reflect biases in the training data.
+    We initialize the embeddings randomly and train them with the network, or take them from some pre-trained model or algorithm.
+    For example, GloVe and Word2Vec were two classic algorithms for this purpose.
 
     \blfootnote{Bolukbasi et al. (2016), \textit{Debiasing word embeddings}, NeurIPS.}
 
@@ -583,7 +570,7 @@
     For $n_1>n_2$, we can build a padded mini-batch:
     \[
         X=\operatorname{stack}\!\left(
-            X_1,\begin{bmatrix}X_2\\\vc{0}\end{bmatrix}
+        X_1,\begin{bmatrix}X_2\\\vc{0}\end{bmatrix}
         \right),
         \qquad X\sim(2,n_1,d).
     \]
@@ -605,13 +592,13 @@
     features $H\sim(n,c')$. We can use them in two ways:
     \begin{itemize}
         \item For \myalert{sequence classification}, we pool over the valid
-            positions and apply a classifier. We obtain one prediction for the
-            whole text, such as its topic or sentiment.
+              positions and apply a classifier. We obtain one prediction for the
+              whole text, such as its topic or sentiment.
         \item For \myalert{next-token prediction}, we keep the positions and
-            apply the same vocabulary classifier at each one:
-            \[
-                \vc{p}_i=\operatorname{softmax}(g(\idx{H}{i,:}))\sim(V).
-            \]
+              apply the same vocabulary classifier at each one:
+              \[
+                  \vc{p}_i=\operatorname{softmax}(g(\idx{H}{i,:}))\sim(V).
+              \]
     \end{itemize}
 
     At position $i$, $\vc{p}_i$ predicts token $z_{i+1}$. Which input positions
@@ -647,8 +634,8 @@
     We train on a \myalert{shifted target}. For our three-token text:
     \[
         \begin{array}{rcl}
-            \text{Input:} & \texttt{Check}\quad\texttt{this} & (2,16)\\
-            \text{Target:} & \texttt{this}\quad\texttt{out} & (16,3)
+            \text{Input:}  & \texttt{Check}\quad\texttt{this} & (2,16) \\
+            \text{Target:} & \texttt{this}\quad\texttt{out}   & (16,3)
         \end{array}
     \]
 
@@ -656,7 +643,7 @@
     position:
     \[
         \mathcal{L}=-\frac{1}{n}\sum_{i=0}^{n-1}
-            \log\idx{\vc{p}_i}{z_{i+1}}.
+        \log\idx{\vc{p}_i}{z_{i+1}}.
     \]
 
     During training, we provide the true input tokens (\myalert{teacher forcing}).
@@ -709,11 +696,11 @@
 \end{whiteframe}
 
 \begin{frame}{Further readings}
-	
-	\begin{itemize}
-		\item \textbf{Chapter 7} of the book.
-	\end{itemize}
-	
+
+    \begin{itemize}
+        \item \textbf{Chapter 7} of the book.
+    \end{itemize}
+
 \end{frame}
 
 \end{document}
