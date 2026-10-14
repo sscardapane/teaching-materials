@@ -60,7 +60,8 @@ course** builds every deck of the active file's course; **All NN and NNDS
 decks** builds everything. All three write to `build/editor/courses/<course>/`
 with SyncTeX, so View and source/PDF navigation work for every deck, and a PDF
 already open in a viewer tab refreshes. The build output prints each PDF with
-its count of overfull vertical boxes, a quick hint of which decks to inspect.
+its count of overfull vertical boxes, a quick hint of which decks to inspect. It then lists overflows whose source line is in `shared/`, naming the course
+where the shared slide does not fit.
 
 The extension's default pdfLaTeX recipe cannot compile the NNDS template because
 it uses `fontspec`. If VS Code was already open, reload its window to pick up the

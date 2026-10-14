@@ -6,6 +6,13 @@ The old course repositories are compatibility snapshots, not authoring targets.
 
 - Edit shared linear-model and MLP content in `shared/slides/`; keep course
   notation, branding, optional content and layout choices in `courses/<course>/`.
+- Colors, notation helpers and the card styles used by shared slides live once
+  in `shared/style/content.tex`, loaded by both courses. Never redefine them in a
+  course file; course themes own only header, footer, title page, fonts,
+  `\myalert` and where `\SlideSource` text goes.
+- After editing anything in `shared/`, run `python3 scripts/build.py all` and
+  fix every entry under "Shared slides that overflow" so the slide fits in both
+  courses.
 - Preserve joint NN authorship, NN-only additions and source attribution.
 - For NNDS narrative revisions, read `docs/NNDS_AUTHORING.md`. It describes
   instructor review, notation and visual checks; migration is not content approval.

@@ -1,4 +1,5 @@
 % Packages
+\input{../../shared/style/content.tex}
 \usepackage{mathtools}
 \usepackage{hyperref}
 \usepackage{setspace}
@@ -9,9 +10,6 @@
 \usepackage[compatibility=false]{caption}
 \usepackage[framemethod=tikz]{mdframed}
 
-% Colored boxes
-\usepackage{tcolorbox}
-\tcbsetforeverylayer{autoparskip} % Removes unwanted vertical space
 
 % Theme
 \usetheme{metropolis}
@@ -84,10 +82,6 @@
 \setbeamercolor{lowercolred}{fg=black,bg=red!10}
 \setbeamercolor{uppercolblue}{fg=white,bg=blue!35}
 \setbeamercolor{lowercolblue}{fg=black,bg=blue!10}
-\definecolor{darkred}{rgb}{0.55, 0.0, 0.0}
-\definecolor{darkpastelblue}{rgb}{0.47, 0.62, 0.8}
-\definecolor{darkcerulean}{rgb}{0.03, 0.27, 0.49}
-\definecolor{darkgreen}{rgb}{0.0, 0.55, 0.0}
 \definecolor{deepblue}{rgb}{0,0,0.5}
 \definecolor{deepred}{rgb}{0.6,0,0}
 \definecolor{deepgreen}{rgb}{0,0.5,0}
@@ -100,12 +94,9 @@
 \def\stacktype{L}
 
 % Mathematical commands
-\newcommand{\vc}[1]{\boldsymbol{\mathbf{#1}}}
 \newcommand{\pr}[1]{{#1\,}'}
 \newcommand{\idx}[2]{{\color{darkpastelblue}[}#1{\color{darkpastelblue}]_{#2}}}
 \newcommand{\shape}[2]{\stackunder{#1}{\sss #2}}
-\DeclareMathOperator*{\argmax}{arg\,max}
-\DeclareMathOperator*{\argmin}{arg\,min}
 
 % Style commands
 \newcommand{\myalert}[1]{{\color{darkred}\textbf{#1}}}
@@ -124,6 +115,10 @@
 
 \setbeamerfont{frametitle}{size=\normalsize}
 \setbeamertemplate{frametitle}[default][right]
+% Slimmer header, close to NN's share of the slide height (Simone, 2026-10-14).
+\makeatletter
+\patchcmd{\beamer@@tmpl@frametitle}{sep=0.3cm}{sep=0.2cm}{}{\PackageWarning{style}{frametitle padding not patched}}
+\makeatother
 {
 }
 %\setbeamercolor{frametitle}{fg=white,bg=black!75}
@@ -193,6 +188,3 @@
 	}
 	\begin{mdframed}[]\relax%
 		\label{#2}}{\end{mdframed}}
-
-% Shared content names each box group; the course controls its height.
-\tcbset{courseheight/.style 2 args={height=#2}}

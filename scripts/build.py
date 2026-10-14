@@ -5,6 +5,7 @@ import os
 import json
 import shutil
 from pathlib import Path
+import re
 import subprocess
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -34,13 +35,19 @@ def main():
             selected = [(course, name) for course, name in selected if course == matches[0][0]]
         else:
             selected = matches
+    shared = []
     for course, name in selected:
         outdir = args.outdir_base / course if args.outdir_base else args.outdir
         output = build(course, name, outdir=outdir, synctex=args.synctex)
+        shared += [(course, name, *warning) for warning in shared_overflows(output.with_suffix('.log'))]
         if args.export:
             destination = ROOT / 'pdf' / course
             destination.mkdir(parents=True, exist_ok=True)
             shutil.copy2(output, destination / output.name)
+    if shared:
+        print('\nShared slides that overflow (fix them for both courses):')
+        for course, name, path, line, points in shared:
+            print(f'  {path}:{line}  {points:.1f}pt too high in {course}/{name}')
 
 
 def build(course, name, *, outdir=None, synctex=False):
@@ -49,6 +56,7 @@ def build(course, name, *, outdir=None, synctex=False):
     output.mkdir(parents=True, exist_ok=True)
     env = os.environ.copy()
     env.pop('PROJECT_ROOT', None)
+    env['max_print_line'] = '100000'  # unwrapped log lines, so file names stay parseable
     command = ['latexmk', '-norc', engine, '-interaction=nonstopmode',
                '-halt-on-error', '-file-line-error', '-bibtex-', '-recorder',
                f'-outdir={output}', f'{name}.tex']
@@ -62,9 +70,34 @@ def build(course, name, *, outdir=None, synctex=False):
         print(log.read_text()[-6000:])
         raise SystemExit(result.returncode)
     pdf = output / f'{name}.pdf'
-    overfull = (output / f'{name}.log').read_text(errors='replace').count('Overfull \\vbox')
+    log_file = output / f'{name}.log'
+    overfull = log_file.read_text(errors='replace').count('Overfull \\vbox') if log_file.exists() else 0
     print(f'{pdf}  ({overfull} overfull vbox warnings)' if overfull else pdf)
     return pdf
+
+
+def shared_overflows(log, threshold=1.0):
+    """Overfull vertical boxes whose source line is in shared/, from the log's file stack."""
+    stack, found = [], []
+    if not log.exists():
+        return found
+    for text in log.read_text(errors='replace').splitlines():
+        match = re.match(r'Overfull \\vbox \(([\d.]+)pt too high\) detected at line (\d+)', text)
+        if match:
+            current = next((path for path in reversed(stack) if path), '')
+            points, line = float(match[1]), int(match[2])
+            if '/shared/' in current and points >= threshold:
+                found.append((Path(current).resolve().relative_to(ROOT), line, points))
+        for token in re.finditer(r'\((\S*)|\)', text):
+            if token[0] == ')':
+                if stack:
+                    stack.pop()
+            else:
+                name = token[1].rstrip(')')
+                stack.append(name if name.endswith('.tex') else None)
+                if token[1].endswith(')'):
+                    stack.pop()
+    return found
 
 
 if __name__ == '__main__':
