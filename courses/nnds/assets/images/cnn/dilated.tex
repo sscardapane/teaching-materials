@@ -1,0 +1,37 @@
+% Editable stack of causal dilated convolutions (kernel size 2, dilations
+% 1, 2, 4), highlighting the receptive field of the last output.
+% Written by Claude (2026-10-14).
+\begingroup
+\begin{tikzpicture}[x=1cm,y=1cm,
+        unit/.style={circle,minimum size=0.42cm,inner sep=0pt,line width=0.8pt},
+        idle/.style={unit,draw=drawgray!60,fill=white},
+        used/.style={unit,draw=drawblue,fill=drawblue_l},
+        tap/.style={drawblue,line width=1.1pt}]
+    \def\dx{0.95}
+    \def\dy{0.78}
+    % every unit, idle by default
+    \foreach \l in {0,...,3}{
+        \foreach \t in {0,...,7}{
+            \node[idle] (u\l-\t) at (\dx*\t,\dy*\l) {};
+        }
+    }
+    % the computation tree of the last output: layer l reads t and t - 2^(l-1)
+    \foreach \l/\d/\ts in {3/4/{7}, 2/2/{7,3}, 1/1/{7,5,3,1}}{
+        \pgfmathtruncatemacro{\below}{\l-1}
+        \foreach \t in \ts{
+            \pgfmathtruncatemacro{\back}{\t-\d}
+            \draw[tap] (u\below-\t) -- (u\l-\t);
+            \draw[tap] (u\below-\back) -- (u\l-\t);
+        }
+    }
+    \foreach \l/\ts in {3/{7}, 2/{7,3}, 1/{7,5,3,1}, 0/{0,...,7}}{
+        \foreach \t in \ts{ \node[used] at (u\l-\t) {}; }
+    }
+    % labels
+    \node[anchor=east,font=\small] at (-0.35,0) {Input};
+    \node[anchor=east,font=\small] at (-0.35,3*\dy) {Output};
+    \foreach \l/\d in {1/1,2/2,3/4}{
+        \node[anchor=west,font=\small,text=drawgray] at (7*\dx+0.4,\dy*\l) {$d=\d$};
+    }
+\end{tikzpicture}
+\endgroup

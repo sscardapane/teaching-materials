@@ -1,0 +1,38 @@
+% Editable stride comparison on the 1D running example (kernel size 3, one
+% zero of padding at each end). Written by Claude (2026-10-14), replacing the
+% cs231n screenshot.
+\begingroup
+% #1 x-shift, #2 stride, #3 title
+\newcommand{\cnnStridePanel}[3]{%
+    \begin{scope}[shift={(#1,0)}]
+        \node[font=\small\bfseries] at (2.125,2.75) {#3};
+        % padded input
+        \foreach \p/\lab in {0/0,1/x_0,2/x_1,3/x_2,4/x_3,5/0}{
+            \ifnum\p=0
+                \node[cnncell,draw=drawgray,fill=white,dashed,text=drawgray] (in\p) at (0.85*\p,0) {$\lab$};
+            \else\ifnum\p=5
+                \node[cnncell,draw=drawgray,fill=white,dashed,text=drawgray] (in\p) at (0.85*\p,0) {$\lab$};
+            \else
+                \node[cnncell,draw=drawblue,fill=drawblue_l] (in\p) at (0.85*\p,0) {$\lab$};
+            \fi\fi
+        }
+        % outputs: one for every #2-th input position
+        \pgfmathtruncatemacro{\nout}{4/#2-1}
+        \foreach \o in {0,...,\nout}{
+            \pgfmathtruncatemacro{\c}{#2*\o+1}
+            \node[cnncell,draw=drawgreen,fill=drawgreen_l] (out\o) at (0.85*\c,1.7) {$y_{\o}$};
+            \foreach \d in {-1,0,1}{
+                \pgfmathtruncatemacro{\src}{\c+\d}
+                \draw[drawgray,line width=0.7pt] (in\src.north) -- (out\o.south);
+            }
+        }
+    \end{scope}
+}
+
+\begin{tikzpicture}[x=1cm,y=1cm,
+        cnncell/.style={minimum width=0.66cm,minimum height=0.66cm,inner sep=0pt,
+            line width=0.9pt,rounded corners=1.5pt,font=\small}]
+    \cnnStridePanel{0}{1}{Stride $1$: four outputs}
+    \cnnStridePanel{6.2}{2}{Stride $2$: two outputs}
+\end{tikzpicture}
+\endgroup

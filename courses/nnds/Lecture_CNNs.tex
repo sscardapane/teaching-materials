@@ -5,6 +5,8 @@
 \usetikzlibrary{arrows.meta,calc}
 \graphicspath{{assets/}{../../shared/assets/}}
 \newcommand*{\boldone}{\text{\usefont{U}{bbold}{m}{n}1}}
+% Causal window: the s positions ending at t (Written by Claude, 2026-10-14).
+\newcommand{\causalP}{\overleftarrow{P}}
 
 \usepackage{annotate-equations}
 \usepackage{subfig}
@@ -17,7 +19,7 @@
     \vspace{0.5cm}
     \title{\large \begin{spacing}{1.0}Neural Networks for Data Science\end{spacing}\vspace{0.25em}
         \normalsize \begin{spacing}{1.0}\textbf{Master's Degree in Data Science}\end{spacing}\vspace{0.5em}}
-    \subtitle{\Large \textbf{Convolutional neural networks}}
+    \subtitle{\Large \textbf{Convolutional networks: from images to text generation}}
     \date{
         {\includegraphics[scale=0.8]{images/Uniroma1}}
     }
@@ -32,20 +34,23 @@
 
 \part{1}
 
-\section{Introduction}
-\subsection{Why fully-connected layers are not enough}
+% Written by Claude (2026-10-14): final CNN refresh following Simone's design
+% brief (card system, H/W/C and T/D notation, zero-based indexing, four
+% subsections, merged slides and the four approved additions).
+\section{Convolutional neural networks}
+\subsection{Images and MLPs}
 
 \begin{frame}{Definition of an image}
 
-    An \myalert{image} is a $3$-dimensional tensor $\stackunder{X}{\sss (h,w,c)}$, where:
+    An \myalert{image} is a tensor $X\sim(H,W,C)$, where:
     %
     \begin{itemize}
-        \item $h$ is the \textbf{height} of the image (e.g., 512 pixels).
-        \item $w$ is the \textbf{width} of the image (e.g., 1024 pixels).
-        \item $c$ is the number of \textbf{channels} (e.g., $3$ channels for a RGB image, $1$ channel for a greyscale image).
+        \item $H$ is the \textbf{height} of the image (e.g., 512 pixels);
+        \item $W$ is the \textbf{width} of the image (e.g., 1024 pixels);
+        \item $C$ is the number of \textbf{channels} (e.g., $3$ channels for an RGB image, $1$ channel for a greyscale image).
     \end{itemize}
     %
-    The first two dimensions have a precise \textit{grid} ordering, while the channels do not have a precise ordering (i.e., we can switch RGB to GBR or BRG with no information loss).
+    The first two axes have a precise \textit{grid} ordering, while the channels do not have a precise ordering (i.e., we can switch RGB to GBR or BRG with no information loss).
 
 \end{frame}
 
@@ -53,8 +58,8 @@
 
     As we saw for sequences, we can apply the same MLP at every pixel:
     \[
-        \idx{H}{i,j,:} = f_{\boldsymbol{\theta}}(\idx{X}{i,j,:}),
-        \qquad H \sim (h,w,c').
+        \idx{Y}{i,j,:} = f_{\boldsymbol{\theta}}(\idx{X}{i,j,:}),
+        \qquad Y \sim (H,W,C').
     \]
 
     Each pixel is processed independently. The MLP mixes channels, but does
@@ -72,16 +77,16 @@
     A simple way to process the whole image is to \myalert{vectorize} it,
     apply a fully-connected layer, and reshape the output:
     \[
-        \shape{\vc{x}}{(hwc)} = \operatorname{vect}(X),
+        \shape{\vc{x}}{(HWC)} = \operatorname{vect}(X),
         \qquad
-        H = \operatorname{unvect}\!\left(\phi(\vc{W}\vc{x}+\vc{b})\right).
+        Y = \operatorname{unvect}\!\left(\phi(\vc{W}\vc{x}+\vc{b})\right).
     \]
 
-    We can choose the output shape to be $(h,w,c')$, so that the layer can
+    We can choose the output shape to be $(H,W,C')$, so that the layer can
     be composed with other image layers.
 
     Now every output pixel can depend on the entire image. However, the
-    weight matrix has $hwc \cdot hwc'$ parameters. Nothing in this layer
+    weight matrix has $HWC \cdot HWC'$ parameters. Nothing in this layer
     forces it to use the spatial structure of the image.
 
 \end{frame}
@@ -92,40 +97,32 @@
 \end{frame}
 
 \begin{frame}{An example to keep in mind}
-    \small
-    \setlength{\parskip}{2pt}
     \setlength{\arraycolsep}{7pt}
-    \setlength{\abovedisplayskip}{5pt}
-    \setlength{\belowdisplayskip}{5pt}
 
     As a running example to visualize what follows, consider a 1D sequence (think of this as “\textit{4 pixels with a single channel}”):
+    \[
+        \vc{x} = \left[x_0, x_1, x_2, x_3\right]
+    \]
 
-    $$
-        \mathbf{x} = \left[x_1, x_2, x_3, x_4\right]
-    $$
-
-    In this case, we do not need any reshaping operations, and the previous layer (with $c^\prime = 1$) can be written as:
-
-    $$
-        \begin{bmatrix} h_1 \\ h_2 \\ h_3 \\ h_4 \end{bmatrix}=\begin{bmatrix}W_{11} & W_{12} & W_{13} & W_{14} \\ W_{21} & W_{22} & W_{23} & W_{24} \\ W_{31} & W_{32} & W_{33} & W_{34} \\ W_{41} & W_{42} & W_{43} & W_{44} \end{bmatrix} \begin{bmatrix} x_1 \\ x_2 \\ x_3 \\ x_4 \end{bmatrix}
-    $$
+    In this case, we do not need any reshaping operations, and the previous layer (with $C' = 1$) can be written as:
+    \[
+        \begin{bmatrix} y_0 \\ y_1 \\ y_2 \\ y_3 \end{bmatrix}=\begin{bmatrix}W_{00} & W_{01} & W_{02} & W_{03} \\ W_{10} & W_{11} & W_{12} & W_{13} \\ W_{20} & W_{21} & W_{22} & W_{23} \\ W_{30} & W_{31} & W_{32} & W_{33} \end{bmatrix} \begin{bmatrix} x_0 \\ x_1 \\ x_2 \\ x_3 \end{bmatrix}
+    \]
 
 \end{frame}
 
-\section{Convolutional neural networks}
 \subsection{Convolutional layers}
 
-% Written by Codex (2026-10-13): convolutional-layers review candidate.
 \begin{whiteframe}{Local neighborhoods}
 
     \begin{columns}[c,onlytextwidth]
         \begin{column}{0.54\textwidth}
             With a \myalert{kernel size} $s=2k+1$, we take the $s \times s$
-            neighborhood centered at $(i,j)$, including all $c$ channels.
+            neighborhood centered at $(i,j)$, including all $C$ channels.
 
             We write this local tensor as:
             \[
-                P_k(i,j) \sim (s,s,c).
+                P_k(i,j) \sim (s,s,C).
             \]
         \end{column}
         \begin{column}{0.42\textwidth}
@@ -135,8 +132,8 @@
     \end{columns}
 
     \vspace{0.5em}
-    \begin{tcolorbox}
-        A layer is \myalert{local} if $\idx{H}{i,j,:}$ depends only on $P_k(i,j)$.
+    \begin{tcolorbox}[nndsblue]
+        A layer is \myalert{local} if $\idx{Y}{i,j,:}$ depends only on $P_k(i,j)$.
     \end{tcolorbox}
 
 \end{whiteframe}
@@ -145,18 +142,18 @@
 
     We apply the same affine map and activation to every neighborhood:
     \[
-        \idx{H}{i,j,:}
+        \idx{Y}{i,j,:}
         = \phi\!\left(
         {\color{darkgreen}\vc{W}^{\top}}\,
-        \shape{\operatorname{vect}(P_k(i,j))}{(s^2c)}
+        \shape{\operatorname{vect}(P_k(i,j))}{(s^2C)}
         + {\color{darkcerulean}\vc{b}}
         \right).
     \]
 
-    We share the weights $\vc{W} \sim (s^2c,c')$ and bias $\vc{b} \sim (c')$
+    We share the weights $\vc{W} \sim (s^2C,C')$ and bias $\vc{b} \sim (C')$
     \textbf{across all locations}.
 
-    This is a \myalert{convolutional layer}. It has $s^2cc' + c'$ parameters,
+    This is a \myalert{convolutional layer}. It has $s^2CC' + C'$ parameters,
     regardless of the image height and width.
 
     The convolution is the affine map inside the parentheses. We apply
@@ -167,12 +164,43 @@
 \begin{whiteframe}{Filters and output channels}
 
     Each column of $\vc{W}$ defines a \myalert{filter}, producing one output
-    channel. A spatial slice $\idx{H}{:,:,a}$ is an \myalert{activation map}.
+    channel. A spatial slice $\idx{Y}{:,:,a}$ is an \myalert{activation map}.
 
     \begin{figure}
         \centering
         \includegraphics[width=0.7\columnwidth]{images/cnn/source/Convolutive_layer.pdf}
     \end{figure}
+
+\end{whiteframe}
+
+% Figure: assets/images/cnn/filters/make_figures.py
+\begin{whiteframe}{What filters learn}
+    \setlength{\parskip}{4pt}
+    \setlength{\abovedisplayskip}{6pt}
+    \setlength{\belowdisplayskip}{6pt}
+
+    \begin{columns}[c,onlytextwidth]
+        \begin{column}{0.42\textwidth}
+            A filter responds where its local pattern appears. With one channel
+            and $s=3$, this filter detects vertical edges, and its transpose
+            horizontal ones:
+            \[
+                K_{\text{v}}=\begin{bmatrix*}[r]-1&0&1\\-2&0&2\\-1&0&1\end{bmatrix*}.
+            \]
+        \end{column}
+        \begin{column}{0.55\textwidth}
+            \centering
+            \includegraphics[width=\linewidth]{images/cnn/filters/edge_filters.pdf}
+        \end{column}
+    \end{columns}
+
+    \medskip
+    A trained CNN learns similar edge and color detectors in its first layer.
+    Later layers combine them into textures, parts and objects: a
+    \myalert{feature hierarchy}.
+
+    \SlideSource{Outputs in absolute value; image: NASA, via scikit-image.
+        Zeiler and Fergus (2014), \href{https://arxiv.org/abs/1311.2901}{\textit{Visualizing and Understanding Convolutional Networks}}, ECCV.}
 
 \end{whiteframe}
 
@@ -186,13 +214,13 @@
     \[
         \widetilde{\vc{x}}
         = \begin{bmatrix}
-            {\color{darkcerulean}0} & x_1 & x_2 & x_3 & x_4 & {\color{darkcerulean}0}
+            {\color{darkcerulean}0} & x_0 & x_1 & x_2 & x_3 & {\color{darkcerulean}0}
         \end{bmatrix}^{\top}.
     \]
 
     With \myalert{zero padding}, we treat values outside the input as zero.
 
-    \begin{tcolorbox}
+    \begin{tcolorbox}[nndsgreen]
         For an odd kernel size $s$, we add $k=(s-1)/2$ zeros at each end to
         preserve the input length when evaluating every position.
     \end{tcolorbox}
@@ -207,16 +235,16 @@
 
     We apply a size-$3$ kernel to the padded sequence, without bias or activation:
     \[
-        \begin{bmatrix} h_1 \\ h_2 \\ h_3 \\ h_4 \end{bmatrix}
+        \begin{bmatrix} y_0 \\ y_1 \\ y_2 \\ y_3 \end{bmatrix}
         =
         \begin{bmatrix}
-            {\color{darkgreen}W_1} & {\color{darkgreen}W_2} & {\color{darkgreen}W_3} & 0                      & 0                      & 0                      \\
-            0                      & {\color{darkgreen}W_1} & {\color{darkgreen}W_2} & {\color{darkgreen}W_3} & 0                      & 0                      \\
-            0                      & 0                      & {\color{darkgreen}W_1} & {\color{darkgreen}W_2} & {\color{darkgreen}W_3} & 0                      \\
-            0                      & 0                      & 0                      & {\color{darkgreen}W_1} & {\color{darkgreen}W_2} & {\color{darkgreen}W_3}
+            {\color{darkgreen}W_0} & {\color{darkgreen}W_1} & {\color{darkgreen}W_2} & 0                      & 0                      & 0                      \\
+            0                      & {\color{darkgreen}W_0} & {\color{darkgreen}W_1} & {\color{darkgreen}W_2} & 0                      & 0                      \\
+            0                      & 0                      & {\color{darkgreen}W_0} & {\color{darkgreen}W_1} & {\color{darkgreen}W_2} & 0                      \\
+            0                      & 0                      & 0                      & {\color{darkgreen}W_0} & {\color{darkgreen}W_1} & {\color{darkgreen}W_2}
         \end{bmatrix}
         \begin{bmatrix}
-            {\color{darkcerulean}0} \\ x_1 \\ x_2 \\ x_3 \\ x_4 \\ {\color{darkcerulean}0}
+            {\color{darkcerulean}0} \\ x_0 \\ x_1 \\ x_2 \\ x_3 \\ {\color{darkcerulean}0}
         \end{bmatrix}.
         \label{eq:convolution_example}
     \]
@@ -233,7 +261,7 @@
     wherever it appears in the image.
 
     We write $T_{\delta}$ for a shift by $\delta$ pixels.
-    \begin{tcolorbox}
+    \begin{tcolorbox}[nndsblue]
         A layer $f$ is \myalert{translation equivariant} if shifting the
         input shifts its output by the same amount:
         \[
@@ -251,8 +279,8 @@
 
     We combine information across larger regions by stacking local layers.
 
-    \begin{tcolorbox}
-        The \myalert{receptive field} of $\idx{H}{i,j,:}$ is the region
+    \begin{tcolorbox}[nndsblue]
+        The \myalert{receptive field} of $\idx{Y}{i,j,:}$ is the region
         of the input that can affect that output.
     \end{tcolorbox}
 
@@ -269,46 +297,56 @@
 
 \begin{frame}[fragile]{Implementation}
     \setlength{\parskip}{3pt}
-    \setlength{\abovedisplayskip}{7pt}
-    \setlength{\belowdisplayskip}{7pt}
+    \setlength{\abovedisplayskip}{6pt}
+    \setlength{\belowdisplayskip}{6pt}
 
     We can collect flattened, padded neighborhoods as columns of $U(X)$:
     \[
-        \shape{\widetilde{Z}}{(c',hw)}
-        = \shape{\vc{W}^{\top}}{(c',s^2c)}\,
-        \shape{U(X)}{(s^2c,hw)}
+        \shape{\widetilde{Z}}{(C',HW)}
+        = \shape{\vc{W}^{\top}}{(C',s^2C)}\,
+        \shape{U(X)}{(s^2C,HW)}
         + \vc{b}.
     \]
 
-    \begin{python}[gobble=4,aboveskip=5pt,belowskip=5pt]
+    \begin{python}[gobble=4,aboveskip=4pt,belowskip=4pt]
         import torch
         X = torch.randn(1, 3, 64, 64)  # (B, C, H, W)
         conv = torch.nn.Conv2d(3, 100, 5, padding=2)
         Z = conv(X)  # (1, 100, 64, 64)
     \end{python}
 
-    In practice, \verb+nn.Conv2d+ uses a specialized implementation for the
-    hardware, so we do not construct $U(X)$ explicitly. We will see more in the lab.
+    PyTorch is \myalert{channels-first}, $(B,C,H,W)$, while our math is
+    channels-last, $(H,W,C)$. In practice, \verb+nn.Conv2d+ uses a specialized
+    implementation for the hardware, so we do not construct $U(X)$ explicitly.
 
     \SlideSource{\href{https://docs.pytorch.org/docs/stable/generated/torch.nn.Unfold.html}{PyTorch: Unfold}
         and \href{https://docs.nvidia.com/deeplearning/performance/dl-performance-convolutional/index.html}{NVIDIA: convolution implementations}.}
 
 \end{frame}
 
-\subsection{Defining the network}
+\subsection{Building a CNN}
 
-% Written by Codex (2026-10-14): minimal corrections following instructor feedback.
 \begin{frame}{Reducing dimensionality}
+    \setlength{\parskip}{3pt}
+    \setlength{\abovedisplayskip}{5pt}
+    \setlength{\belowdisplayskip}{5pt}
 
     We can define a convolutional block by composing convolutional layers $f_i$, each including its activation function:
-    %
-    $$
-        H = (f_l \circ \ldots \circ f_2 \circ f_1)(X)
-    $$
+    \[
+        Y = (f_L \circ \cdots \circ f_2 \circ f_1)(X).
+    \]
 
-    With the padding introduced earlier, convolutional blocks can modify the number of channels, but they keep the spatial resolution $(h,w)$ constant. We might want to reduce the resolution in-between blocks, to make the networks faster and more efficient.
+    With the padding introduced earlier, these blocks can change the number of
+    channels, but they keep the resolution $(H,W)$. We often halve it between blocks.
 
-    This is also justified from a signal processing perspective, where \myalert{multi-resolution} filter banks are common.
+    \begin{tcolorbox}[nndsgreen]
+        After we halve the resolution, every later layer grows the receptive
+        field \myalert{twice as fast}: $2(s-1)$ input pixels per layer instead
+        of $s-1$.
+    \end{tcolorbox}
+
+    The following layers also process four times fewer pixels, so they are
+    cheaper to run.
 
 \end{frame}
 
@@ -316,13 +354,13 @@
 
     In a convolution with \myalert{stride}, we evaluate every $r$-th position along each spatial axis, where $r$ is the stride parameter.
 
-    For example, for $r=2$, using zero-based indices, we have:
+    For example, for $r=2$, we have:
     %
     \[
-        \idx{H}{i,j,:} = \phi(\vc{W}^{\top}\operatorname{vect}(P_k({\color{darkred}2i,2j}))+\vc{b}) \,.
+        \idx{Y}{i,j,:} = \phi(\vc{W}^{\top}\operatorname{vect}(P_k({\color{darkred}2i,2j}))+\vc{b}) \,.
     \]
     %
-    With the padding introduced earlier, $H \sim (\lceil h/2\rceil,\lceil w/2\rceil,c')$, which becomes $(h/2,w/2,c')$ when $h$ and $w$ are even.
+    With the padding introduced earlier, $Y \sim (\lceil H/2\rceil,\lceil W/2\rceil,C')$, which becomes $(H/2,W/2,C')$ when $H$ and $W$ are even.
 
     The \verb+nn.Conv2d+ layer we saw before has a \verb+stride+ parameter.
 
@@ -330,97 +368,152 @@
 
 \begin{whiteframe}{Convolution with a larger stride}
 
-    \vspace{1.5em}
-    \begin{figure}
-        \centering
-        \includegraphics[width=0.95\columnwidth]{images/cnn/source/stride.jpg}
-        \caption{Left figure has stride = 1, right figure has stride = 2. Image source is \url{http://cs231n.github.io/convolutional-networks/}.}
-    \end{figure}
+    On our running example, a size-$3$ kernel with one zero of padding at each
+    end:
+
+    \vspace{1.2em}
+    \begin{center}
+        \scalebox{1.15}{\input{assets/images/cnn/stride.tex}}
+    \end{center}
+
+    \vspace{0.8em}
+    With stride $2$, we keep every other output of the stride-$1$ layer.
 
 \end{whiteframe}
 
-\begin{frame}{Max-pooling}
+\begin{whiteframe}{Max-pooling}
+    \setlength{\parskip}{5pt}
 
-    Alternatively, a \myalert{max-pooling} (or an \myalert{average-pooling}) layer can be used. It computes the maximum (or the average) from small blocks of the input tensor.
+    \begin{columns}[c,onlytextwidth]
+        \begin{column}{0.5\textwidth}
+            A \myalert{max-pooling} layer takes the maximum over small blocks
+            of the input. With $2\times2$ blocks:
+            \[
+                \idx{Y}{i,j,a}=\max_{u,v\in\{0,1\}}\idx{X}{2i+u,\,2j+v,\,a}.
+            \]
 
-    Differently from convolutional layers, it is common to consider even-dimensional blocks (2x2, 4x4, ...). It acts on each channel separately.
+            It acts on each channel separately and has no parameters. With the
+            mean instead of the maximum, we obtain \myalert{average pooling}.
+
+            Unlike convolutions, we usually take even block sizes ($2\times2$,
+            $4\times4$, \ldots).
+        \end{column}
+        \begin{column}{0.45\textwidth}
+            \centering
+            \includegraphics[width=\linewidth]{images/cnn/book/max_pooling.pdf}
+        \end{column}
+    \end{columns}
+
+\end{whiteframe}
+
+\begin{frame}{Complete architecture of a CNN}
+    \setlength{\parskip}{2pt}
+
+    A standard CNN for classification has three parts, with $Z\sim(H',W',C')$
+    and $\vc{h}\sim(C')$:
+
+    \begin{columns}[T,onlytextwidth]
+        \begin{column}{0.32\textwidth}
+            \begin{tcolorbox}[nndsblue,courseheight={cnn-arch}{}]
+                \textbf{Backbone:} convolutional and pooling layers.
+                \[
+                    Z=(f_L\circ\cdots\circ f_1)(X)
+                \]
+            \end{tcolorbox}
+        \end{column}
+        \begin{column}{0.32\textwidth}
+            \begin{tcolorbox}[nndsblue,courseheight={cnn-arch}{}]
+                \textbf{Head:} \myalert{global pooling} (or flattening).
+                \[
+                    \vc{h}=\tfrac{1}{H'W'}\textstyle\sum_{i,j}\idx{Z}{i,j,:}
+                \]
+            \end{tcolorbox}
+        \end{column}
+        \begin{column}{0.32\textwidth}
+            \begin{tcolorbox}[nndsblue,courseheight={cnn-arch}{}]
+                \textbf{Classifier:} e.g., logistic regression.
+                \[
+                    \vc{y}=\operatorname{softmax}(g(\vc{h}))
+                \]
+            \end{tcolorbox}
+        \end{column}
+    \end{columns}
+
+    \medskip
+    \begin{tcolorbox}[nndsgreen]
+        With global pooling, the output is roughly \myalert{invariant} to a
+        translation. Image boundaries and downsampling can break exact invariance.
+    \end{tcolorbox}
+
+    More recent CNNs add many variations to this basic architecture. How to
+    choose the layers and their hyper-parameters is still an open
+    \textit{model selection} research issue.
 
 \end{frame}
 
-\begin{whiteframe}{Visualization of max-pooling}
+% Figure: assets/images/cnn/filters/make_figures.py
+\begin{whiteframe}{Data augmentation}
+    \setlength{\parskip}{3pt}
 
+    Equivariance and global pooling build invariance into the architecture.
+    We can also obtain it from the data.
+
+    \begin{center}
+        \includegraphics[width=0.86\linewidth]{images/cnn/filters/augmentation.pdf}
+    \end{center}
+
+    \begin{columns}[T,onlytextwidth]
+        \begin{column}{0.55\textwidth}
+            \begin{tcolorbox}[nndsgreen,courseheight={cnn-augment}{}]
+                With \myalert{data augmentation}, we train on random
+                transformations $(\mathcal{A}(X),y)$ of each example that
+                should not change its label.
+            \end{tcolorbox}
+        \end{column}
+        \begin{column}{0.42\textwidth}
+            \begin{tcolorbox}[nndsorange,courseheight={cnn-augment}{}]
+                The label must survive: a flip is fine for a cat, but turns a
+                ``b'' into a ``d''.
+            \end{tcolorbox}
+        \end{column}
+    \end{columns}
+
+\end{whiteframe}
+
+\begin{whiteframe}{Example of a simple CNN specification}
+    \setlength{\abovecaptionskip}{8pt}
     \vspace{1em}
     \begin{figure}
         \centering
-        \includegraphics[width=0.7\columnwidth]{images/cnn/book/max_pooling.pdf}
-        \caption{Visualization of max-pooling on a $4 \times 4$ image with windows of size $2 \times 2$. Note that the maximum operation can be replaced with any differentiable aggregation (e.g., average).}
-    \end{figure}
-
-\end{whiteframe}
-
-\begin{frame}{Complete architecture of a CNN (1)}
-
-    A standard CNN for classification is then composed by:
-    %
-    \begin{itemize}
-        \item Interleaving convolutional and pooling layers;
-        \item Flattening (or \myalert{global pooling});
-        \item A classification block.
-    \end{itemize}
-
-    Note: with global pooling, the final layer is roughly \myalert{invariant} to a translation. Image boundaries and downsampling can break exact invariance.
-
-    More recent CNNs add many variations on this basic architecture. How to choose the sequence of layers and their hyper-parameters is still an open \textit{model selection} research issue.
-
-\end{frame}
-
-\begin{frame}{Complete architecture of a CNN (2)}
-    \setlength{\arraycolsep}{2pt}
-
-    \begin{equation*}
-        \begin{array}{rclr}
-            \textrm{Block 1:}  & \shape{H}{(h',w',c')} =    & (f_l \circ \ldots \circ f_2 \circ f_1)(X) & \text{(\color{darkred}convolutional or pooling layers)} \\
-            \textrm{Block 2a:} & \shape{\vc{h}}{(h'w'c')} = & \text{vect}(H)                            & \text{(\color{darkgreen}flattening)}                    \\
-            \textrm{Block 2b:} & \shape{\vc{h}}{(c')} =     & \frac{1}{h'w'}\sum_{i,j} \idx{H}{i,j,:}   & \text{(\color{darkgreen}global pooling)}                \\
-            \textrm{Block 3:}  & \vc{y} =                   & \text{softmax}(g(\vc{h}))                 & \text{(\color{blue}e.g., logistic regression)}
-        \end{array}
-    \end{equation*}
-
-\end{frame}
-
-\begin{whiteframe}{Example of a simple CNN specification}
-    \setlength{\abovecaptionskip}{5pt}
-    \begin{figure}
-        \centering
-        \includegraphics[width=0.79\columnwidth]{images/cnn/book/CNN_architecture.pdf}
+        \includegraphics[width=\columnwidth]{images/cnn/book/CNN_architecture.pdf}
         \caption{Down-sampling reduces the cost of subsequent layers. Global pooling makes the final classification dimensionality manageable.}
     \end{figure}
 
 \end{whiteframe}
 
 \begin{whiteframe}{Designing in blocks}
+    \setlength{\abovecaptionskip}{8pt}
 
     \vspace{1em}
     \begin{figure}
         \centering
-        \includegraphics[width=0.8\columnwidth]{images/cnn/book/CNN_blocks.pdf}
-        \caption{When CNNs tends to become deep, it is simpler to reason in repeating \textit{blocks} made of multiple components. This is easy using the layering abstraction.}
+        \includegraphics[width=0.9\columnwidth]{images/cnn/book/CNN_blocks.pdf}
+        \caption{When CNNs become deep, it is simpler to reason in repeating \textit{blocks} made of multiple components. This is easy using the layering abstraction.}
     \end{figure}
 
 \end{whiteframe}
 
-% Written by Codex (2026-10-14): approved CNN-to-sequences continuation candidate.
 \begin{frame}{Spatial mixing and channel mixing}
     \setlength{\parskip}{3pt}
     \setlength{\abovedisplayskip}{6pt}
     \setlength{\belowdisplayskip}{6pt}
 
-    The positionwise MLP we saw earlier is equivalent to a $1\times1$ \myalert{pointwise convolution} (same channel map at every pixel).
+    Each layer of the positionwise MLP we saw earlier is a $1\times1$ \myalert{pointwise convolution} (the same channel map at every pixel).
 
     With a \myalert{depthwise convolution}, each channel has instead its own spatial
-    filter. For $K\sim(s,s,c)$ and $s=2k+1$, the layer is:
+    filter. For $K\sim(s,s,C)$ and $s=2k+1$, the layer is:
     \[
-        \idx{D}{i,j,a}
+        \idx{Y}{i,j,a}
         = \phi\!\left(
         \sum_{u=-k}^{k}\sum_{v=-k}^{k}
         \idx{K}{u+k,v+k,a}\,\idx{X}{i+u,j+v,a}+b_a
@@ -435,8 +528,48 @@
 
 \end{frame}
 
+\begin{frame}{A few landmark CNNs}
+    \setlength{\parskip}{3pt}
+
+    \begin{columns}[T,onlytextwidth]
+        \begin{column}{0.32\textwidth}
+            \begin{tcolorbox}[nndsblue,courseheight={cnn-landmarks}{}]
+                \textbf{LeNet-5 (1998)}
+
+                Two convolution and pooling stages and a fully-connected
+                classifier, for handwritten digits.
+            \end{tcolorbox}
+        \end{column}
+        \begin{column}{0.32\textwidth}
+            \begin{tcolorbox}[nndsblue,courseheight={cnn-landmarks}{}]
+                \textbf{VGG (2014)}
+
+                Blocks of $3\times3$ convolutions and max-pooling, up to
+                19 layers.
+            \end{tcolorbox}
+        \end{column}
+        \begin{column}{0.32\textwidth}
+            \begin{tcolorbox}[nndsblue,courseheight={cnn-landmarks}{}]
+                \textbf{ConvNeXt (2022)}
+
+                Depthwise $7\times7$ convolutions and pointwise MLPs, with
+                lessons from transformers.
+            \end{tcolorbox}
+        \end{column}
+    \end{columns}
+
+    \medskip
+    Stacking small kernels, as in VGG, grows the receptive field cheaply.
+    Going much deeper needs \myalert{residual connections}, introduced with
+    ResNet (2016): we will see them in the next lecture.
+
+    \SlideSource{LeCun et al. (1998), Proc.\ IEEE; Simonyan and Zisserman (2015), ICLR;
+        Liu et al. (2022), \textit{A ConvNet for the 2020s}, CVPR.}
+
+\end{frame}
+
 \section{Convolutions beyond images}
-\subsection{From images to sequences}
+\subsection{Sequences, text and generation}
 
 \begin{frame}{Temporal sequences}
     \setlength{\parskip}{3pt}
@@ -444,15 +577,15 @@
     CNNs can be extended easily to other domains having grid-like structure
     of various dimensions.
 
-    For example, consider $n$ steps of a time-series
-    $\vc{x}_0,\ldots,\vc{x}_{n-1}\in\mathbb{R}^c$, each step having $c$
-    features (e.g., readings from $c$ different sensors).
+    For example, consider $T$ steps of a time-series
+    $\vc{x}_0,\ldots,\vc{x}_{T-1}\in\mathbb{R}^C$, each step having $C$
+    features (e.g., readings from $C$ different sensors).
 
     We represent it using a matrix:
     \vspace{1.5em}
     \[
-        X\sim(\eqnmarkbox[drawred]{seqlength}{n},
-        \eqnmarkbox[drawgreen]{seqfeatures}{c}).
+        X\sim(\eqnmarkbox[drawred]{seqlength}{T},
+        \eqnmarkbox[drawgreen]{seqfeatures}{C}).
     \]
     \annotate[yshift=1em]{above,left}{seqlength}{Length of the sequence}
     \annotate[yshift=1em]{above,right}{seqfeatures}{Features}
@@ -466,25 +599,23 @@
     \setlength{\abovedisplayskip}{7pt}
     \setlength{\belowdisplayskip}{7pt}
 
-    With kernel size $s=2k+1$, we take the neighborhood $P_k(i)\sim(s,c)$
-    around position $i$, including all $c$ features.
+    With kernel size $s=2k+1$, we take the neighborhood $P_k(t)\sim(s,C)$
+    around position $t$, including all $C$ features.
 
     The same definition now gives a \myalert{1D convolutional layer}:
     \[
-        \idx{H}{i,:}
-        =\phi\!\left(\vc{W}^{\top}\operatorname{vect}(P_k(i))+\vc{b}\right),
-        \qquad H\sim(n,c').
+        \idx{Y}{t,:}
+        =\phi\!\left(\vc{W}^{\top}\operatorname{vect}(P_k(t))+\vc{b}\right),
+        \qquad Y\sim(T,C').
     \]
 
-    We share $\vc{W}\sim(sc,c')$ and $\vc{b}\sim(c')$ across positions.
-    With stride $1$ and $k$ zeros at each end, the sequence length stays $n$.
+    We share $\vc{W}\sim(sC,C')$ and $\vc{b}\sim(C')$ across positions.
+    With stride $1$ and $k$ zeros at each end, the sequence length stays $T$.
 
     Like in the 2D case, the layer is local and translation equivariant away
     from the boundaries.
 
 \end{frame}
-
-\subsection{Representing text}
 
 \begin{frame}{Handling text data}
 
@@ -492,12 +623,12 @@
 
     \begin{enumerate}
         \item We choose how to split (\myalert{tokenize}) the text, e.g., by word, by character, by byte, by \myalert{subword}, and the maximum number $V$ of unique \myalert{tokens} we can handle (e.g., the $V$ most frequent words). The resulting set of tokens is the \myalert{vocabulary} or \myalert{dictionary}.
-        \item Each token in the text is then converted into a discrete ID $z_i \in \{1,\ldots,V\}$, giving us an integer sequence $\vc{z}\sim(n)$.
-        \item We \myalert{embed} each token ID into a dense vector \textit{embedding} in $\mathbb{R}^d$ via a trainable matrix $\vc{E}\sim(V,d)$ (embedding matrix).
+        \item Each token in the text is then converted into a discrete ID $z_t \in \{0,\ldots,V-1\}$, giving us an integer sequence $\vc{z}\sim(T)$.
+        \item We \myalert{embed} each token ID into a vector in $\mathbb{R}^D$ (in a few slides).
     \end{enumerate}
 
-    By the end of this procedure we have a matrix $X\sim(n,d)$ of $n$ tokens,
-    each represented by $d$ features.
+    By the end of this procedure we have a matrix $X\sim(T,D)$ of $T$ tokens,
+    each represented by $D$ features.
 
 \end{frame}
 
@@ -514,7 +645,6 @@
 
 \end{whiteframe}
 
-% Written by Codex (2026-10-14): requested subword and BPE additions.
 \begin{frame}{Subword embeddings}
     \setlength{\parskip}{3pt}
     \setlength{\abovedisplayskip}{6pt}
@@ -530,7 +660,7 @@
         \end{array}
     \]
 
-    Each piece has an ID and a row in $\vc{E}\sim(V,d)$.
+    Each piece has an ID and a row in $\vc{E}\sim(V,D)$.
     Both words share the embedding for \texttt{play}.
 
     Unseen words can split into known pieces, and frequent words can stay whole.
@@ -575,16 +705,19 @@
     \setlength{\abovedisplayskip}{7pt}
     \setlength{\belowdisplayskip}{7pt}
 
-    For embedding we learn an \myalert{embedding matrix} $\vc{E}\sim(V,d)$, with one row for each of the $V$ tokens in the vocabulary. Embedding element $z_i$ of the sequence is just a row lookup:
-
+    For embedding we learn an \myalert{embedding matrix} $\vc{E}\sim(V,D)$, with one row for each of the $V$ tokens in the vocabulary. Embedding element $z_t$ of the sequence is just a row lookup:
     \[
-        \idx{X}{i,:}=\idx{\vc{E}}{z_i,:}
+        \idx{X}{t,:}=\idx{\vc{E}}{z_t,:}
     \]
 
     We initialize the embeddings randomly and train them with the network, or take them from some pre-trained model or algorithm.
     For example, GloVe and Word2Vec were two classic algorithms for this purpose.
 
-    \SlideSource{Bolukbasi et al. (2016), \textit{Debiasing word embeddings}, NeurIPS.}
+    Pre-trained embeddings also inherit the biases of their training text:
+    for example, word analogies can reproduce gender stereotypes about
+    professions.
+
+    \SlideSource{Bolukbasi et al. (2016), \href{https://arxiv.org/abs/1607.06520}{\textit{Man is to Computer Programmer as Woman is to Homemaker? Debiasing Word Embeddings}}, NeurIPS.}
 
 \end{frame}
 
@@ -605,14 +738,14 @@
     \setlength{\belowdisplayskip}{7pt}
 
     Two texts may have different lengths. Their embedded matrices
-    $X_1\sim(n_1,d)$ and $X_2\sim(n_2,d)$ share the same feature dimension $d$.
+    $X_1\sim(T_1,D)$ and $X_2\sim(T_2,D)$ share the same feature dimension $D$.
 
-    For $n_1>n_2$, we can build a padded mini-batch:
+    For $T_1>T_2$, we can build a padded mini-batch:
     \[
         X=\operatorname{stack}\!\left(
         X_1,\begin{bmatrix}X_2\\\vc{0}\end{bmatrix}
         \right),
-        \qquad X\sim(2,n_1,d).
+        \qquad X\sim(2,T_1,D).
     \]
 
     We pad to the maximum sequence length in the mini-batch.
@@ -623,13 +756,11 @@
 
 \end{frame}
 
-\subsection{Prediction and generation}
-
 \begin{frame}{Two tasks on a sequence}
     \setlength{\parskip}{4pt}
 
-    From the embedded input $X\sim(n,d)$, the convolutional network produces
-    features $H\sim(n,c')$. We can use them in two ways:
+    From the embedded input $X\sim(T,D)$, the convolutional network produces
+    features $Y\sim(T,C')$. We can use them in two ways:
     \begin{itemize}
         \item For \myalert{sequence classification}, we pool over the valid
               positions and apply a classifier. We obtain one prediction for the
@@ -637,58 +768,78 @@
         \item For \myalert{next-token prediction}, we keep the positions and
               apply the same vocabulary classifier at each one:
               \[
-                  \vc{p}_i=\operatorname{softmax}(g(\idx{H}{i,:}))\sim(V).
+                  \vc{p}_t=\operatorname{softmax}(g(\idx{Y}{t,:}))\sim(V).
               \]
     \end{itemize}
 
-    At position $i$, $\vc{p}_i$ predicts token $z_{i+1}$. Which input positions
+    At position $t$, $\vc{p}_t$ predicts token $z_{t+1}$. Which input positions
     can we let it use?
-
-\end{frame}
-
-% Written by Codex (2026-10-14): restore the causal definition and masked layer.
-\begin{frame}{Masked convolutions}
-    \setlength{\parskip}{1pt}
-    \setlength{\abovedisplayskip}{2pt}
-    \setlength{\belowdisplayskip}{1.5pt}
-
-    \vspace*{0.5em}
-    \begin{tcolorbox}
-        For a temporal sequence $X\sim(n,c)$, a \myalert{causal model}
-        $H=f(X)$, with $H\sim(n,c')$, is such that $\idx{H}{i,:}$ depends
-        only on $\idx{X}{j,:}$ for $j\le i$.
-    \end{tcolorbox}
-
-    \[
-        \idx{H}{i,:}=\phi\!\left(
-        \eqnmarkbox[drawred]{causalweights}{(\vc{W}\odot\vc{M})^{\top}}
-        \operatorname{vect}(P_k(i))+\vc{b}\right).
-    \]
-    \annotate[yshift=-0.4em]{below,right}{causalweights}{Masked weight matrix}
-
-    We flatten $P_k(i)$ row by row. For offset $u$, input feature $a$ and
-    output channel $q$, the fixed mask $\vc{M}\sim(sc,c')$ is:
-    \[
-        \idx{\vc{M}}{(u+k)c+a,q}
-        =\begin{cases}1,&u\le0,\\0,&u>0,\end{cases}
-        \qquad u\in\{-k,\ldots,k\}.
-    \]
 
 \end{frame}
 
 \begin{whiteframe}{Causal convolutions}
     \setlength{\parskip}{3pt}
-    \setlength{\abovecaptionskip}{4pt}
+    \setlength{\abovedisplayskip}{6pt}
+    \setlength{\belowdisplayskip}{6pt}
 
-    \begin{figure}
-        \centering
-        \includegraphics[width=0.72\linewidth,height=0.34\textheight,keepaspectratio]{images/cnn/sequences/Causal_convolutions.pdf}
-        \caption{Outputs can use the current input and past inputs.
-            Connections from future inputs are removed.}
-    \end{figure}
+    \begin{tcolorbox}[nndsblue]
+        For a sequence $X\sim(T,C)$, a \myalert{causal model} $Y=f(X)$ is such
+        that $\idx{Y}{t,:}$ depends only on $\idx{X}{t',:}$ for $t'\le t$.
+    \end{tcolorbox}
 
-    In a convolution, we mask the weights that would read future positions.
-    The prediction of $z_{i+1}$ must not already depend on that token.
+    \medskip
+    \begin{columns}[c,onlytextwidth]
+        \begin{column}{0.5\textwidth}
+            We pad with $s-1$ zeros on the left only. The window
+            $\causalP(t)\sim(s,C)$ covers positions $t-s+1,\ldots,t$:
+            \[
+                \idx{Y}{t,:}=\phi\!\left(\vc{W}^{\top}\operatorname{vect}(\causalP(t))+\vc{b}\right).
+            \]
+        \end{column}
+        \begin{column}{0.46\textwidth}
+            \centering
+            \includegraphics[width=\linewidth]{images/cnn/sequences/Causal_convolutions.pdf}
+
+            {\footnotesize Kernel size $s=2$: one zero on the left.}
+        \end{column}
+    \end{columns}
+
+    \medskip
+    Equivalently, we zero the weights of a centered kernel that read the future.
+    The prediction of $z_{t+1}$ must not already depend on that token.
+
+\end{whiteframe}
+
+\begin{whiteframe}{Dilated convolutions}
+    \setlength{\parskip}{3pt}
+    \setlength{\abovedisplayskip}{5pt}
+    \setlength{\belowdisplayskip}{5pt}
+
+    A causal layer extends the receptive field by $s-1$ positions, so long
+    contexts need many layers. In a \myalert{dilated convolution} with
+    dilation $d$, the window skips $d-1$ positions between its taps:
+    \[
+        \causalP_d(t)\ \text{covers positions}\ t-(s-1)d,\ \ldots,\ t-d,\ t.
+    \]
+
+    \begin{columns}[c,onlytextwidth]
+        \begin{column}{0.5\textwidth}
+            \centering
+            \scalebox{0.68}{\input{assets/images/cnn/dilated.tex}}
+        \end{column}
+        \begin{column}{0.46\textwidth}
+            \begin{tcolorbox}[nndsgreen]
+                Doubling the dilation at every layer ($d=1,2,4,\ldots$), $L$
+                layers with $s=2$ see $2^L$ positions: the receptive field grows
+                \myalert{exponentially} with depth.
+            \end{tcolorbox}
+        \end{column}
+    \end{columns}
+
+    \medskip
+    WaveNet used this design to generate raw audio, one sample at a time.
+
+    \SlideSource{van den Oord et al. (2016), \href{https://arxiv.org/abs/1609.03499}{\textit{WaveNet: A Generative Model for Raw Audio}}, arXiv.}
 
 \end{whiteframe}
 
@@ -705,11 +856,11 @@
         \end{array}
     \]
 
-    For $n$ valid input positions, we apply the cross-entropy loss at every valid
+    For $T$ valid input positions, we apply the cross-entropy loss at every valid
     position:
     \[
-        \mathcal{L}=-\frac{1}{n}\sum_{i=0}^{n-1}
-        \log\idx{\vc{p}_i}{z_{i+1}}.
+        \mathcal{L}=-\frac{1}{T}\sum_{t=0}^{T-1}
+        \log\idx{\vc{p}_t}{z_{t+1}}.
     \]
 
     During training, we provide the true input tokens (\myalert{teacher forcing}).
@@ -720,8 +871,8 @@
 
 \begin{frame}{Autoregressive models}
     \setlength{\parskip}{4pt}
-    \setlength{\abovedisplayskip}{7pt}
-    \setlength{\belowdisplayskip}{7pt}
+    \setlength{\abovedisplayskip}{6pt}
+    \setlength{\belowdisplayskip}{6pt}
 
     The same next-token predictor can generate text in an
     \myalert{autoregressive} way.
@@ -737,7 +888,9 @@
         \texttt{Check this out}\quad\ldots
     \]
 
-    The input now includes the model's own sampled tokens.
+    The input now includes the model's own sampled tokens. As in the linear
+    models lecture, we can sample with a \myalert{temperature} $\tau$: a small
+    $\tau$ gives predictable text, a large $\tau$ more varied text.
 
     Training can compute many next-token predictions in parallel. Generation
     must wait for each sampled token before predicting the following one.
@@ -761,10 +914,17 @@
 
 \end{whiteframe}
 
-\begin{frame}{Further readings}
+\begin{frame}{What comes next}
+    \setlength{\parskip}{6pt}
+
+    This lecture follows \textbf{Chapter 7} of the book.
 
     \begin{itemize}
-        \item \textbf{Chapter 7} of the book.
+        \item In the next lecture, we build deeper models: normalization
+              layers, which extend the idea of normalizing the inputs, and
+              residual connections.
+        \item Then we replace fixed neighborhoods with \myalert{attention},
+              where the interactions between tokens depend on the input.
     \end{itemize}
 
 \end{frame}
