@@ -12,8 +12,8 @@
 			\]
 			Changing the gate gives other activations:
 			\begin{itemize}
-				\item \textbf{LeakyReLU}: $g(s)=\alpha$ for $s<0$ (e.g., $\alpha=0.01$). \textbf{PReLU} learns $\alpha$.
-				\item \textbf{Smooth gates}: $0<g(s)<1$, plotted on the right.
+				\item \textbf{LeakyReLU}: $g(s)=\alpha$ for $s<0$ (e.g., $\alpha=0.01$). \item \textbf{PReLU}, same as LeakyReLU but $\alpha$ is learned (per-unit).
+				\item \textbf{Smooth gates}: any smooth non-decreasing $0<g(s)<1$, as shown on the right.
 			\end{itemize}
 		\end{column}
 		\begin{column}{0.43\textwidth}\centering\setlength{\parskip}{0pt}
@@ -33,7 +33,6 @@
 	\MLPSlideFont\setlength{\parskip}{4pt}\setlength{\abovedisplayskip}{6pt}\setlength{\belowdisplayskip}{6pt}
 	\begin{columns}[c,onlytextwidth]
 		\begin{column}{0.54\textwidth}
-			We can use the sigmoid or the Gaussian CDF as the gate.
 
 			\textbf{SiLU} ({Sigmoid-weighted linear unit}):
 			\[

@@ -541,8 +541,8 @@
     pieces across words, for example (illustrative):
     \[
         \begin{array}{rcl}
-            \texttt{playing} & \longmapsto & (\texttt{play},\texttt{ing})\\
-            \texttt{played} & \longmapsto & (\texttt{play},\texttt{ed})
+            \texttt{playing} & \longmapsto & (\texttt{play},\texttt{ing}) \\
+            \texttt{played}  & \longmapsto & (\texttt{play},\texttt{ed})
         \end{array}
     \]
 
@@ -573,7 +573,7 @@
     \texttt{pug} $\times2$. We count pairs within words:
     \[
         \begin{array}{rcll}
-            (\texttt{u},\texttt{g}) & \longmapsto & \texttt{ug} & \quad 10\text{ occurrences}\\
+            (\texttt{u},\texttt{g})  & \longmapsto & \texttt{ug}  & \quad 10\text{ occurrences} \\
             (\texttt{h},\texttt{ug}) & \longmapsto & \texttt{hug} & \quad 8\text{ occurrences}
         \end{array}
     \]
@@ -677,8 +677,8 @@
 
     \[
         \idx{H}{i,:}=\phi\!\left(
-            \eqnmarkbox[drawred]{causalweights}{(\vc{W}\odot\vc{M})^{\top}}
-            \operatorname{vect}(P_k(i))+\vc{b}\right).
+        \eqnmarkbox[drawred]{causalweights}{(\vc{W}\odot\vc{M})^{\top}}
+        \operatorname{vect}(P_k(i))+\vc{b}\right).
     \]
     \annotate[yshift=-0.4em]{below,right}{causalweights}{Masked weight matrix}
 
