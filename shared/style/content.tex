@@ -47,6 +47,20 @@
 	nndsred/.style={colback=drawred_l!12!white,colframe=drawred,boxrule=0.8pt,arc=1mm}
 }
 
+% A card that opens with \[ would start with an empty paragraph line plus the
+% display skip, leaving more room above than below (by an amount that differs
+% between engines). Set that leading equation as a centered display-style line
+% instead, so the space above it is the card padding, as below.
+\makeatletter
+\newcommand{\nndscardlead}{\futurelet\nndscard@next\nndscard@check}
+% tcolorbox follows this hook with \ignorespaces; look past it.
+\def\nndscard@check{\ifx\nndscard@next\ignorespaces
+	\expandafter\nndscard@skip\else\expandafter\nndscard@test\fi}
+\def\nndscard@skip\ignorespaces{\nndscard@test}
+\newcommand{\nndscard@test}{\@ifnextchar\[{\nndscard@display}{}}
+\def\nndscard@display\[#1\]{{\centering$\displaystyle#1$\par}\@ifnextchar\end{}{\vspace{\belowdisplayskip}}}
+\makeatother
+
 % Card text is ragged-right: narrow justified columns open wide word gaps,
 % especially in NNDS, which never hyphenates. Fixed display spacing: when
 % parallel cards share a height, stretchable skips would otherwise spread
@@ -54,7 +68,8 @@
 \tcbset{
 	nndscard/.style={before upper={\raggedright
 		\setlength{\abovedisplayskip}{6pt}\setlength{\belowdisplayskip}{6pt}%
-		\setlength{\abovedisplayshortskip}{6pt}\setlength{\belowdisplayshortskip}{6pt}}},
+		\setlength{\abovedisplayshortskip}{6pt}\setlength{\belowdisplayshortskip}{6pt}%
+		\nndscardlead}},
 	nndsblue/.append style={nndscard},
 	nndsgreen/.append style={nndscard},
 	nndsorange/.append style={nndscard},

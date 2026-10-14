@@ -18,7 +18,7 @@
 			\begin{tcolorbox}[nndsgreen,courseheight={linear-setup}{0.42\textheight}]
 				\textbf{\color{darkgreen}Model}
 
-				A map from an input to a prediction:
+				A map from inputs to predictions:
 				\begin{equation}
 					\hat{y}=f_{\boldsymbol{\theta}}(x) \,.
 				\end{equation}
@@ -54,7 +54,7 @@
 			\begin{tcolorbox}[nndsblue,courseheight={linear-splits}{0.27\textheight}]
 				\textbf{\color{darkcerulean}Validation}
 
-				Choose model and hyperparameters.
+				Model selection.
 			\end{tcolorbox}
 		\end{column}
 		\begin{column}{0.32\textwidth}
@@ -109,8 +109,9 @@
 			\begin{tcolorbox}[nndsgreen,courseheight={linear-risk}{0.61\textheight}]
 				\textbf{\color{darkgreen}What we care about}
 
-				The loss over the full data distribution:
+				The loss over the data distribution:
 				\begin{equation}
+					\vphantom{\sum_{i=1}^{N}}% same height as the empirical risk
 					\mathcal{R}(\boldsymbol{\theta})
 					=\mathbb{E}_{p(x,y)}\!\left[
 					\ell\left(f_{\boldsymbol{\theta}}(x),y\right)\right] \,.
@@ -122,16 +123,13 @@
 			\begin{tcolorbox}[nndsblue,courseheight={linear-risk}{0.61\textheight}]
 				\textbf{\color{darkcerulean}What we can optimize}
 
-				The average loss over the training data:
+				The average training loss:
 				\begin{equation}
 					\mathcal{L}(\boldsymbol{\theta})
 					=\frac{1}{N}\sum_{i=1}^{N}
 					\ell\left(f_{\boldsymbol{\theta}}(x_i),y_i\right) \,.
 				\end{equation}
-				\begin{equation}
-					\boldsymbol{\theta}^*
-					=\argmin_{\boldsymbol{\theta}}\mathcal{L}(\boldsymbol{\theta}) \,.
-				\end{equation}
+				This is the \myalert{empirical risk}; training computes $\boldsymbol{\theta}^*=\argmin_{\boldsymbol{\theta}}\mathcal{L}(\boldsymbol{\theta})$.
 			\end{tcolorbox}
 		\end{column}
 	\end{columns}
@@ -309,8 +307,8 @@
 	\justifying
 	In classification, each target $y_i\in\{1,\ldots,C\}$ identifies one of $C$ classes. These numbers are labels, not quantities: class $2$ does not mean twice class $1$.
 
-	A linear classifier produces one score for each class:
 	\begin{tcolorbox}[nndsblue]
+		A linear classifier produces one score for each class:
 		\begin{equation}
 			\vc{z}_i=\vc{W}\vc{x}_i+\vc{b}\in\mathbb{R}^{C},
 			\qquad
