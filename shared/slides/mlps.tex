@@ -103,8 +103,7 @@
 	This is an \textbf{existence result}. It does not tell us how much width or data we need, or whether training will find suitable parameters.
 
 	A single hidden layer can be sufficient for approximation, but it need not be an efficient choice. We will see shortly how depth can help.
-	\vfill
-	{\scriptsize\color{drawgray}Leshno, Lin, Pinkus and Schocken (1993), \href{https://doi.org/10.1016/S0893-6080(05)80131-5}{Neural Networks, 6(6), 861--867}.}
+	\SlideSource{Leshno, Lin, Pinkus and Schocken (1993), \href{https://doi.org/10.1016/S0893-6080(05)80131-5}{Neural Networks, 6(6), 861--867}.}
 \end{frame}
 
 \begin{frame}{Some terminology}
@@ -215,9 +214,7 @@
       \scalebox{\MLPGeometryScale}{\input{../../shared/assets/images/lecture_4/relu/regions.tex}}
     \end{column}
   \end{columns}
-  \vfill
-  {\scriptsize\color{drawgray}For ReLU hidden layers, before any output sigmoid or softmax.
-  \href{https://arxiv.org/abs/1402.1869}{Mont\'ufar et al. (2014)}.}
+  \SlideSource{For ReLU hidden layers, before any output sigmoid or softmax. \href{https://arxiv.org/abs/1402.1869}{Mont\'ufar et al. (2014)}.}
 \end{frame}
 
 \begin{frame}{Depth through composition}
@@ -237,9 +234,7 @@
   A single hidden layer with $m$ ReLUs has at most $m+1$ pieces in one dimension.
   \myalert{Depth can make a representation much more compact.}
 
-  \vfill
-  {\scriptsize\color{drawgray}An expressivity example, not a guarantee about training or generalization.
-  \href{https://proceedings.mlr.press/v49/telgarsky16.html}{Telgarsky (2016)}.}
+  \SlideSource{An expressivity example, not a guarantee about training or generalization. \href{https://proceedings.mlr.press/v49/telgarsky16.html}{Telgarsky (2016)}.}
 \end{frame}
 
 \subsection{Training in practice}
@@ -298,8 +293,7 @@
 	\end{tcolorbox}
 
 	We will meet looped blocks again with recurrent networks.
-	\vfill
-	{\scriptsize\color{drawgray}\href{https://arxiv.org/abs/1807.03819}{Dehghani et al., Universal Transformers (2019)}.\par}
+	\SlideSource{\href{https://arxiv.org/abs/1807.03819}{Dehghani et al., Universal Transformers (2019)}.}
 \end{frame}
 
 \begin{frame}{Shared MLPs on structured data}
@@ -370,7 +364,5 @@
 	\href{https://arxiv.org/abs/1812.11118}{double descent as model size grows}, and
 	\href{https://proceedings.mlr.press/v238/ferbach24a.html}{low-loss paths connecting different solutions}.
 
-	\MLPGrokkingCitationGap
-	{\scriptsize\color{drawgray}Original plots: Power et al. (2022),
-	\href{https://arxiv.org/abs/2201.02177}{\MLPGrokkingCitationTitle}, Figs.~1 and~4.}
+	\SlideSource{Original plots: Power et al. (2022), \href{https://arxiv.org/abs/2201.02177}{\MLPGrokkingCitationTitle}, Figs.~1 and~4.}
 \end{frame}

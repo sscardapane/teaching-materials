@@ -42,3 +42,6 @@
 
 % Shared content names each box group; the course controls its height.
 \tcbset{courseheight/.style 2 args={equal height group=#1}}
+
+% Slide sources: bottom of the content area (the footline holds course details).
+\providecommand{\SlideSource}[1]{\par\vfill{\scriptsize\color{drawgray}#1\par}}

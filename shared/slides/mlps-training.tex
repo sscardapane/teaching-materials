@@ -47,8 +47,7 @@
 			\input{../../shared/assets/images/lecture_4/init/activation-scale.tex}
 		\end{column}
 	\end{columns}
-	\vfill
-	{\scriptsize\color{drawgray}The same reasoning applies to gradients flowing backward, as we will see in the autodiff lecture. For other activations, see \href{https://proceedings.mlr.press/v9/glorot10a.html}{Glorot and Bengio (2010)}; \href{https://arxiv.org/abs/1502.01852}{He et al. (2015)}.\par}
+	\SlideSource{The same reasoning applies to gradients flowing backward, as we will see in the autodiff lecture. For other activations, see \href{https://proceedings.mlr.press/v9/glorot10a.html}{Glorot and Bengio (2010)}; \href{https://arxiv.org/abs/1502.01852}{He et al. (2015)}.}
 \end{frame}
 
 \begin{frame}[fragile]{Weight decay}
@@ -77,6 +76,5 @@
 	\end{tcolorbox}
 
 	In PyTorch, it is an optimizer argument: \verb+SGD(..., weight_decay=1e-4)+.
-	\vfill
-	{\scriptsize\color{drawgray}With Adam, the penalty and the decay differ; AdamW applies the decay directly. \href{https://arxiv.org/abs/1711.05101}{Loshchilov and Hutter (2019)}.\par}
+	\SlideSource{With Adam, the penalty and the decay differ; AdamW applies the decay directly. \href{https://arxiv.org/abs/1711.05101}{Loshchilov and Hutter (2019)}.}
 \end{frame}

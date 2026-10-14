@@ -151,6 +151,18 @@
 	\endgroup
 }
 
+% Slide sources: set in the frame footer beside the page number, so they
+% take no room from the content. Zero height keeps the footline unchanged.
+% Global, because the footline is typeset outside the frame's group; each
+% frame starts empty.
+\newcommand{\insertslidesource}{}
+\newcommand{\SlideSource}[1]{\gdef\insertslidesource{#1}}
+\AddToHook{env/frame/begin}{\gdef\insertslidesource{}}
+\setbeamertemplate{frame footer}{%
+	\ifx\insertslidesource\empty\else
+		\smash{\parbox[b]{0.88\textwidth}{\raggedright\scriptsize\color{black!60}\insertslidesource}}%
+	\fi}
+
 % Theorems
 \newcommand*{\theorembreak}{\usebeamertemplate{theorem end}\framebreak\usebeamertemplate{theorem begin}}
 \newcounter{theo}[section]\setcounter{theo}{0}

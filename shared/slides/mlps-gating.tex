@@ -2,7 +2,7 @@
 % former course-specific "ReLU as a gate"/"Smooth activation weights" slides
 % with "Learning the negative slope"; MoE split from the highway/MoE slide.
 \begin{frame}{ReLU as a gate}
-	\MLPSlideFont\setlength{\parskip}{3pt}\setlength{\abovedisplayskip}{4pt}\setlength{\belowdisplayskip}{4pt}
+	\MLPSlideFont\setlength{\parskip}{4pt}\setlength{\abovedisplayskip}{6pt}\setlength{\belowdisplayskip}{6pt}
 	\begin{columns}[T,onlytextwidth]
 		\begin{column}{0.58\textwidth}
 			ReLU multiplies its input by a \textbf{gate} that depends on the input itself:
@@ -27,7 +27,7 @@
 	\end{columns}
 	\vfill
 	{Kolmogorov--Arnold networks (KANs) go further: they learn a whole scalar function on every connection, at a higher cost.\par}
-	{\scriptsize\color{drawgray}\href{https://arxiv.org/abs/1502.01852}{He et al. (2015)}; \href{https://arxiv.org/abs/2404.19756}{Liu et al. (2024), KAN}.\par}
+	\SlideSource{\href{https://arxiv.org/abs/1502.01852}{He et al. (2015)}; \href{https://arxiv.org/abs/2404.19756}{Liu et al. (2024), KAN}.}
 \end{frame}
 
 \begin{frame}{Smooth gates: SiLU and GELU}
@@ -57,8 +57,7 @@
 	\end{columns}
 	\vspace{0.4em}
 	GELU is common in transformers such as BERT and GPT-2; SiLU appears inside SwiGLU.
-	\vfill
-	{\scriptsize\color{drawgray}\href{https://arxiv.org/abs/1702.03118}{Elfwing et al. (2017)}; \href{https://arxiv.org/abs/1606.08415}{Hendrycks and Gimpel (2016)}.}
+	\SlideSource{\href{https://arxiv.org/abs/1702.03118}{Elfwing et al. (2017)}; \href{https://arxiv.org/abs/1606.08415}{Hendrycks and Gimpel (2016)}.}
 \end{frame}
 
 \begin{frame}{Gating with a second projection: GLU and SwiGLU}
@@ -83,10 +82,7 @@
 		{For $\vc{x}\in\mathbb{R}^{D}$,
 			$\vc{W}_u,\vc{W}_g\in\mathbb{R}^{M\times D}$ and $\vc{W}_o\in\mathbb{R}^{D\times M}$.
 			Biases are omitted.\par}
-	\vfill
-	{\scriptsize\color{drawgray}
-		\href{https://arxiv.org/abs/2002.05202}{Shazeer (2020)};
-		\href{https://arxiv.org/abs/2302.13971}{Touvron et al., LLaMA (2023)}.\par}
+	\SlideSource{\href{https://arxiv.org/abs/2002.05202}{Shazeer (2020)}; \href{https://arxiv.org/abs/2302.13971}{Touvron et al., LLaMA (2023)}.}
 \end{frame}
 
 \begin{frame}{Mixtures of experts}
@@ -120,7 +116,7 @@
 			\end{tcolorbox}
 		\end{column}
 	\end{columns}
+	\smallskip
 	Sparse MoEs are common in recent language models. Training must keep the experts balanced, or the router may send most inputs to a few of them.
-	\vfill
-	{\scriptsize\color{drawgray}\href{https://arxiv.org/abs/1701.06538}{Shazeer et al. (2017)}; \href{https://arxiv.org/abs/2101.03961}{Fedus et al. (2022)}; \href{https://arxiv.org/abs/2401.04088}{Jiang et al. (2024)}.\par}
+	\SlideSource{\href{https://arxiv.org/abs/1701.06538}{Shazeer et al. (2017)}; \href{https://arxiv.org/abs/2101.03961}{Fedus et al. (2022)}; \href{https://arxiv.org/abs/2401.04088}{Jiang et al. (2024)}.}
 \end{frame}
