@@ -1,7 +1,7 @@
-% Written by Claude (2026-10-14): initialization, two of the
-% training-in-practice slides. Figure: shared/assets/images/lecture_4/init/.
+% Written by Claude (2026-10-14): training-in-practice slides
+% (initialization, weight decay). Figure: shared/assets/images/lecture_4/init/.
 \begin{frame}{Initializing the weights}
-	\MLPTrainingFont
+	\MLPSlideFont
 	\setlength{\abovedisplayskip}{4pt}\setlength{\belowdisplayskip}{4pt}
 	\begin{tcolorbox}[nndsorange,boxsep=1mm,top=1mm,bottom=1mm]
 		If all the weights of a layer start equal, all its hidden units stay identical during training. We break this \myalert{symmetry} by sampling the weights at random, $W_{ij}\sim\mathcal{N}(0,\sigma^2)$.
@@ -23,7 +23,7 @@
 \end{frame}
 
 \begin{frame}{He initialization}
-	\MLPTrainingFont
+	\MLPSlideFont
 	\setlength{\abovedisplayskip}{4pt}\setlength{\belowdisplayskip}{4pt}
 	\begin{columns}[c,onlytextwidth]
 		\begin{column}{0.48\textwidth}
@@ -49,4 +49,34 @@
 	\end{columns}
 	\vfill
 	{\scriptsize\color{drawgray}The same reasoning applies to gradients flowing backward, as we will see in the autodiff lecture. For other activations, see \href{https://proceedings.mlr.press/v9/glorot10a.html}{Glorot and Bengio (2010)}; \href{https://arxiv.org/abs/1502.01852}{He et al. (2015)}.\par}
+\end{frame}
+
+\begin{frame}[fragile]{Weight decay}
+	\MLPSlideFont
+	\setlength{\abovedisplayskip}{4pt}\setlength{\belowdisplayskip}{4pt}
+	In ridge regression we penalized large weights. We can add the same penalty to the loss of any network:
+	\begin{tcolorbox}[nndsblue,boxsep=1mm,top=1mm,bottom=1mm]
+		\[
+			\mathcal{L}_{\lambda}(\boldsymbol{\theta})
+			=\mathcal{L}(\boldsymbol{\theta})
+			+\frac{\lambda}{2}\left\lVert\boldsymbol{\theta}\right\rVert^2
+			\qquad\text{(sum of all squared parameters).}
+		\]
+	\end{tcolorbox}
+
+	The penalty adds $\lambda\boldsymbol{\theta}$ to the gradient, so one gradient descent step becomes:
+	\[
+		\boldsymbol{\theta}
+		\leftarrow
+		\boldsymbol{\theta}-\eta\left(\nabla\mathcal{L}(\boldsymbol{\theta})+\lambda\boldsymbol{\theta}\right)
+		={\color{darkcerulean}(1-\eta\lambda)}\,\boldsymbol{\theta}-\eta\nabla\mathcal{L}(\boldsymbol{\theta}).
+	\]
+
+	\begin{tcolorbox}[nndsgreen,boxsep=1mm,top=1mm,bottom=1mm]
+		Each step first shrinks all parameters by the same factor, hence the name \myalert{weight decay}. A parameter stays large only if the loss keeps pushing it there.
+	\end{tcolorbox}
+
+	In PyTorch, it is an optimizer argument: \verb+SGD(..., weight_decay=1e-4)+.
+	\vfill
+	{\scriptsize\color{drawgray}With Adam, the penalty and the decay differ; AdamW applies the decay directly. \href{https://arxiv.org/abs/1711.05101}{Loshchilov and Hutter (2019)}.\par}
 \end{frame}

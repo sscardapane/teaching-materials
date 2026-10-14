@@ -1,0 +1,21 @@
+% Sparse mixture of experts with E=4 and k=2 (Claude, 2026-10-14).
+% Uses the nnblock/nnother/nnmerge/nnedge styles from shared/slides/mlps.tex.
+\begin{tikzpicture}[x=1cm,y=1cm]
+	\node (x) at (0,0) {$\vc{x}$};
+	\node[nnblock,minimum width=1.0cm] (r) at (1.5,-1.75) {router};
+	\foreach \e/\yy/\sty in {1/1.2/nnblock,2/0.4/nnother,3/-0.4/nnblock,4/-1.2/nnother}{
+		\node[\sty,minimum width=0.9cm,minimum height=0.5cm] (f\e) at (2.9,\yy) {$f_{\e}$};
+	}
+	\foreach \e in {1,3}{\node[fill=white,opacity=0.55,minimum width=0.95cm,minimum height=0.55cm] at (f\e) {};}
+	\node[nnmerge] (s) at (4.6,0) {$\Sigma$};
+	\node (y) at (5.6,0) {$\vc{y}$};
+	\draw[nnedge] (x.east) -- (0.5,0) |- (f1.west);
+	\draw[nnedge] (0.5,0) |- (f2.west);
+	\draw[nnedge] (0.5,0) |- (f3.west);
+	\draw[nnedge] (0.5,0) |- (f4.west);
+	\draw[nnedge] (0.5,0) |- (r.west);
+	\draw[nnedge,draw=drawgreen] (f2.east) -- (s);
+	\draw[nnedge,draw=drawgreen] (f4.east) -- (s);
+	\draw[->,dashed,draw=drawgreen,thick] (r.east) -| (4.6,-0.3) node[pos=0.25,below,font=\scriptsize,text=drawgray] {$a_2,a_4$};
+	\draw[nnedge] (s) -- (y);
+\end{tikzpicture}
