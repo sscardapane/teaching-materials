@@ -530,6 +530,62 @@
 
 \end{whiteframe}
 
+% Written by Codex (2026-10-14): requested subword and BPE additions.
+\begin{frame}{Subword embeddings}
+    \setlength{\parskip}{3pt}
+    \setlength{\abovedisplayskip}{6pt}
+    \setlength{\belowdisplayskip}{6pt}
+
+    Word-level vocabularies can miss unseen words. Character tokenization
+    produces longer sequences. With \myalert{subword tokenization}, we reuse
+    pieces across words, for example (illustrative):
+    \[
+        \begin{array}{rcl}
+            \texttt{playing} & \longmapsto & (\texttt{play},\texttt{ing})\\
+            \texttt{played} & \longmapsto & (\texttt{play},\texttt{ed})
+        \end{array}
+    \]
+
+    Each piece has an ID and a row in $\vc{E}\sim(V,d)$.
+    Both words share the embedding for \texttt{play}.
+
+    Unseen words can split into known pieces, and frequent words can stay whole.
+    Learned pieces need not match linguistic word parts.
+
+    \blfootnote{Sennrich, Haddow and Birch (2016),
+        \href{https://aclanthology.org/P16-1162/}{\textit{Neural Machine Translation of Rare Words with Subword Units}}, ACL.}
+
+\end{frame}
+
+\begin{frame}{Byte pair encoding}
+    \setlength{\parskip}{3pt}
+    \setlength{\abovedisplayskip}{5pt}
+    \setlength{\belowdisplayskip}{5pt}
+
+    We can learn the vocabulary with \myalert{byte pair encoding} (BPE):
+    \begin{enumerate}
+        \item We start with single characters.
+        \item We merge the most frequent adjacent pair into a new token.
+        \item We repeat to reach the chosen vocabulary size.
+    \end{enumerate}
+
+    Toy corpus: \texttt{hug} $\times5$, \texttt{hugs} $\times3$,
+    \texttt{pug} $\times2$. We count pairs within words:
+    \[
+        \begin{array}{rcll}
+            (\texttt{u},\texttt{g}) & \longmapsto & \texttt{ug} & \quad 10\text{ occurrences}\\
+            (\texttt{h},\texttt{ug}) & \longmapsto & \texttt{hug} & \quad 8\text{ occurrences}
+        \end{array}
+    \]
+
+    On new text, we apply the fixed merge rules in their learned order.
+    \myalert{Byte-level BPE} starts from $256$ byte values, so it can represent
+    any UTF-8 text.
+
+    \blfootnote{\href{https://huggingface.co/learn/llm-course/en/chapter6/5}{Hugging Face: Byte-Pair Encoding tokenization}.}
+
+\end{frame}
+
 \begin{frame}{Dense embeddings}
     \setlength{\parskip}{4pt}
     \setlength{\abovedisplayskip}{7pt}
@@ -606,13 +662,39 @@
 
 \end{frame}
 
+% Written by Codex (2026-10-14): restore the causal definition and masked layer.
+\begin{frame}{Masked convolutions}
+    \setlength{\parskip}{1pt}
+    \setlength{\abovedisplayskip}{2pt}
+    \setlength{\belowdisplayskip}{1.5pt}
+
+    \vspace*{0.5em}
+    \begin{tcolorbox}
+        For a temporal sequence $X\sim(n,c)$, a \myalert{causal model}
+        $H=f(X)$, with $H\sim(n,c')$, is such that $\idx{H}{i,:}$ depends
+        only on $\idx{X}{j,:}$ for $j\le i$.
+    \end{tcolorbox}
+
+    \[
+        \idx{H}{i,:}=\phi\!\left(
+            \eqnmarkbox[drawred]{causalweights}{(\vc{W}\odot\vc{M})^{\top}}
+            \operatorname{vect}(P_k(i))+\vc{b}\right).
+    \]
+    \annotate[yshift=-0.4em]{below,right}{causalweights}{Masked weight matrix}
+
+    We flatten $P_k(i)$ row by row. For offset $u$, input feature $a$ and
+    output channel $q$, the fixed mask $\vc{M}\sim(sc,c')$ is:
+    \[
+        \idx{\vc{M}}{(u+k)c+a,q}
+        =\begin{cases}1,&u\le0,\\0,&u>0,\end{cases}
+        \qquad u\in\{-k,\ldots,k\}.
+    \]
+
+\end{frame}
+
 \begin{whiteframe}{Causal convolutions}
     \setlength{\parskip}{3pt}
     \setlength{\abovecaptionskip}{4pt}
-
-    For a temporal sequence $X\sim(n,d)$, a \myalert{causal model}
-    $H=f(X)$ is such that $\idx{H}{i,:}$ depends only on $\idx{X}{j,:}$
-    for $j\le i$.
 
     \begin{figure}
         \centering

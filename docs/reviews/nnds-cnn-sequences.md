@@ -133,3 +133,59 @@ This remains an instructor-review candidate. The narrative and cuts are agreed;
 acceptance of the rendered wording and layout remains open. No tracked download
 PDF is exported, and no HTML, notebook, deep-network lecture or course-site
 content is changed by this source checkpoint.
+
+
+## Instructor correction and subword additions, 2026-10-14
+
+This revision starts from Simone's own edits in `8b6c8a1`. He requested restoring
+the boxed causal-model definition and mathematical causal-convolution definition,
+and adding one or two slides on subword embeddings and BPE. The earlier candidate
+had compressed the definition into unboxed prose and replaced the masked-weight
+formula with a diagram. That compression removed original mathematical content
+without a specific approval and is corrected here.
+
+These are three added frames and one local move of the existing definition:
+
+| Slide | Requested change and prerequisites |
+| --- | --- |
+| Subword embeddings | Add after Text tokenization. Use the vocabulary, IDs and embedding matrix already introduced on Handling text data. Show illustrative playing/played splits sharing the play token's embedding, explain unseen-word coverage through known pieces, and distinguish learned pieces from linguistic word parts. |
+| Byte pair encoding | Add immediately after Subword embeddings. Explain character-based initialization, repeated most-frequent adjacent-pair merges, target vocabulary size and reuse of fixed ordered rules. A toy corpus has hug x5, hugs x3 and pug x2. Its first two merges have counts 10 and 8. Explain the byte-level variant and its 256-byte alphabet. |
+| Masked convolutions | Restore immediately before the causal diagram. Keep the boxed causal-model condition j<=i, the explicit masked affine-plus-activation equation and its masked-weight annotation. Use the accepted W^T orientation and bias/activation convention. Define mask entries by window offset, avoiding the original conflation of matrix columns with absolute sequence positions. |
+| Causal convolutions | Move only the unboxed definition onto Masked convolutions. Keep the original figure, dimensions, caption and final explanation. |
+
+For a row-major neighborhood vectorization, the mask M has shape (sc,c'). Its
+entry ((u+k)c+a,q) is 1 for u<=0 and 0 for u>0, for every input feature a and output
+channel q. The fixed mask and W have identical shapes, and (W elementwise M)^T
+maps the sc flattened input features to c' outputs. Bias and pointwise activation
+remain inside the convolutional layer. The current input is allowed because the
+classifier at i predicts the next token. Token IDs retain Simone's edited
+convention; this revision does not change that slide or its embedding notation.
+
+Sources are [Sennrich et al. (ACL 2016)](https://aclanthology.org/P16-1162/)
+and the [Hugging Face BPE explanation](https://huggingface.co/learn/llm-course/en/chapter6/5),
+linked directly on the added slides. The playing/played split and toy word
+frequencies are illustrative, not output from a deployed tokenizer. BPE counts
+are recomputed after each merge. The second merge is (h,ug), rather than (h,u).
+
+The revised continuation has 16 content slides (printed 24-39). The complete
+deck has 40 explicit frames and 46 PDF pages, including six dividers. All 35 other
+existing titled frames are byte-identical to 8b6c8a1, as is the cover and all
+surrounding source outside the explicitly changed anchors. No figures or styles
+are changed. The mathematical definition is moved, rather than removed.
+
+All five NNDS decks build. Full-slide visual checks cover the three additions and
+the affected causal diagram at presentation resolution, with the existing body
+font retained. The new frames have no overfull warnings. The title and Handling
+text data retain their baseline warnings. Numerical checks confirm the two BPE
+merge counts, agreement between the mask equation and a past-only convolution,
+and independence from perturbations to future inputs. Changed prose received
+the humanizer pass against the surrounding slides. The source and rendered
+preservation checks use 8b6c8a1 as the baseline. The cover and 33 unchanged content
+frames match the baseline pixels after excluding the updated footer numbers.
+Dense embeddings and Autoregressive generation have small rasterization
+differences, with identical text and fonts and at most 0.34 pt of text-bounding-box
+difference. Both were inspected in full at 1600 px; their layout and content are
+preserved. Divider progress bars reflect the increased total slide count.
+
+This remains a rendered instructor-review candidate. The source checkpoint does
+not export tracked student PDFs or change the public site.
