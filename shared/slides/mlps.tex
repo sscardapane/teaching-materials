@@ -248,7 +248,8 @@
 \input{../../shared/slides/mlps-initialization.tex}
 
 % October 14, 2026 restructure: KAF and KAN slides removed (KAN kept as one
-% line), highway and branch combinations deferred to the residual follow-up.
+% line), highway and branch combinations deferred to the residual follow-up,
+% recurrence deferred to the recurrent-models deck (figure kept in lecture_4/).
 \subsection{Gating}
 
 % Diagram styles for the gating and sharing slides.
@@ -439,28 +440,6 @@
 	{\tiny\color{drawgray}
 		The unrolled example shows three applications.
 		\href{https://arxiv.org/abs/1807.03819}{Dehghani et al., Universal Transformers (2019)}.\par}
-\end{frame}
-
-\begin{frame}{Recurrence over a sequence}
-	\small
-	\setlength{\parskip}{3pt}
-	\setlength{\abovedisplayskip}{5pt}
-	\setlength{\belowdisplayskip}{5pt}
-	If we supply a new input at each application, the shared block becomes
-	a \textbf{recurrent model}:
-	\[
-		\vc{h}_t=f_{\boldsymbol{\theta}}(\vc{h}_{t-1},\vc{x}_t).
-	\]
-	\begin{center}
-		\input{../../shared/assets/images/lecture_4/recurrence.tex}
-	\end{center}
-
-	\MLPRecurrenceStart
-	The hidden state carries information from earlier inputs, while the same
-	parameters are used throughout the sequence. The model can therefore process sequences of different lengths.\MLPRecurrenceEnd
-
-	Unlike a loop over depth, this recurrence advances through the input sequence
-	at each step.
 \end{frame}
 
 \begin{frame}{Shared MLPs on structured data}

@@ -1,15 +1,35 @@
-% Written by Claude (2026-10-14): initialization, first of three
+% Written by Claude (2026-10-14): initialization, two of the
 % training-in-practice slides. Figure: shared/assets/images/lecture_4/init/.
 \begin{frame}{Initializing the weights}
 	\MLPTrainingFont
 	\setlength{\abovedisplayskip}{4pt}\setlength{\belowdisplayskip}{4pt}
-	\begin{columns}[T,onlytextwidth]
-		\begin{column}{0.50\textwidth}
-			\begin{tcolorbox}[nndsorange,boxsep=1mm,top=1mm,bottom=1mm]
-				If all the weights of a layer start equal, all its hidden units stay identical during training. We break this \myalert{symmetry} with random weights.
-			\end{tcolorbox}
+	\begin{tcolorbox}[nndsorange,boxsep=1mm,top=1mm,bottom=1mm]
+		If all the weights of a layer start equal, all its hidden units stay identical during training. We break this \myalert{symmetry} by sampling the weights at random, $W_{ij}\sim\mathcal{N}(0,\sigma^2)$.
+	\end{tcolorbox}
 
-			The scale also matters. With weights of variance $\sigma^2$, each ReLU layer multiplies the mean square of the activations by $\sigma^2 D_{\ell-1}/2$.
+	How large should $\sigma^2$ be? We follow the mean square of the activations, $m_\ell=\mathbb{E}\bigl[(h^{(\ell)}_i)^2\bigr]$, through one ReLU layer with zero biases:
+	\begin{itemize}
+		\item The preactivation $s_i=\sum_{j}W_{ij}h_j$ is a sum of $D_{\ell-1}$ independent zero-mean terms, so their variances add up: $\mathbb{E}[s_i^2]={\color{darkcerulean}\sigma^2 D_{\ell-1}}\,m_{\ell-1}$.
+		\item $s_i$ is symmetric around zero, and ReLU sets its negative half to zero: $m_\ell={\color{draworange}\tfrac12}\,\mathbb{E}[s_i^2]$.
+	\end{itemize}
+
+	\begin{tcolorbox}[nndsgreen,boxsep=1mm,top=1mm,bottom=1mm]
+		\[
+			m_\ell=\frac{{\color{darkcerulean}\sigma^2 D_{\ell-1}}}{{\color{draworange}2}}\;m_{\ell-1}
+			\qquad\Longrightarrow\qquad
+			\text{the scale is preserved when }\sigma^2=\frac{2}{D_{\ell-1}}.
+		\]
+	\end{tcolorbox}
+\end{frame}
+
+\begin{frame}{He initialization}
+	\MLPTrainingFont
+	\setlength{\abovedisplayskip}{4pt}\setlength{\belowdisplayskip}{4pt}
+	\begin{columns}[c,onlytextwidth]
+		\begin{column}{0.48\textwidth}
+			With any other $\sigma^2$, every layer multiplies $m_\ell$ by the same factor, so the error compounds with depth: activations \myalert{vanish} for small weights and \myalert{explode} for large ones.
+
+			\medskip
 
 			\begin{tcolorbox}[nndsblue,boxsep=1mm,top=1mm,bottom=1mm]
 				\textbf{\color{darkcerulean}He initialization}
@@ -19,7 +39,7 @@
 				\]
 			\end{tcolorbox}
 		\end{column}
-		\begin{column}{0.46\textwidth}
+		\begin{column}{0.48\textwidth}
 			\centering
 			\textbf{\color{darkcerulean}Root mean square of $\vc{h}^{(\ell)}$}\par
 			{\scriptsize\color{drawgray}ReLU MLP, width $D_\ell=512$}\par
