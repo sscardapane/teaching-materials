@@ -207,7 +207,6 @@
 \begin{frame}{A linear model}
 
 	\begin{tcolorbox}[nndsblue,boxsep=1mm,top=1mm,bottom=1mm]
-		\justifying
 		For an input $\vc{x}\in\mathbb{R}^{D}$, a scalar linear model is defined as:
 		\begin{equation}
 			f_{\boldsymbol{\theta}}(\vc{x})
@@ -231,7 +230,7 @@
 	\end{equation}
 
 	\begin{tcolorbox}[nndsblue]
-		Combining a linear model with squared loss gives the \myalert{least-squares} objective:
+		A linear model with squared loss gives the \myalert{least-squares} objective:
 		\begin{equation}
 			\mathcal{L}_{\mathrm{LS}}(\vc{w})
 			= \frac{1}{N}\sum_{i=1}^{N}
@@ -279,7 +278,6 @@
 	With strongly correlated features, the fitted weights can be unstable.
 
 	\begin{tcolorbox}[nndsorange,boxsep=1mm,top=1mm,bottom=1mm]
-		\justifying
 		\myalert{Regularization} modifies the training objective to favour solutions with useful properties. \myalert{Ridge regression} favours smaller weights:
 		\begin{equation}
 			\mathcal{L}_{\mathrm{ridge}}(\vc{w})
@@ -431,7 +429,6 @@
 			\begin{tcolorbox}[nndsblue,courseheight={linear-boundaries}{0.49\textheight}]
 				\textbf{\color{darkcerulean}Binary case}
 
-				\justifying
 				At threshold $0.5$, the predicted class changes when the scalar logit is zero:
 				\begin{equation}
 					\vc{w}^{\top}\vc{x}+b=0 \,.
@@ -443,7 +440,6 @@
 			\begin{tcolorbox}[nndsblue,courseheight={linear-boundaries}{0.49\textheight}]
 				\textbf{\color{darkcerulean}Multiclass case}
 
-				\justifying
 				The boundary between classes $k$ and $j$ is where their logits are equal:
 				\begin{equation}
 					(\vc{w}_k-\vc{w}_j)^{\top}\vc{x}
@@ -455,7 +451,6 @@
 	\end{columns}
 
 	\begin{tcolorbox}[nndsgreen,boxsep=1mm,top=1mm,bottom=1mm]
-		\justifying
 		Softmax and sigmoid are nonlinear, but the resulting decision boundaries are linear in the input. Transforming the inputs lets us construct nonlinear decision boundaries.
 	\end{tcolorbox}
 
@@ -500,7 +495,6 @@
 	Softmax scores are not automatically calibrated probabilities.
 
 	\begin{tcolorbox}[nndsgreen,boxsep=1mm,top=1mm,bottom=1mm]
-		\justifying
 		A classifier is \myalert{calibrated} if predictions made with confidence $q$ are correct about a fraction $q$ of the time.
 	\end{tcolorbox}
 

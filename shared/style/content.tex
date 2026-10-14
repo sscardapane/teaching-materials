@@ -47,10 +47,12 @@
 	nndsred/.style={colback=drawred_l!12!white,colframe=drawred,boxrule=0.8pt,arc=1mm}
 }
 
-% Fixed display spacing inside cards. When parallel cards share a height,
-% stretchable skips would otherwise spread the content unevenly.
+% Card text is ragged-right: narrow justified columns open wide word gaps,
+% especially in NNDS, which never hyphenates. Fixed display spacing: when
+% parallel cards share a height, stretchable skips would otherwise spread
+% the content unevenly.
 \tcbset{
-	nndscard/.style={before upper={%
+	nndscard/.style={before upper={\raggedright
 		\setlength{\abovedisplayskip}{6pt}\setlength{\belowdisplayskip}{6pt}%
 		\setlength{\abovedisplayshortskip}{6pt}\setlength{\belowdisplayshortskip}{6pt}}},
 	nndsblue/.append style={nndscard},

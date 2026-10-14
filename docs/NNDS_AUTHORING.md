@@ -37,7 +37,7 @@ pass su Lecture N").
   marks warnings and trade-offs; red is reserved for training-specific or
   genuinely problematic elements. Parallel cards must have equal height. A
   colored box contains a complete definition, condition, or takeaway—never an
-  isolated equation used as decoration. Keep prose justified, figures
+  isolated equation used as decoration. Keep full-width prose justified and card text ragged-right (narrow justified columns open wide word gaps), figures
   transparent against the slide canvas, and enough unboxed whitespace that the
   deck does not become a wall of panels. Leave strong visual anchor slides
   visually distinct rather than forcing the card system everywhere.
