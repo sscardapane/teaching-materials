@@ -133,7 +133,7 @@
 
     \vspace{0.5em}
     \begin{tcolorbox}[nndsblue]
-        A layer is \myalert{local} if $\idx{Y}{i,j,:}$ depends only on $P_k(i,j)$.
+        A layer is \myalert{local} if $\idx{Y}{i,j,:}$ depends only on $P_k(i,j)$ for some $k$.
     \end{tcolorbox}
 
 \end{whiteframe}
@@ -220,6 +220,7 @@
 
     With \myalert{zero padding}, we treat values outside the input as zero.
 
+    \vspace{0.5em}
     \begin{tcolorbox}[nndsgreen]
         For an odd kernel size $s$, we add $k=(s-1)/2$ zeros at each end to
         preserve the input length when evaluating every position.
@@ -261,12 +262,11 @@
 
     \begin{columns}[c,onlytextwidth]
         \begin{column}{0.6\textwidth}
-            Shared weights give the same response to the same neighborhood,
-            wherever it appears in the image.
+            Shared weights give the same response to the same neighborhood (patch), wherever it appears in the image.
 
-            We write $T_{\delta}$ for a shift by $\delta$ pixels.
+            \vspace{0.5em}
             \begin{tcolorbox}[nndsblue]
-                A layer $f$ is \myalert{translation equivariant} if shifting the
+                We write $T_{\delta}$ for a shift by $\delta$ pixels. A layer $f$ is \myalert{translation equivariant} if shifting the
                 input shifts its output by the same amount:
                 \[
                     f(T_{\delta}X)=T_{\delta}f(X).
@@ -289,13 +289,15 @@
     \setlength{\abovedisplayskip}{4pt}
     \setlength{\belowdisplayskip}{4pt}
 
-    We combine information across larger regions by stacking local layers.
+    Each convolutional layer is local, but larger regions of the input image can be processed by stacking them.
 
+    \vspace{0.5em}
     \begin{tcolorbox}[nndsblue]
         The \myalert{receptive field} of $\idx{Y}{i,j,:}$ is the region
         of the input that can affect that output.
     \end{tcolorbox}
 
+    \vspace{0.5em}
     \begin{columns}[c,onlytextwidth]
         \begin{column}{0.44\textwidth}
             Away from the boundaries, $L$ layers with kernel size $s$, evaluated
@@ -356,14 +358,13 @@
     With the padding introduced earlier, these blocks can change the number of
     channels, but they keep the resolution $(H,W)$. We often halve it between blocks.
 
+    \vspace{0.5em}
     \begin{tcolorbox}[nndsgreen]
         After we halve the resolution, every later layer grows the receptive
         field \myalert{twice as fast}: $2(s-1)$ input pixels per layer instead
-        of $s-1$.
+        of $s-1$. The following layers also process four times fewer pixels, so they are
+        cheaper to run.
     \end{tcolorbox}
-
-    The following layers also process four times fewer pixels, so they are
-    cheaper to run.
 
 \end{frame}
 
@@ -431,7 +432,7 @@
     \begin{columns}[T,onlytextwidth]
         \begin{column}{0.32\textwidth}
             \begin{tcolorbox}[nndsblue,courseheight={cnn-arch}{}]
-                \textbf{Backbone:} convolutional and pooling layers.
+                \textbf{Backbone:}\\ convolutional and pooling layers.
                 \[
                     Z=(f_L\circ\cdots\circ f_1)(X)
                 \]
@@ -439,7 +440,7 @@
         \end{column}
         \begin{column}{0.32\textwidth}
             \begin{tcolorbox}[nndsblue,courseheight={cnn-arch}{}]
-                \textbf{Head:} \myalert{global pooling} (or flattening).
+                \textbf{Head:}\\ \myalert{global pooling} (or flattening).
                 \[
                     \vc{h}=\tfrac{1}{H'W'}\textstyle\sum_{i,j}\idx{Z}{i,j,:}
                 \]
@@ -447,7 +448,7 @@
         \end{column}
         \begin{column}{0.32\textwidth}
             \begin{tcolorbox}[nndsblue,courseheight={cnn-arch}{}]
-                \textbf{Classifier:} e.g., logistic regression.
+                \textbf{Classifier:}\\ e.g., logistic regression.
                 \[
                     \vc{y}=\operatorname{softmax}(g(\vc{h}))
                 \]
@@ -805,12 +806,14 @@
 
     We pad with $s-1$ zeros on the left only. The window $\causalP(t)\sim(s,C)$
     covers positions $t-s+1,\ldots,t$:
-
+    %
     \begin{columns}[c,onlytextwidth]
         \begin{column}{0.46\textwidth}
             \[
                 \idx{Y}{t,:}=\phi\!\left(\vc{W}^{\top}\operatorname{vect}(\causalP(t))+\vc{b}\right).
             \]
+
+            \vspace{1em}
             Equivalently, we zero the weights of a centered kernel that read
             the future.
         \end{column}
