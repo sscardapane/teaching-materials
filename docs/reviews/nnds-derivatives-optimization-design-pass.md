@@ -53,3 +53,25 @@ a function" removed (its max/min point is now one line on Empirical risk
 minimization), the basis vector defined inline, and the momentum intro moved
 above its columns. The 2c sub-deck's `pageOffset` is now `27`, so its pages
 continue from 2b (last page 28); the old value `38` predated the July trims.
+
+## Review fixes (2026-10-15)
+
+Simone's review of the design pass:
+
+- **Directional derivative:** the figure sat right under the definition box; it now
+  has space above it. The gradient was already exactly normal to the tangent
+  (equal axis aspect), but no drawn level curve passed through x, so the right
+  angle was hard to see. The level set through x is now drawn darker, and the
+  caption says "tangent to the level set".
+- **Saddle points in more dimensions:** the reference was cramped against the body
+  text; the figure is slightly smaller and there is space before the reference.
+- **Descent direction:** columns are vertically centred, so the equation on the
+  left no longer sits at the top with empty space below.
+- **Conditioning, Momentum, Comparing the three methods:** the paths stopped
+  after 15 steps, before the minimum. Each method now runs until it is within
+  0.05 of the minimum: GD 46 steps, momentum 19, Adam 39 (step size 0.15, which
+  removes the overshoot past the minimum). The comparison slide now says "running
+  each method until it reaches the minimum".
+
+Rebuilt both courses; only the pre-existing title-page warning remains on this deck.
+Not exported.

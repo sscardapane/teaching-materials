@@ -1,6 +1,6 @@
 """Gradient and a direction u at a point of a 2D quadratic.
 
-Writes ../directional_derivative.pdf. Written by Claude (2026-10-14).
+Writes ../directional_derivative.pdf. Written by Claude (2026-10-14); level set through x highlighted 2026-10-15.
 
     .venv/bin/python shared/assets/images/lecture_2/src/plot_directional_derivative.py
 """
@@ -28,6 +28,8 @@ tangent = np.array([-gn[1], gn[0]])
 
 fig, ax = plt.subplots(figsize=(6, 4.4))
 ax.contour(a, b, f, levels=np.linspace(0.1, 3.5, 9), colors=GRAY, linewidths=0.9)
+# The level set through x, drawn darker: the dashed tangent touches it at x, at a right angle to the gradient.
+ax.contour(a, b, f, levels=[0.5 * (x[0] ** 2 + 3 * x[1] ** 2)], colors="#555555", linewidths=1.6)
 ax.plot(*np.stack([x - 0.9 * tangent, x + 0.9 * tangent]).T, "--", color=GRAY, linewidth=1.5)
 ax.annotate("", xy=x + 0.95 * gn, xytext=x, arrowprops=dict(arrowstyle="-|>", color=RED, lw=2.8, mutation_scale=22))
 ax.annotate("", xy=x + 0.95 * u, xytext=x, arrowprops=dict(arrowstyle="-|>", color=BLUE, lw=2.8, mutation_scale=22))
@@ -39,7 +41,7 @@ mid = arc[len(arc) // 2]
 ax.text(x[0] + 0.45 * np.cos(mid), x[1] + 0.45 * np.sin(mid), r"$\alpha$", color=ORANGE, ha="center", va="center")
 ax.plot(*x, "o", color="black")
 ax.text(*(x + np.array([0.08, -0.22])), r"$\mathbf{x}$")
-ax.text(-2.1, -1.5, "dashed: level set,\nwhere $\\mathrm{D}_{\\mathbf{u}}f = 0$", color=GRAY, fontsize=14, va="bottom")
+ax.text(-2.1, -1.5, "dashed: tangent to the level set,\nwhere $\\mathrm{D}_{\\mathbf{u}}f = 0$", color=GRAY, fontsize=14, va="bottom")
 ax.set_xticks([]); ax.set_yticks([]); ax.set_aspect("equal")
 fig.savefig(OUT / "directional_derivative.pdf", transparent=True, bbox_inches="tight", pad_inches=0.05,
             metadata={"CreationDate": None})

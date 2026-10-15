@@ -26,18 +26,25 @@ def grad(theta):
     return np.array([theta[0], KAPPA * theta[1]])
 
 
-def run(eta, lam=0.0, steps=15):
+# Each method runs until it is within TOL of the minimum, so every path ends at the star.
+TOL = 0.05
+MAX_STEPS = 500
+
+
+def run(eta, lam=0.0):
     theta, u, path = START.copy(), np.zeros(2), [START.copy()]
-    for _ in range(steps):
+    while np.linalg.norm(theta) > TOL and len(path) <= MAX_STEPS:
         u = lam * u - eta * grad(theta)
         theta = theta + u
         path.append(theta.copy())
     return np.array(path)
 
 
-def adam(eta, steps=15, b1=0.9, b2=0.999, eps=1e-8):
+def adam(eta, b1=0.9, b2=0.999, eps=1e-8):
     theta, m, v, path = START.copy(), np.zeros(2), np.zeros(2), [START.copy()]
-    for t in range(1, steps + 1):
+    t = 0
+    while np.linalg.norm(theta) > TOL and len(path) <= MAX_STEPS:
+        t += 1
         g = grad(theta)
         m = b1 * m + (1 - b1) * g
         v = b2 * v + (1 - b2) * g * g
@@ -59,7 +66,8 @@ def base(ax):
 
 
 def draw(ax, path, color, label):
-    ax.plot(path[:, 0], path[:, 1], "-o", color=color, markersize=4, linewidth=1.8, label=label)
+    ax.plot(path[:, 0], path[:, 1], "-o", color=color, markersize=3, linewidth=1.5, label=label)
+    print(f"{label}: {len(path) - 1} steps")
 
 
 def save(fig, name):
@@ -88,6 +96,6 @@ fig, ax = plt.subplots(figsize=(7, 3.4))
 base(ax)
 draw(ax, gd, RED, "GD")
 draw(ax, run(eta=0.04, lam=0.7), BLUE, "Momentum")
-draw(ax, adam(eta=0.3), GREEN, "Adam")
+draw(ax, adam(eta=0.15), GREEN, "Adam")
 ax.legend(loc="lower center", bbox_to_anchor=(0.5, 1.0), ncol=3, frameon=False)
 save(fig, "adam_path.pdf")

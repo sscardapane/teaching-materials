@@ -121,6 +121,7 @@
 		\]
 	\end{tcolorbox}
 
+	\vspace{0.6em}
 	\begin{columns}[c,onlytextwidth]
 		\begin{column}{0.55\textwidth}
 			It is easy to prove that:
@@ -302,11 +303,12 @@
 	For $\mathcal{L}(\boldsymbol{\theta})=\theta_1^2-\theta_2^2$, the gradient vanishes at $\vc{0}$, a {\color{darkgreen}minimum along $\theta_1$} and a {\color{darkred}maximum along $\theta_2$}:
 
 	\begin{center}
-		\includegraphics[height=0.47\textheight]{images/lecture_2/saddle_2d.pdf}
+		\includegraphics[height=0.42\textheight]{images/lecture_2/saddle_2d.pdf}
 	\end{center}
 
 	A minimum must curve upwards in \textit{every} direction, so with millions of parameters most stationary points are saddles. GD slows down near them; gradient noise helps to escape.
 
+	\vspace{1.0em}
 	\SlideSource{Dauphin et al. (2014), \href{https://arxiv.org/abs/1406.2572}{\textit{Identifying and attacking the saddle point problem in high-dimensional non-convex optimization}}, NeurIPS.}
 
 \end{whiteframe}
@@ -337,7 +339,7 @@
 	$\langle\vc{a},\vc{b}\rangle=\lVert\vc{a}\rVert\lVert\vc{b}\rVert\cos(\alpha)$,
 	where $\alpha$ is the angle between the two vectors.
 
-	\begin{columns}[T,onlytextwidth]
+	\begin{columns}[c,onlytextwidth]
 		\begin{column}{0.62\textwidth}
 			The rate of change along $\vc{p}_t$ is:
 			\begin{align*}
@@ -662,7 +664,7 @@
 \begin{whiteframe}{Comparing the three methods}
 	\setlength{\parskip}{3pt}
 
-	On the same quadratic and for the same number of steps:
+	On the same quadratic, running each method until it reaches the minimum:
 
 	\begin{center}
 		\includegraphics[height=0.5\textheight]{images/lecture_2/adam_path.pdf}
