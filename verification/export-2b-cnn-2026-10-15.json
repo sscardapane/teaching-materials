@@ -12,7 +12,7 @@
       "pages": 34,
       "all_pages_rendered": true,
       "visual_review": "All slides inspected on contact sheets; every changed slide inspected at full size. No clipping, overlap or missing assets observed.",
-      "link_count": 3
+      "link_count": 11
     },
     "Lecture_CNNs": {
       "file": "pdf/nnds/Lecture_CNNs.pdf",
@@ -22,7 +22,7 @@
       "pages": 45,
       "all_pages_rendered": true,
       "visual_review": "All slides inspected on contact sheets; every changed slide inspected at full size. No clipping, overlap or missing assets observed.",
-      "link_count": 8
+      "link_count": 16
     }
   },
   "build_notes": {
