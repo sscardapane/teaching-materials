@@ -2,7 +2,7 @@
 \documentclass[11pt,aspectratio=169]{beamer}
 
 \input{style.tex}
-\usetikzlibrary{arrows.meta,calc}
+\usetikzlibrary{arrows.meta,calc,decorations.pathreplacing}
 \graphicspath{{assets/}{../../shared/assets/}}
 \newcommand*{\boldone}{\text{\usefont{U}{bbold}{m}{n}1}}
 % Causal window: the s positions ending at t (Written by Claude, 2026-10-14).
@@ -93,7 +93,12 @@
 
 \begin{frame}{Two ways to process an image}
     \centering
-    \scalebox{0.97}{\input{assets/images/cnn/input-mixing.tex}}
+    \scalebox{0.93}{\input{assets/images/cnn/input-mixing.tex}}
+
+    \vspace{0.8em}
+    \raggedright
+    Convolutions sit in between: each output pixel sees a small
+    \myalert{neighborhood}, and the weights are shared across positions.
 \end{frame}
 
 \begin{frame}{An example to keep in mind}
@@ -694,9 +699,9 @@
 
     We can learn the vocabulary with \myalert{byte pair encoding} (BPE):
     \begin{enumerate}
-        \item We start with single characters.
-        \item We merge the most frequent adjacent pair into a new token.
-        \item We repeat to reach the chosen vocabulary size.
+        \item Start the vocabulary with the single characters.
+        \item Merge the most frequent adjacent pair into a new token, \myalert{added to the vocabulary}.
+        \item Repeat until the vocabulary reaches the chosen size $V$.
     \end{enumerate}
 
     Toy corpus: \texttt{hug} $\times5$, \texttt{hugs} $\times3$,
@@ -707,6 +712,8 @@
             (\texttt{h},\texttt{ug}) & \longmapsto & \texttt{hug} & \quad 8\text{ occurrences}
         \end{array}
     \]
+    The vocabulary grows from $\{\texttt{g},\texttt{h},\texttt{p},\texttt{s},\texttt{u}\}$
+    to $\{\ldots,\texttt{ug}\}$ and then $\{\ldots,\texttt{ug},\texttt{hug}\}$.
 
     On new text, we apply the fixed merge rules in their learned order.
     \myalert{Byte-level BPE} starts from $256$ byte values, so it can represent
@@ -843,15 +850,14 @@
     \]
 
     \begin{columns}[c,onlytextwidth]
-        \begin{column}{0.5\textwidth}
+        \begin{column}{0.56\textwidth}
             \centering
-            \scalebox{0.68}{\input{assets/images/cnn/dilated.tex}}
+            \scalebox{0.74}{\input{assets/images/cnn/dilated.tex}}
         \end{column}
-        \begin{column}{0.46\textwidth}
+        \begin{column}{0.4\textwidth}
             \begin{tcolorbox}[nndsgreen]
-                Doubling the dilation at every layer ($d=1,2,4,\ldots$), $L$
-                layers with $s=2$ see $2^L$ positions: the receptive field grows
-                \myalert{exponentially} with depth.
+                With $d=1,2,4,\ldots$ and $s=2$, $L$ layers see $2^L$ positions:
+                the receptive field grows \myalert{exponentially} with depth.
             \end{tcolorbox}
         \end{column}
     \end{columns}
@@ -865,27 +871,33 @@
 
 \begin{frame}{Training a next-token predictor}
     \setlength{\parskip}{3pt}
-    \setlength{\abovedisplayskip}{6pt}
-    \setlength{\belowdisplayskip}{6pt}
+    \setlength{\abovedisplayskip}{4pt}
+    \setlength{\belowdisplayskip}{4pt}
 
-    We train on a \myalert{shifted target}. For our three-token text:
-    \[
-        \begin{array}{rcl}
-            \text{Input:}  & \texttt{Check}\quad\texttt{this} & (2,16) \\
-            \text{Target:} & \texttt{this}\quad\texttt{out}   & (16,3)
-        \end{array}
-    \]
+    We train on a \myalert{shifted target}. Take the text
+    \texttt{Check this out}, with token IDs from a toy vocabulary:
 
-    For $T$ valid input positions, we apply the cross-entropy loss at every valid
-    position:
+    {\centering
+        \renewcommand{\arraystretch}{1.15}
+        \begin{tabular}{lcc}
+            
+            Position $t$          & $0$                       & $1$                       \\
+            \hline
+            Input $z_t$           & $2$ (\texttt{Check})      & $16$ (\texttt{this})      \\
+            Target $z_{t+1}$      & $16$ (\texttt{this})      & $3$ (\texttt{out})        \\
+            
+        \end{tabular}
+    \par}
+
+    Each prediction $\vc{p}_t$ is compared with the next ID, averaging the
+    cross-entropy over the $T$ input positions:
     \[
         \mathcal{L}=-\frac{1}{T}\sum_{t=0}^{T-1}
         \log\idx{\vc{p}_t}{z_{t+1}}.
     \]
 
-    During training, we provide the true input tokens (\myalert{teacher forcing}).
-    With a causal CNN, all these predictions can be computed in parallel,
-    without leaking the future targets.
+    During training we feed the true tokens (\myalert{teacher forcing}), so a
+    causal CNN computes all predictions in parallel without seeing future targets.
 
 \end{frame}
 
@@ -923,9 +935,10 @@
 
     \begin{figure}
         \centering
-        \includegraphics[width=0.95\textwidth,height=0.44\textheight,keepaspectratio]{images/cnn/sequences/autoregressive_generation.pdf}
-        \caption{Generated values are fed back as new inputs. For text, we feed back sampled token IDs. Gray circles
-            mark unused positions.}
+        \includegraphics[width=0.95\textwidth,height=0.42\textheight,keepaspectratio]{images/cnn/sequences/autoregressive_generation.pdf}
+        \caption{The hat marks a generated value: $\hat{x}_{t+1}$ is the model's prediction
+            for position $t+1$, which is fed back as the next input. For text, we feed back
+            sampled token IDs. Gray circles mark unused positions.}
     \end{figure}
 
     Convolutions exchange information through fixed neighborhoods.

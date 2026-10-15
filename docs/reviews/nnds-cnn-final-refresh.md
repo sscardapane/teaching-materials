@@ -95,3 +95,25 @@ originals and was not updated. `source/stride.jpg` is no longer used.
 overfull warning, on the title page, as before. Every new, merged or redrawn
 slide was rendered and checked at full size for overflow, overlap and footer
 collisions.
+
+## Review fixes and export (2026-10-15)
+
+After Simone's own edits (`2129f13`), his review asked for five changes:
+
+- **Two ways to process an image:** the diagram is redrawn around what one output
+  pixel depends on. In the positionwise MLP it sees one input pixel; in the
+  vectorized layer it sees all of them (one wire per pixel). Each row states the
+  weight count, and a closing line sets up convolutions as the middle ground.
+- **Byte pair encoding:** step 2 now says each merge is *added to the vocabulary*,
+  and a line shows the toy vocabulary growing from the characters to `ug` and `hug`.
+- **Dilated convolutions:** the figure is redrawn with edges under the units, one
+  label per layer, the output marked, and a brace for the 8-position receptive
+  field. The box text is shorter.
+- **Training a next-token predictor:** the IDs (2, 16, 3) were never defined.
+  The example is now a table by position: input `z_t` and target `z_{t+1}`, with the
+  tokens next to their IDs.
+- **Autoregressive generation:** the caption defines the hat: `x̂_{t+1}` is the model's
+  prediction, fed back as the next input.
+
+The deck loads `decorations.pathreplacing` for the brace. Exported with 2b; baseline
+`verification/export-2b-cnn-2026-10-15.json`.

@@ -1,0 +1,36 @@
+{
+  "baseline_id": "nnds-2b-cnn-export-2026-10-15",
+  "approval": "Simone reviewed 2b and the CNN deck on 2026-10-15, asked for fixes on four 2b slides and five CNN slides, and requested the export.",
+  "scope": "Export NNDS 2b (derivatives and optimization) after the review fixes, and the first export of the CNN deck after the review fixes and Simone's own edits (2129f13).",
+  "reference_policy": "Earlier migration and export baselines remain unchanged.",
+  "decks": {
+    "Lecture_2_preliminaries": {
+      "file": "pdf/nnds/Lecture_2_preliminaries.pdf",
+      "source": "courses/nnds/Lecture_2_preliminaries.tex",
+      "source_sha256": "071e423e3f4cf250040e10854b795cf2248d762a96ac4ddd37e0a5d1cc0d7a4b",
+      "sha256": "2964ba0f7680d0ea5caeec26aac4978ea5f41d056500c6f773d9ee621946797e",
+      "pages": 34,
+      "all_pages_rendered": true,
+      "visual_review": "All slides inspected on contact sheets; every changed slide inspected at full size. No clipping, overlap or missing assets observed.",
+      "link_count": 3
+    },
+    "Lecture_CNNs": {
+      "file": "pdf/nnds/Lecture_CNNs.pdf",
+      "source": "courses/nnds/Lecture_CNNs.tex",
+      "source_sha256": "754dd4d4ba3e895c69624bc49219246a581291c266c717a050e0ffd3e9cd8f78",
+      "sha256": "bab872223aeaa86c0fb1f3f2945e3ad6df159437350286a48ed87f5905a1baa5",
+      "pages": 45,
+      "all_pages_rendered": true,
+      "visual_review": "All slides inspected on contact sheets; every changed slide inspected at full size. No clipping, overlap or missing assets observed.",
+      "link_count": 8
+    }
+  },
+  "build_notes": {
+    "2b": "Existing title-page overfull vbox warning only.",
+    "CNN": "Existing title-page overfull vbox warning only; no content overflow warnings."
+  },
+  "reviews": [
+    "docs/reviews/nnds-derivatives-optimization-design-pass.md",
+    "docs/reviews/nnds-cnn-final-refresh.md"
+  ]
+}

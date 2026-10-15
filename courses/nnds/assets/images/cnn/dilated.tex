@@ -1,18 +1,21 @@
 % Editable stack of causal dilated convolutions (kernel size 2, dilations
 % 1, 2, 4), highlighting the receptive field of the last output.
-% Written by Claude (2026-10-14).
+% Written by Claude (2026-10-14); redrawn 2026-10-15 (edges below the units,
+% one label per layer).
 \begingroup
 \begin{tikzpicture}[x=1cm,y=1cm,
-        unit/.style={circle,minimum size=0.42cm,inner sep=0pt,line width=0.8pt},
-        idle/.style={unit,draw=drawgray!60,fill=white},
+        unit/.style={circle,minimum size=0.4cm,inner sep=0pt,line width=0.8pt},
+        idle/.style={unit,draw=drawgray!45,fill=white},
         used/.style={unit,draw=drawblue,fill=drawblue_l},
-        tap/.style={drawblue,line width=1.1pt}]
-    \def\dx{0.95}
-    \def\dy{0.78}
-    % every unit, idle by default
+        result/.style={unit,draw=drawgreen,fill=drawgreen_l,line width=1.1pt},
+        tap/.style={drawblue,line width=1pt},
+        layer/.style={anchor=east,font=\small,text=drawgray}]
+    \def\dx{0.8}
+    \def\dy{0.95}
+    % positions only; the units are drawn after the edges, so lines stay underneath
     \foreach \l in {0,...,3}{
         \foreach \t in {0,...,7}{
-            \node[idle] (u\l-\t) at (\dx*\t,\dy*\l) {};
+            \coordinate (u\l-\t) at (\dx*\t,\dy*\l);
         }
     }
     % the computation tree of the last output: layer l reads t and t - 2^(l-1)
@@ -24,14 +27,20 @@
             \draw[tap] (u\below-\back) -- (u\l-\t);
         }
     }
-    \foreach \l/\ts in {3/{7}, 2/{7,3}, 1/{7,5,3,1}, 0/{0,...,7}}{
+    \foreach \l in {0,...,3}{
+        \foreach \t in {0,...,7}{ \node[idle] at (u\l-\t) {}; }
+    }
+    \foreach \l/\ts in {2/{7,3}, 1/{7,5,3,1}, 0/{0,...,7}}{
         \foreach \t in \ts{ \node[used] at (u\l-\t) {}; }
     }
-    % labels
-    \node[anchor=east,font=\small] at (-0.35,0) {Input};
-    \node[anchor=east,font=\small] at (-0.35,3*\dy) {Output};
-    \foreach \l/\d in {1/1,2/2,3/4}{
-        \node[anchor=west,font=\small,text=drawgray] at (7*\dx+0.4,\dy*\l) {$d=\d$};
-    }
+    \node[result] at (u3-7) {};
+    % one label per layer
+    \node[layer] at (-0.4,0) {input};
+    \node[layer] at (-0.4,\dy) {$d=1$};
+    \node[layer] at (-0.4,2*\dy) {$d=2$};
+    \node[layer] at (-0.4,3*\dy) {$d=4$};
+    \node[anchor=west,font=\small,text=drawgreen] at (7*\dx+0.35,3*\dy) {output};
+    \draw[decorate,decoration={brace,mirror,amplitude=4pt},drawgray]
+        (-0.2,-0.4) -- node[below=4pt,font=\small,text=drawgray] {receptive field: $8$ positions} (7*\dx+0.2,-0.4);
 \end{tikzpicture}
 \endgroup
