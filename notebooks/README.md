@@ -68,9 +68,8 @@ An environment without these packages can install `requirements.txt`.
 ## Proposed teaching format
 
 PT01 can be read and run from top to bottom without filling gaps. The core
-ends after the classification example. The optional examples preserve the
-original diagonal, normalization and cosine-similarity exercises as worked
-examples, with explicit edge cases.
+ends after the classification example. The optional diagonal, normalization and cosine-similarity
+functions are exercises with stubs, edge-case checks and instructor references.
 
 PT02 supplies data handling, plotting, the model class and accuracy.
 Students write the batched forward pass, a stable cross-entropy loss and the training step, then investigate
@@ -85,9 +84,9 @@ in its instructor notebook. The explanatory worked examples stay in both version
 
 The optional tensor-semantics section implements item 25 of the shared additions
 menu: students predict, diagnose and repair a broadcasted regression error, a
-transposed batch and centering over the wrong axis. Each uses hand-checkable
+transposed batch and a softmax over the wrong axis. Each uses hand-checkable
 values and asks for assertions that reject the original computation. The section
-can also be used after Section 2; it needs no autograd or PT02 material.
+needs Sections 1 and 2 plus the softmax from Section 5, and no PT02 material.
 
 Item 26 extends Sections 3 and 4 with a tensor-level view of autograd:
 `requires_grad`, `is_leaf`, `grad_fn`, `grad`, and `retains_grad`, followed by
@@ -132,7 +131,7 @@ code, timing, and this paragraph should be discussed in the next review.
 | --- | --- |
 | PT01 tensor introduction and indexing | Condensed around batch and feature axes and a batched linear model. |
 | Storage pointers and strides | Optional, using visible mutation to explain views/copies and a short stride example; deprecated typed-storage calls removed. |
-| Diagonal, normalization and cosine exercises | Optional worked examples with known-answer checks; constant and zero-vector conventions stated. |
+| Diagonal, normalization and cosine exercises | Optional exercises with stubs and checks (asymmetric, square and scaled inputs); constant and zero-vector conventions stated; references in the instructor notebook. |
 | Profiler and compilation interlude | Deferred to performance material; no claim that compilation guarantees a speedup. |
 | Autodiff | Retained with explicit leaf behavior, gradient accumulation, fresh forward passes, updates under `no_grad`, and detached logging. |
 | Backward-node traversal/counting cosines | Deferred to the later autodiff unit; no private graph attributes in the required path. |
@@ -256,6 +255,18 @@ both large rates overshoot on the first update and then converge. The PT01/PT02
 verifier passed on CPU (Python 3.12.4, PyTorch 2.14.1). The autodiff step was
 skipped because the PT03 student source was edited by hand in `4716bcf` and no
 longer matches its generator; PT03 was not changed.
+
+PT01 activity revision (Simone, October 16). The tasks students actually work
+on were too easy, so they now ask for more. The short check no longer repeats the examples shown just above it: a
+square matrix where the wrong-axis mean runs silently, accumulated gradients
+from two different functions followed by a stale update, and `backward()` on a
+per-example loss. Its answers are executable in the instructor notebook. Tensor
+challenge 3, which repeated the Section 2 centering example, became a softmax
+over the batch axis that changes a predicted class while keeping the shape. The
+diagonal, row-normalization and cosine functions became exercises. The verifier
+checks that their tests reject a doubled main diagonal, normalization over the
+wrong axis and unnormalized dot products. The autograd detective is unchanged. The PT01/PT02 verifier passed on CPU
+(Python 3.12.4, PyTorch 2.14.1), with the autodiff step skipped as above.
 
 ## PT03: automatic differentiation from scratch
 

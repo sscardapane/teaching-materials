@@ -123,9 +123,9 @@ must_reject(suspect_errors, torch.tensor([1., 0., -1.]))
 must_reject(suspect_mse, torch.tensor(2. / 3.))
 assert suspect_predictions.shape == row_predictions.shape
 must_reject(suspect_predictions, torch.tensor([21., 43.]))
-assert suspect_centered.shape == feature_centered.shape
-must_reject(suspect_centered, torch.tensor([[-2., -10.], [0., 0.], [2., 10.]]))
-must_reject(suspect_centered.mean(dim=0), torch.zeros(2))
+assert suspect_probabilities.shape == probabilities.shape
+must_reject(suspect_probabilities.sum(dim=-1), torch.ones(3))
+must_reject(suspect_probabilities.argmax(dim=-1), torch.tensor([0, 2, 0]))
 try:
     larger_batch.T @ weights
 except RuntimeError:
@@ -138,6 +138,26 @@ torch.testing.assert_close(single_error, torch.tensor([1.]))
 ''')])
         execute(checks)
         print("PASS PT01 displayed solutions and rejection of all three original bugs", flush=True)
+
+        # The array-operation checks must reject plausible wrong implementations.
+        array_checks = {c.id: c.source for c in pt01.cells
+                        if c.id in {"0202983b-check", "52081f9c-check", "33514e05-check"}}
+        assert len(array_checks) == 3
+        wrong_versions = {
+            "0202983b-check": "def sum_diagonals(A):\n    return 2 * A.diagonal().sum()",
+            "52081f9c-check": ("def normalize_rows(A, eps=1e-8):\n"
+                               "    return (A - A.mean(dim=0, keepdim=True)) / A.std(dim=0, correction=0, keepdim=True).clamp_min(eps)"),
+            "33514e05-check": "def cosine_similarity(A):\n    return A @ A.T",
+        }
+        rejections = ["import torch\nimport torch.nn.functional as F\n"
+                      "def must_fail(source):\n"
+                      "    try:\n        exec(source, dict(globals()))\n"
+                      "    except AssertionError:\n        return\n"
+                      "    raise AssertionError('Array check accepted a wrong implementation')\n"]
+        for check_id, wrong in wrong_versions.items():
+            rejections.append(f"must_fail({(wrong + chr(10) + array_checks[check_id])!r})")
+        execute(nbformat.v4.new_notebook(cells=[nbformat.v4.new_code_cell("\n".join(rejections))]))
+        print("PASS PT01 array-operation checks reject wrong implementations", flush=True)
 
         repairs = [c.source for c in pt01.cells if c.id.startswith("autograd-detective-solutions-code-")]
         assert len(repairs) == 4
