@@ -177,13 +177,10 @@ def build_autodiff():
     intro = cell_by_id(notebook, "ad-intro")
     source = "".join(intro["source"])
     source = source.replace(" (instructor version)", "")
-    source = source.replace(
-        "This instructor version includes executable solutions in cells tagged\n"
-        "`reference`. The generated student version removes them and all saved outputs.\n"
-        "An unfinished activity raises an error; it never silently calls a solution.",
-        "This is the student version. Complete each activity before continuing.\n"
-        "An unfinished activity raises an error that names the missing implementation.\n"
-        "Exercise solutions and saved outputs are not included.")
+    # The student intro ends with the prerequisites (Simone's October 8 revision):
+    # drop the instructor paragraph and the provenance note that follow them.
+    instructor_tail = source.index("\n\nThis instructor version includes executable solutions")
+    source = source[:instructor_tail]
     intro["source"] = lines(source)
     return clear_execution(notebook)
 

@@ -7843,16 +7843,7 @@ functions.</p>
 cell: if your code is wrong, the check stops with a message telling you what to
 look at. A function that still raises <code>NotImplementedError</code> stops the notebook
 at its first use, so complete the activities in order.</p>
-<p>You need PT01 (tensors and autograd) and PT02 (the batched linear classifier).
-This notebook runs on its own and does not import them.</p>
-<p>This is the student version. Complete each activity before continuing.
-An unfinished activity raises an error that names the missing implementation.
-Exercise solutions and saved outputs are not included.</p>
-<blockquote>
-<p>[!note] Written by Codex (2026-10-07), revised by Claude (2026-10-07)
-Adapted from Simone Scardapane's autodiff Colab and the shared PT01/PT02
-notebooks. Sources are listed at the end.</p>
-</blockquote>
+<p>We assume knowledge of the material covered in PT01 (tensors and autograd) and PT02 (the batched linear classifier).</p>
 </div>
 </div>
 </div>
@@ -7863,9 +7854,8 @@ notebooks. Sources are listed at the end.</p>
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="1.-Setup">1. Setup<a class="anchor-link" href="#1.-Setup">¶</a></h2><p>The engine uses NumPy only. PyTorch is imported to check your results. Everything
-runs on the CPU in double precision (float64), so a disagreement with PyTorch
-points to a bug, not to rounding. <code>close</code> and <code>expect_error</code> are small helpers
+<h2 id="1.-Setup">1. Setup<a class="anchor-link" href="#1.-Setup">¶</a></h2><p>The engine we implement will wrap NumPy with a PyTorch-like API for the backward pass. Everything
+runs on the CPU in double precision (float64) to avoid numerical disagreements. <code>close</code> and <code>expect_error</code> are small helpers
 used by the check cells.</p>
 </div>
 </div>
@@ -7973,7 +7963,7 @@ differences.</p>
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h3 id="The-same-idea-for-vectors-and-matrices">The same idea for vectors and matrices<a class="anchor-link" href="#The-same-idea-for-vectors-and-matrices">¶</a></h3><p>The lecture writes the derivative of $f$ at $x$ as a linear map, the <strong>JVP</strong>
+<h3 id="The-same-idea-for-vectors-and-matrices">The same idea for vectors and matrices<a class="anchor-link" href="#The-same-idea-for-vectors-and-matrices">¶</a></h3><p>We saw that the derivative of $f$ at $x$ can be interpreted as a linear map, the <strong>JVP</strong>
 $\partial f(x)[u]$. It takes a direction $u$ in the input space and returns the
 resulting change of the output. Reverse mode uses the map that goes the other
 way. The <strong>VJP</strong> $\partial f(x)^*[v]$, the adjoint of the JVP, takes a direction
@@ -7985,7 +7975,7 @@ and matrices alike (<code>np.sum(a * b)</code>).</p>
 <p>In a backward pass, $v$ is the adjoint of the output, and the VJP returns the
 adjoint of the input:</p>
 <p>$$\bar x = \partial f(x)^*[\bar y].$$</p>
-<p>Two facts follow, and you will use both all the time:</p>
+<p>Two facts follow immediately:</p>
 <ul>
 <li>$\bar x$ always has the same shape as $x$. Checking shapes catches many bugs.</li>
 <li>For a scalar loss, seeding $\bar L = 1$ and applying VJPs all the way back gives
@@ -9237,7 +9227,7 @@ Nothing to implement here.</p>
 and <a href="https://colab.research.google.com/drive/1HtjP7WEFLllgFhTE7gGRjdo8e2RV5zNY">reference fragments</a>.</li>
 <li><a href="https://docs.google.com/presentation/d/1RV6QapVTqQkmM1RO2OfYFU6XjqvxdLVSnTPT65gsISQ/edit">Automatic differentiation lecture slides</a>:
 derivatives as linear maps, JVPs and VJPs, reverse mode with operator overloading.</li>
-<li>Shared <a href="PT01_Introduction_to_PyTorch.ipynb">PT01</a> and
+<li><a href="PT01_Introduction_to_PyTorch.ipynb">PT01</a> and
 <a href="PT02_Logistic_regression.ipynb">PT02</a> notebooks: tensors, autograd, the classifier and the MLP.</li>
 <li><a href="https://docs.jax.dev/en/latest/notebooks/autodiff_cookbook.html">JAX Autodiff Cookbook</a>:
 JVPs, VJPs and the "cotangent" terminology. JAX is not a dependency.</li>

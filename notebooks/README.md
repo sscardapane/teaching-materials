@@ -268,6 +268,13 @@ checks that their tests reject a doubled main diagonal, normalization over the
 wrong axis and unnormalized dot products. The autograd detective is unchanged. The PT01/PT02 verifier passed on CPU
 (Python 3.12.4, PyTorch 2.14.1), with the autodiff step skipped as above.
 
+PT03 student source (October 16). Simone's October 8 edits to the student
+notebook (`4716bcf`) were moved into the instructor source and the generator: the
+one-line prerequisite intro without the student-version notice or provenance note,
+and the Setup and VJP wording. At Simone's request the Colab source links remain in
+the Sources list. The regenerated student notebook differs from his version only by
+those links, and the full verifier, including autodiff, passes again.
+
 ## PT03: automatic differentiation from scratch
 
 > [!note] Written by Codex (2026-10-07), revised by Claude (2026-10-07)
