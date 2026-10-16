@@ -7803,7 +7803,7 @@ a.anchor-link {
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
 <h1 id="PT02:-Logistic-regression-in-PyTorch">PT02: Logistic regression in PyTorch<a class="anchor-link" href="#PT02:-Logistic-regression-in-PyTorch">¶</a></h1><p>Given a few measurements of a penguin, can we predict its species? In this lab we build a linear classifier, train it with gradient descent and evaluate it.</p>
-<p>You should be comfortable with PT01 up to its short check: tensor operations, <code>backward()</code> and parameter updates. Data loading and plotting are provided. You write four pieces yourself: the forward pass, the loss, the training step, and a diagnosis of a faulty training step. We then compare learning rates, switch to PyTorch's standard components and train on mini-batches. After the MLP lecture, Section 9 replaces the linear model with an MLP, keeping the rest of the code.</p>
+<p>You should be comfortable with PT01 up to its short check: tensor operations, <code>backward()</code> and parameter updates. Data loading and plotting are provided. There are six activities. In the first three you write the forward pass, the loss and the training step. Then you investigate why the largest learning rate wins on this data, diagnose a faulty training step, and check when a mini-batch update equals a full-batch one. Along the way we switch to PyTorch's standard components and train on mini-batches. After the MLP lecture, Section 9 replaces the linear model with an MLP, keeping the rest of the code.</p>
 <p>Two optional sections close the notebook. The first uses per-example gradients to look inside the trained classifier. The second is an exercise for after the MLP lecture, where we reuse the same training loop with an MLP to fit an image.</p>
 <p>Complete each activity before moving on: if you run a later cell first, you get an error that names the missing activity. Solutions are not included in this version.</p>
 <blockquote>
@@ -8149,32 +8149,14 @@ a.anchor-link {
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="4.-One-training-step">4. One training step<a class="anchor-link" href="#4.-One-training-step">¶</a></h2><p>Here is one gradient descent step written out in full. The order is: clear the gradients, compute the loss, call <code>backward()</code>, update. Only the update runs inside <code>no_grad</code>.</p>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=900865a5">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython3"><pre><span></span><span class="n">model</span> <span class="o">=</span> <span class="n">LogisticRegression</span><span class="p">(</span><span class="n">Xtrain</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="nb">len</span><span class="p">(</span><span class="n">classes</span><span class="p">))</span>
-<span class="k">for</span> <span class="n">parameter</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">():</span>
-    <span class="n">parameter</span><span class="o">.</span><span class="n">grad</span> <span class="o">=</span> <span class="kc">None</span>
-<span class="n">loss</span> <span class="o">=</span> <span class="n">cross_entropy</span><span class="p">(</span><span class="n">model</span><span class="p">(</span><span class="n">Xtrain</span><span class="p">),</span> <span class="n">ytrain</span><span class="p">)</span>
-<span class="n">loss</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"Weight gradient shape:"</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">grad</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"Bias gradient shape:"</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">bias</span><span class="o">.</span><span class="n">grad</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
-<span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
-    <span class="k">for</span> <span class="n">parameter</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">():</span>
-        <span class="n">parameter</span> <span class="o">-=</span> <span class="mf">0.1</span> <span class="o">*</span> <span class="n">parameter</span><span class="o">.</span><span class="n">grad</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"Loss before:"</span><span class="p">,</span> <span class="n">loss</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"Loss after:"</span><span class="p">,</span> <span class="n">cross_entropy</span><span class="p">(</span><span class="n">model</span><span class="p">(</span><span class="n">Xtrain</span><span class="p">),</span> <span class="n">ytrain</span><span class="p">)</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
-</pre></div>
-</div>
+<h2 id="4.-One-training-step">4. One training step<a class="anchor-link" href="#4.-One-training-step">¶</a></h2><p>One step of gradient descent has four parts, in this order:</p>
+<ol>
+<li>clear the gradients left by the previous step (set the <code>.grad</code> of each parameter to <code>None</code>);</li>
+<li>compute the loss on the data;</li>
+<li>call <code>backward()</code>;</li>
+<li>subtract the learning rate times its gradient from each parameter.</li>
+</ol>
+<p>Only the update runs inside <code>torch.no_grad()</code>. You saw all four parts in PT01; here you put them together.</p>
 </div>
 </div>
 </div>
@@ -8185,7 +8167,7 @@ a.anchor-link {
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h3 id="Activity-3:-train-the-classifier">Activity 3: train the classifier<a class="anchor-link" href="#Activity-3:-train-the-classifier">¶</a></h3><p>Move this update into <code>training_step</code>. The function changes the model in place and returns the loss computed <strong>before</strong> the update, as a Python number. The data are arguments rather than global variables, so later we can call the same function on mini-batches.</p>
+<h3 id="Activity-3:-train-the-classifier">Activity 3: train the classifier<a class="anchor-link" href="#Activity-3:-train-the-classifier">¶</a></h3><p>Write <code>training_step</code>. It makes one step on the data it receives, changes the model in place and returns the loss computed <strong>before</strong> the update, as a Python number. Loop over <code>model.parameters()</code>, so that the same code updates the weight and the bias. The data are arguments rather than global variables, so later we can call the same function on mini-batches.</p>
 <p>The next cell checks your function over two consecutive steps; the second step catches gradients that were not cleared. Then run the training loop and look at the training and validation curves together. Leave the test set alone until the end.</p>
 </div>
 </div>
@@ -8347,8 +8329,44 @@ a.anchor-link {
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<p>On this dataset the largest rate wins clearly. Do not read this as a general rule. With these four features the three species are linearly separable on the training set, or very nearly so. When that happens, the cross-entropy keeps decreasing as the weights grow, and a larger step simply gets there faster. You can check it by printing <code>model.weight.norm()</code> for each run.</p>
-<p>Try larger rates, such as 100 or 1000, and look at the first few updates. In Section 9 we will see what the same rate of 10 does to an MLP.</p>
+<p>On this dataset the largest rate wins clearly. Do not read this as a general rule: the next activity asks why it happens here.</p>
+<h3 id="Activity-4:-why-does-the-largest-rate-win?">Activity 4: why does the largest rate win?<a class="anchor-link" href="#Activity-4:-why-does-the-largest-rate-win?">¶</a></h3><p>Write down a prediction before each step, then check it.</p>
+<ol>
+<li>Which of the three runs has the largest weight norm? Print <code>lr_models[rate].weight.norm()</code> and the training accuracy of each run.</li>
+<li>Copy the <code>lr=10</code> model with <code>copy.deepcopy</code> and keep training it with <code>fit</code> for 2000 more updates, recording the weight norm every 200 updates. Does the training loss reach zero? Does the norm level off?</li>
+<li>The norm keeps changing, but does the <em>direction</em> <code>W / ‖W‖</code> keep changing too? Compute the cosine between the directions at consecutive checkpoints.</li>
+<li>Train from <code>initial_model</code> with <code>lr=100</code> and <code>lr=1000</code>, and print the first ten training losses. Does anything break? In Section 9 we will see what a rate of 10 does to an MLP.</li>
+</ol>
+<p>Do not overwrite <code>model</code> or <code>lr_models</code>: Section 8 evaluates the selected run.</p>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=lr-activity-work">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="cm-editor cm-s-jupyter">
+<div class="highlight hl-ipython3"><pre><span></span><span class="c1"># Activity 4: your experiments here.</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=lr-activity-discussion">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<details>
+<summary>Discussion (open after the activity)</summary>
+<p>With these four features the three species are linearly separable on the training set: the <code>lr=10</code> run reaches 100% training accuracy. Once a linear classifier separates the data, scaling up its weights makes every correct logit larger relative to the others, so the cross-entropy keeps falling as the norm grows. The loss never reaches zero and the norm never levels off, though both change more and more slowly. The direction, instead, settles: training keeps pushing the same separator further out. A larger step simply travels this path faster, which is why <code>lr=10</code> wins.</p>
+<p>Even rates of 100 and 1000 do not break anything. The first update overshoots and the loss jumps, but the loss is convex in the parameters and the data are separable, so training recovers. This is a property of this problem, not of gradient descent: with an MLP, or with classes that overlap, the same rates behave very differently.</p>
+</details>
 </div>
 </div>
 </div>
@@ -8359,8 +8377,8 @@ a.anchor-link {
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="5.-Investigating-a-training-run">5. Investigating a training run<a class="anchor-link" href="#5.-Investigating-a-training-run">¶</a></h2><h3 id="Activity-4:-a-different-training-step">Activity 4: a different training step<a class="anchor-link" href="#Activity-4:-a-different-training-step">¶</a></h3><p>A colleague gives you the function below. It runs, and at first its loss may even fall faster than yours. Is it the same gradient descent?</p>
-<p>Compare it with your <code>training_step</code>, starting from the same parameters and data. Design a small experiment that tells the two apart: write down what you expect, run it, then fix the function. A decreasing loss alone does not settle the question.</p>
+<h2 id="5.-Investigating-a-training-run">5. Investigating a training run<a class="anchor-link" href="#5.-Investigating-a-training-run">¶</a></h2><h3 id="Activity-5:-a-different-training-step">Activity 5: a different training step<a class="anchor-link" href="#Activity-5:-a-different-training-step">¶</a></h3><p>A colleague gives you the function below. It runs, and at first its loss may even fall faster than yours. Is it the same gradient descent?</p>
+<p>Compare it with your <code>training_step</code>, starting from the same parameters and data. Design a small experiment that tells the two apart: write down what you expect, run it, then fix the function. A decreasing loss alone does not settle the question. The cell below only defines the function; the experiment is up to you.</p>
 </div>
 </div>
 </div>
@@ -8379,30 +8397,6 @@ a.anchor-link {
         <span class="k">for</span> <span class="n">parameter</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">():</span>
             <span class="n">parameter</span> <span class="o">-=</span> <span class="n">lr</span> <span class="o">*</span> <span class="n">parameter</span><span class="o">.</span><span class="n">grad</span>
     <span class="k">return</span> <span class="n">loss</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
-
-<span class="n">normal</span> <span class="o">=</span> <span class="n">LogisticRegression</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
-<span class="n">suspect</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">normal</span><span class="p">)</span>
-<span class="n">normal_losses</span><span class="p">,</span> <span class="n">suspect_losses</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[]</span>
-<span class="n">normal_norms</span><span class="p">,</span> <span class="n">suspect_norms</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[]</span>
-<span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">30</span><span class="p">):</span>
-    <span class="n">run_step</span><span class="p">(</span><span class="n">normal</span><span class="p">,</span> <span class="n">Xtrain</span><span class="p">,</span> <span class="n">ytrain</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">)</span>
-    <span class="n">suspect_step</span><span class="p">(</span><span class="n">suspect</span><span class="p">,</span> <span class="n">Xtrain</span><span class="p">,</span> <span class="n">ytrain</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">)</span>
-    <span class="n">normal_losses</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">evaluate</span><span class="p">(</span><span class="n">normal</span><span class="p">,</span> <span class="n">Xtrain</span><span class="p">,</span> <span class="n">ytrain</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
-    <span class="n">suspect_losses</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">evaluate</span><span class="p">(</span><span class="n">suspect</span><span class="p">,</span> <span class="n">Xtrain</span><span class="p">,</span> <span class="n">ytrain</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
-    <span class="n">normal_norms</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">normal</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">grad</span><span class="o">.</span><span class="n">norm</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
-    <span class="n">suspect_norms</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">suspect</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">grad</span><span class="o">.</span><span class="n">norm</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
-<span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mf">3.5</span><span class="p">))</span>
-<span class="n">updates</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">normal_losses</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
-<span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">updates</span><span class="p">,</span> <span class="n">normal_losses</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">"Working step"</span><span class="p">)</span>
-<span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">updates</span><span class="p">,</span> <span class="n">suspect_losses</span><span class="p">,</span> <span class="s2">"--"</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">"Suspect step"</span><span class="p">)</span>
-<span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">xlabel</span><span class="o">=</span><span class="s2">"Update"</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s2">"Training cross-entropy"</span><span class="p">)</span>
-<span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">updates</span><span class="p">,</span> <span class="n">normal_norms</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">"Working step"</span><span class="p">)</span>
-<span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">updates</span><span class="p">,</span> <span class="n">suspect_norms</span><span class="p">,</span> <span class="s2">"--"</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">"Suspect step"</span><span class="p">)</span>
-<span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">xlabel</span><span class="o">=</span><span class="s2">"Update"</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s2">"Norm of weight.grad"</span><span class="p">)</span>
-<span class="k">for</span> <span class="n">ax</span> <span class="ow">in</span> <span class="n">axes</span><span class="p">:</span>
-    <span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
-<span class="n">fig</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
 </div>
@@ -8416,7 +8410,7 @@ a.anchor-link {
 <div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython3"><pre><span></span><span class="c1"># What is wrong?</span>
+<div class="highlight hl-ipython3"><pre><span></span><span class="c1"># Activity 5: your experiment here. What do you expect, and what do you observe?</span>
 </pre></div>
 </div>
 </div>
@@ -8541,7 +8535,35 @@ a.anchor-link {
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<p>Why do two batches give different gradients for the same parameters? What changes if you set <code>batch_size=len(ytrain)</code>? Check that one update with this batch size matches the full-batch update, starting from the same parameters.</p>
+<h3 id="Activity-6:-a-batch-as-large-as-the-training-set">Activity 6: a batch as large as the training set<a class="anchor-link" href="#Activity-6:-a-batch-as-large-as-the-training-set">¶</a></h3><p>Why do two batches give different gradients for the same parameters? Write down your answer, then test a consequence of it. Build a <code>DataLoader</code> with <code>batch_size=len(ytrain)</code> and <code>shuffle=True</code>, and show that one epoch with it, starting from <code>initial_model</code>, gives the same parameters as one full-batch <code>run_step</code> from the same start. Does the shuffling matter here? What would change with <code>batch_size=len(ytrain) - 1</code>?</p>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=minibatch-activity-work">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="cm-editor cm-s-jupyter">
+<div class="highlight hl-ipython3"><pre><span></span><span class="c1"># Activity 6: your check here.</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=minibatch-activity-discussion">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<details>
+<summary>Discussion (open after the activity)</summary>
+<p>Each batch gradient is the average of the per-example gradients in that batch, so different examples give different averages. With a single batch containing every example, the average is the full-batch gradient, and shuffling only changes the order of the terms in the sum: the result agrees up to floating-point rounding, which is why the check uses <code>assert_close</code> and not exact equality. With <code>batch_size=len(ytrain) - 1</code> an epoch has two updates, the second computed from a single example, so its gradient is far noisier than the first.</p>
+</details>
 </div>
 </div>
 </div>

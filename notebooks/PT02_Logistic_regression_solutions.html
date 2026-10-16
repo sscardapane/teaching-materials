@@ -7803,7 +7803,7 @@ a.anchor-link {
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
 <h1 id="PT02:-Logistic-regression-in-PyTorch-(instructor-version)">PT02: Logistic regression in PyTorch (instructor version)<a class="anchor-link" href="#PT02:-Logistic-regression-in-PyTorch-(instructor-version)">¶</a></h1><p>Given a few measurements of a penguin, can we predict its species? In this lab we build a linear classifier, train it with gradient descent and evaluate it.</p>
-<p>You should be comfortable with PT01 up to its short check: tensor operations, <code>backward()</code> and parameter updates. Data loading and plotting are provided. You write four pieces yourself: the forward pass, the loss, the training step, and a diagnosis of a faulty training step. We then compare learning rates, switch to PyTorch's standard components and train on mini-batches. After the MLP lecture, Section 9 replaces the linear model with an MLP, keeping the rest of the code.</p>
+<p>You should be comfortable with PT01 up to its short check: tensor operations, <code>backward()</code> and parameter updates. Data loading and plotting are provided. There are six activities. In the first three you write the forward pass, the loss and the training step. Then you investigate why the largest learning rate wins on this data, diagnose a faulty training step, and check when a mini-batch update equals a full-batch one. Along the way we switch to PyTorch's standard components and train on mini-batches. After the MLP lecture, Section 9 replaces the linear model with an MLP, keeping the rest of the code.</p>
 <p>Two optional sections close the notebook. The first uses per-example gradients to look inside the trained classifier. The second is an exercise for after the MLP lecture, where we reuse the same training loop with an MLP to fit an image.</p>
 <p>This is the instructor version. Reference implementations are included, and unfinished activities fall back to them, so the whole notebook runs. The student version does not contain these cells.</p>
 <blockquote>
@@ -8359,11 +8359,18 @@ Using reference loss
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="4.-One-training-step">4. One training step<a class="anchor-link" href="#4.-One-training-step">¶</a></h2><p>Here is one gradient descent step written out in full. The order is: clear the gradients, compute the loss, call <code>backward()</code>, update. Only the update runs inside <code>no_grad</code>.</p>
+<h2 id="4.-One-training-step">4. One training step<a class="anchor-link" href="#4.-One-training-step">¶</a></h2><p>One step of gradient descent has four parts, in this order:</p>
+<ol>
+<li>clear the gradients left by the previous step (set the <code>.grad</code> of each parameter to <code>None</code>);</li>
+<li>compute the loss on the data;</li>
+<li>call <code>backward()</code>;</li>
+<li>subtract the learning rate times its gradient from each parameter.</li>
+</ol>
+<p>Only the update runs inside <code>torch.no_grad()</code>. You saw all four parts in PT01; here you put them together.</p>
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=900865a5">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell celltag_reference" id="cell-id=900865a5">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -8371,7 +8378,8 @@ Using reference loss
 <div class="jp-InputPrompt jp-InputArea-prompt">In [13]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython3"><pre><span></span><span class="n">model</span> <span class="o">=</span> <span class="n">LogisticRegression</span><span class="p">(</span><span class="n">Xtrain</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="nb">len</span><span class="p">(</span><span class="n">classes</span><span class="p">))</span>
+<div class="highlight hl-ipython3"><pre><span></span><span class="c1"># Instructor demonstration of one full step; not in the student version.</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">LogisticRegression</span><span class="p">(</span><span class="n">Xtrain</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="nb">len</span><span class="p">(</span><span class="n">classes</span><span class="p">))</span>
 <span class="k">for</span> <span class="n">parameter</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">():</span>
     <span class="n">parameter</span><span class="o">.</span><span class="n">grad</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="n">loss</span> <span class="o">=</span> <span class="n">cross_entropy</span><span class="p">(</span><span class="n">model</span><span class="p">(</span><span class="n">Xtrain</span><span class="p">),</span> <span class="n">ytrain</span><span class="p">)</span>
@@ -8411,7 +8419,7 @@ Loss after: 0.9933529496192932
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h3 id="Activity-3:-train-the-classifier">Activity 3: train the classifier<a class="anchor-link" href="#Activity-3:-train-the-classifier">¶</a></h3><p>Move this update into <code>training_step</code>. The function changes the model in place and returns the loss computed <strong>before</strong> the update, as a Python number. The data are arguments rather than global variables, so later we can call the same function on mini-batches.</p>
+<h3 id="Activity-3:-train-the-classifier">Activity 3: train the classifier<a class="anchor-link" href="#Activity-3:-train-the-classifier">¶</a></h3><p>Write <code>training_step</code>. It makes one step on the data it receives, changes the model in place and returns the loss computed <strong>before</strong> the update, as a Python number. Loop over <code>model.parameters()</code>, so that the same code updates the weight and the bias. The data are arguments rather than global variables, so later we can call the same function on mini-batches.</p>
 <p>The next cell checks your function over two consecutive steps; the second step catches gradients that were not cleared. Then run the training loop and look at the training and validation curves together. Leave the test set alone until the end.</p>
 </div>
 </div>
@@ -8668,8 +8676,109 @@ Loss after: 0.9933529496192932
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<p>On this dataset the largest rate wins clearly. Do not read this as a general rule. With these four features the three species are linearly separable on the training set, or very nearly so. When that happens, the cross-entropy keeps decreasing as the weights grow, and a larger step simply gets there faster. You can check it by printing <code>model.weight.norm()</code> for each run.</p>
-<p>Try larger rates, such as 100 or 1000, and look at the first few updates. In Section 9 we will see what the same rate of 10 does to an MLP.</p>
+<p>On this dataset the largest rate wins clearly. Do not read this as a general rule: the next activity asks why it happens here.</p>
+<h3 id="Activity-4:-why-does-the-largest-rate-win?">Activity 4: why does the largest rate win?<a class="anchor-link" href="#Activity-4:-why-does-the-largest-rate-win?">¶</a></h3><p>Write down a prediction before each step, then check it.</p>
+<ol>
+<li>Which of the three runs has the largest weight norm? Print <code>lr_models[rate].weight.norm()</code> and the training accuracy of each run.</li>
+<li>Copy the <code>lr=10</code> model with <code>copy.deepcopy</code> and keep training it with <code>fit</code> for 2000 more updates, recording the weight norm every 200 updates. Does the training loss reach zero? Does the norm level off?</li>
+<li>The norm keeps changing, but does the <em>direction</em> <code>W / ‖W‖</code> keep changing too? Compute the cosine between the directions at consecutive checkpoints.</li>
+<li>Train from <code>initial_model</code> with <code>lr=100</code> and <code>lr=1000</code>, and print the first ten training losses. Does anything break? In Section 9 we will see what a rate of 10 does to an MLP.</li>
+</ol>
+<p>Do not overwrite <code>model</code> or <code>lr_models</code>: Section 8 evaluates the selected run.</p>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=lr-activity-work">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [19]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="cm-editor cm-s-jupyter">
+<div class="highlight hl-ipython3"><pre><span></span><span class="c1"># Activity 4: your experiments here.</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell celltag_reference" id="cell-id=lr-activity-reference">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [20]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="cm-editor cm-s-jupyter">
+<div class="highlight hl-ipython3"><pre><span></span><span class="c1"># Reference for Activity 4.</span>
+<span class="k">for</span> <span class="n">rate</span> <span class="ow">in</span> <span class="n">learning_rates</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"lr=</span><span class="si">{</span><span class="n">rate</span><span class="si">:</span><span class="s2">g</span><span class="si">}</span><span class="s2">: weight norm </span><span class="si">{</span><span class="n">lr_models</span><span class="p">[</span><span class="n">rate</span><span class="p">]</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">norm</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">()</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">, "</span>
+          <span class="sa">f</span><span class="s2">"training accuracy </span><span class="si">{</span><span class="n">evaluate</span><span class="p">(</span><span class="n">lr_models</span><span class="p">[</span><span class="n">rate</span><span class="p">],</span><span class="w"> </span><span class="n">Xtrain</span><span class="p">,</span><span class="w"> </span><span class="n">ytrain</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+
+<span class="n">longer</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">lr_models</span><span class="p">[</span><span class="mf">10.0</span><span class="p">])</span>
+<span class="n">norms</span><span class="p">,</span> <span class="n">directions</span><span class="p">,</span> <span class="n">train_losses</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[],</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>
+    <span class="n">trace</span> <span class="o">=</span> <span class="n">fit</span><span class="p">(</span><span class="n">longer</span><span class="p">,</span> <span class="n">Xtrain</span><span class="p">,</span> <span class="n">ytrain</span><span class="p">,</span> <span class="n">Xval</span><span class="p">,</span> <span class="n">yval</span><span class="p">,</span> <span class="n">lr</span><span class="o">=</span><span class="mf">10.0</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span>
+    <span class="n">norms</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">longer</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">norm</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
+    <span class="n">directions</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">longer</span><span class="o">.</span><span class="n">weight</span> <span class="o">/</span> <span class="n">longer</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">norm</span><span class="p">())</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">flatten</span><span class="p">())</span>
+    <span class="n">train_losses</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">trace</span><span class="p">[</span><span class="s2">"train_loss"</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+<span class="n">cosines</span> <span class="o">=</span> <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">a</span> <span class="o">@</span> <span class="n">b</span><span class="p">)</span> <span class="k">for</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">directions</span><span class="p">,</span> <span class="n">directions</span><span class="p">[</span><span class="mi">1</span><span class="p">:])]</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Norm every 200 updates:"</span><span class="p">,</span> <span class="p">[</span><span class="nb">round</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">norms</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Training loss:"</span><span class="p">,</span> <span class="p">[</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">v</span><span class="si">:</span><span class="s2">.1e</span><span class="si">}</span><span class="s2">"</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">train_losses</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Cosine between consecutive directions:"</span><span class="p">,</span> <span class="p">[</span><span class="nb">round</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">cosines</span><span class="p">])</span>
+<span class="k">assert</span> <span class="nb">all</span><span class="p">(</span><span class="n">b</span> <span class="o">&gt;</span> <span class="n">a</span> <span class="k">for</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">norms</span><span class="p">,</span> <span class="n">norms</span><span class="p">[</span><span class="mi">1</span><span class="p">:]))</span>
+<span class="k">assert</span> <span class="nb">all</span><span class="p">(</span><span class="n">b</span> <span class="o">&lt;</span> <span class="n">a</span> <span class="k">for</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">train_losses</span><span class="p">,</span> <span class="n">train_losses</span><span class="p">[</span><span class="mi">1</span><span class="p">:]))</span> <span class="ow">and</span> <span class="n">train_losses</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span>
+<span class="k">assert</span> <span class="n">cosines</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mf">0.999</span>
+
+<span class="k">for</span> <span class="n">rate</span> <span class="ow">in</span> <span class="p">[</span><span class="mf">100.0</span><span class="p">,</span> <span class="mf">1000.0</span><span class="p">]:</span>
+    <span class="n">trial</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">initial_model</span><span class="p">)</span>
+    <span class="n">trace</span> <span class="o">=</span> <span class="n">fit</span><span class="p">(</span><span class="n">trial</span><span class="p">,</span> <span class="n">Xtrain</span><span class="p">,</span> <span class="n">ytrain</span><span class="p">,</span> <span class="n">Xval</span><span class="p">,</span> <span class="n">yval</span><span class="p">,</span> <span class="n">lr</span><span class="o">=</span><span class="n">rate</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"lr=</span><span class="si">{</span><span class="n">rate</span><span class="si">:</span><span class="s2">g</span><span class="si">}</span><span class="s2">: first losses"</span><span class="p">,</span> <span class="p">[</span><span class="nb">round</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">trace</span><span class="p">[</span><span class="s2">"train_loss"</span><span class="p">][:</span><span class="mi">10</span><span class="p">]],</span>
+          <span class="sa">f</span><span class="s2">"final </span><span class="si">{</span><span class="n">trace</span><span class="p">[</span><span class="s1">'train_loss'</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="si">:</span><span class="s2">.1e</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">trace</span><span class="p">[</span><span class="s2">"train_loss"</span><span class="p">])</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
+<pre>lr=0.001: weight norm 0.19, training accuracy 0.932
+lr=0.1: weight norm 2.99, training accuracy 0.980
+lr=10: weight norm 13.83, training accuracy 1.000
+</pre>
+</div>
+</div>
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
+<pre>Norm every 200 updates: [15.8, 17.2, 18.4, 19.4, 20.4, 21.2, 21.9, 22.6, 23.3, 23.8]
+Training loss: ['7.6e-03', '6.2e-03', '5.3e-03', '4.7e-03', '4.3e-03', '3.9e-03', '3.6e-03', '3.3e-03', '3.1e-03', '3.0e-03']
+Cosine between consecutive directions: [0.9986, 0.9995, 0.9998, 0.9999, 0.9999, 1.0, 1.0, 1.0, 1.0]
+lr=100: first losses [3.47, 1.15, 0.45, 0.27, 0.15, 0.08, 0.03, 0.01, 0.01, 0.0] final 3.1e-04
+lr=1000: first losses [34.63, 11.82, 4.65, 2.78, 1.47, 0.75, 0.21, 0.02, 0.0, 0.0] final 2.1e-06
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=lr-activity-discussion">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<details>
+<summary>Discussion (open after the activity)</summary>
+<p>With these four features the three species are linearly separable on the training set: the <code>lr=10</code> run reaches 100% training accuracy. Once a linear classifier separates the data, scaling up its weights makes every correct logit larger relative to the others, so the cross-entropy keeps falling as the norm grows. The loss never reaches zero and the norm never levels off, though both change more and more slowly. The direction, instead, settles: training keeps pushing the same separator further out. A larger step simply travels this path faster, which is why <code>lr=10</code> wins.</p>
+<p>Even rates of 100 and 1000 do not break anything. The first update overshoots and the loss jumps, but the loss is convex in the parameters and the data are separable, so training recovers. This is a property of this problem, not of gradient descent: with an MLP, or with classes that overlap, the same rates behave very differently.</p>
+</details>
 </div>
 </div>
 </div>
@@ -8680,17 +8789,17 @@ Loss after: 0.9933529496192932
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="5.-Investigating-a-training-run">5. Investigating a training run<a class="anchor-link" href="#5.-Investigating-a-training-run">¶</a></h2><h3 id="Activity-4:-a-different-training-step">Activity 4: a different training step<a class="anchor-link" href="#Activity-4:-a-different-training-step">¶</a></h3><p>A colleague gives you the function below. It runs, and at first its loss may even fall faster than yours. Is it the same gradient descent?</p>
-<p>Compare it with your <code>training_step</code>, starting from the same parameters and data. Design a small experiment that tells the two apart: write down what you expect, run it, then fix the function. A decreasing loss alone does not settle the question.</p>
+<h2 id="5.-Investigating-a-training-run">5. Investigating a training run<a class="anchor-link" href="#5.-Investigating-a-training-run">¶</a></h2><h3 id="Activity-5:-a-different-training-step">Activity 5: a different training step<a class="anchor-link" href="#Activity-5:-a-different-training-step">¶</a></h3><p>A colleague gives you the function below. It runs, and at first its loss may even fall faster than yours. Is it the same gradient descent?</p>
+<p>Compare it with your <code>training_step</code>, starting from the same parameters and data. Design a small experiment that tells the two apart: write down what you expect, run it, then fix the function. A decreasing loss alone does not settle the question. The cell below only defines the function; the experiment is up to you.</p>
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=5c09e5ad">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=5c09e5ad">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [19]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [21]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
 <div class="highlight hl-ipython3"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">suspect_step</span><span class="p">(</span><span class="n">model</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="n">Float</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="s2">"batch features"</span><span class="p">],</span> <span class="n">y</span><span class="p">:</span> <span class="n">Int</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="s2">"batch"</span><span class="p">],</span> <span class="n">lr</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
@@ -8700,7 +8809,68 @@ Loss after: 0.9933529496192932
         <span class="k">for</span> <span class="n">parameter</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">():</span>
             <span class="n">parameter</span> <span class="o">-=</span> <span class="n">lr</span> <span class="o">*</span> <span class="n">parameter</span><span class="o">.</span><span class="n">grad</span>
     <span class="k">return</span> <span class="n">loss</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
-
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=74631f24">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [22]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="cm-editor cm-s-jupyter">
+<div class="highlight hl-ipython3"><pre><span></span><span class="c1"># Activity 5: your experiment here. What do you expect, and what do you observe?</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell celltag_reference" id="cell-id=21fe67f8">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [23]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="cm-editor cm-s-jupyter">
+<div class="highlight hl-ipython3"><pre><span></span><span class="c1"># Reference probe: differentiate twice without updating the parameters.</span>
+<span class="n">probe_model</span> <span class="o">=</span> <span class="n">LogisticRegression</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+<span class="n">cross_entropy</span><span class="p">(</span><span class="n">probe_model</span><span class="p">(</span><span class="n">Xtrain</span><span class="p">),</span> <span class="n">ytrain</span><span class="p">)</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
+<span class="n">first</span> <span class="o">=</span> <span class="n">probe_model</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">grad</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span>
+<span class="n">cross_entropy</span><span class="p">(</span><span class="n">probe_model</span><span class="p">(</span><span class="n">Xtrain</span><span class="p">),</span> <span class="n">ytrain</span><span class="p">)</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
+<span class="n">torch</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_close</span><span class="p">(</span><span class="n">probe_model</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">grad</span><span class="p">,</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">first</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Same parameters, same data, twice the stored gradient."</span><span class="p">)</span>
+<span class="c1"># Clear gradients at the start of suspect_step, as in reference_training_step.</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
+<pre>Same parameters, same data, twice the stored gradient.
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell celltag_reference" id="cell-id=suspect-reference-plot">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [24]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="cm-editor cm-s-jupyter">
+<div class="highlight hl-ipython3"><pre><span></span><span class="c1"># Reference comparison to show after the investigation.</span>
 <span class="n">normal</span> <span class="o">=</span> <span class="n">LogisticRegression</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
 <span class="n">suspect</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">normal</span><span class="p">)</span>
 <span class="n">normal_losses</span><span class="p">,</span> <span class="n">suspect_losses</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[]</span>
@@ -8741,54 +8911,6 @@ Loss after: 0.9933529496192932
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=74631f24">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [20]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython3"><pre><span></span><span class="c1"># What is wrong?</span>
-</pre></div>
-</div>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell celltag_reference" id="cell-id=21fe67f8">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [21]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython3"><pre><span></span><span class="c1"># Reference probe: differentiate twice without updating the parameters.</span>
-<span class="n">probe_model</span> <span class="o">=</span> <span class="n">LogisticRegression</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
-<span class="n">cross_entropy</span><span class="p">(</span><span class="n">probe_model</span><span class="p">(</span><span class="n">Xtrain</span><span class="p">),</span> <span class="n">ytrain</span><span class="p">)</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
-<span class="n">first</span> <span class="o">=</span> <span class="n">probe_model</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">grad</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span>
-<span class="n">cross_entropy</span><span class="p">(</span><span class="n">probe_model</span><span class="p">(</span><span class="n">Xtrain</span><span class="p">),</span> <span class="n">ytrain</span><span class="p">)</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
-<span class="n">torch</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_close</span><span class="p">(</span><span class="n">probe_model</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">grad</span><span class="p">,</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">first</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"Same parameters, same data, twice the stored gradient."</span><span class="p">)</span>
-<span class="c1"># Clear gradients at the start of suspect_step, as in reference_training_step.</span>
-</pre></div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
-</div>
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>Same parameters, same data, twice the stored gradient.
-</pre>
-</div>
-</div>
-</div>
-</div>
 </div>
 <div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=5fc10ff8">
 <div class="jp-Cell-inputWrapper" tabindex="0">
@@ -8821,7 +8943,7 @@ Loss after: 0.9933529496192932
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [22]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [25]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
 <div class="highlight hl-ipython3"><pre><span></span><span class="n">manual</span> <span class="o">=</span> <span class="n">LogisticRegression</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
@@ -8877,7 +8999,7 @@ Loss after: 0.9933529496192932
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [23]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [26]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
 <div class="highlight hl-ipython3"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">torch.utils.data</span><span class="w"> </span><span class="kn">import</span> <span class="n">TensorDataset</span><span class="p">,</span> <span class="n">DataLoader</span>
@@ -8941,7 +9063,74 @@ Epochs: 30; updates: 210
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<p>Why do two batches give different gradients for the same parameters? What changes if you set <code>batch_size=len(ytrain)</code>? Check that one update with this batch size matches the full-batch update, starting from the same parameters.</p>
+<h3 id="Activity-6:-a-batch-as-large-as-the-training-set">Activity 6: a batch as large as the training set<a class="anchor-link" href="#Activity-6:-a-batch-as-large-as-the-training-set">¶</a></h3><p>Why do two batches give different gradients for the same parameters? Write down your answer, then test a consequence of it. Build a <code>DataLoader</code> with <code>batch_size=len(ytrain)</code> and <code>shuffle=True</code>, and show that one epoch with it, starting from <code>initial_model</code>, gives the same parameters as one full-batch <code>run_step</code> from the same start. Does the shuffling matter here? What would change with <code>batch_size=len(ytrain) - 1</code>?</p>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=minibatch-activity-work">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [27]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="cm-editor cm-s-jupyter">
+<div class="highlight hl-ipython3"><pre><span></span><span class="c1"># Activity 6: your check here.</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell celltag_reference" id="cell-id=minibatch-activity-reference">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [28]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="cm-editor cm-s-jupyter">
+<div class="highlight hl-ipython3"><pre><span></span><span class="c1"># Reference for Activity 6.</span>
+<span class="n">full_loader</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">TensorDataset</span><span class="p">(</span><span class="n">Xtrain</span><span class="p">,</span> <span class="n">ytrain</span><span class="p">),</span> <span class="n">batch_size</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">ytrain</span><span class="p">),</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                         <span class="n">generator</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">Generator</span><span class="p">()</span><span class="o">.</span><span class="n">manual_seed</span><span class="p">(</span><span class="mi">7</span><span class="p">))</span>
+<span class="n">one_epoch</span><span class="p">,</span> <span class="n">one_step</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">initial_model</span><span class="p">),</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">initial_model</span><span class="p">)</span>
+<span class="n">updates_in_epoch</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="k">for</span> <span class="n">batch_X</span><span class="p">,</span> <span class="n">batch_y</span> <span class="ow">in</span> <span class="n">full_loader</span><span class="p">:</span>
+    <span class="n">run_step</span><span class="p">(</span><span class="n">one_epoch</span><span class="p">,</span> <span class="n">batch_X</span><span class="p">,</span> <span class="n">batch_y</span><span class="p">,</span> <span class="n">lr</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
+    <span class="n">updates_in_epoch</span> <span class="o">+=</span> <span class="mi">1</span>
+<span class="n">run_step</span><span class="p">(</span><span class="n">one_step</span><span class="p">,</span> <span class="n">Xtrain</span><span class="p">,</span> <span class="n">ytrain</span><span class="p">,</span> <span class="n">lr</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
+<span class="k">assert</span> <span class="n">updates_in_epoch</span> <span class="o">==</span> <span class="mi">1</span>
+<span class="k">for</span> <span class="n">loader_parameter</span><span class="p">,</span> <span class="n">full_parameter</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">one_epoch</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">one_step</span><span class="o">.</span><span class="n">parameters</span><span class="p">()):</span>
+    <span class="n">torch</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_close</span><span class="p">(</span><span class="n">loader_parameter</span><span class="p">,</span> <span class="n">full_parameter</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"One shuffled full-size batch gives the full-batch update."</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
+<pre>One shuffled full-size batch gives the full-batch update.
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=minibatch-activity-discussion">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<details>
+<summary>Discussion (open after the activity)</summary>
+<p>Each batch gradient is the average of the per-example gradients in that batch, so different examples give different averages. With a single batch containing every example, the average is the full-batch gradient, and shuffling only changes the order of the terms in the sum: the result agrees up to floating-point rounding, which is why the check uses <code>assert_close</code> and not exact equality. With <code>batch_size=len(ytrain) - 1</code> an epoch has two updates, the second computed from a single example, so its gradient is far noisier than the first.</p>
+</details>
 </div>
 </div>
 </div>
@@ -8962,7 +9151,7 @@ Epochs: 30; updates: 210
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [24]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [29]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
 <div class="highlight hl-ipython3"><pre><span></span><span class="n">test_loss</span><span class="p">,</span> <span class="n">test_accuracy</span> <span class="o">=</span> <span class="n">evaluate</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">Xtest</span><span class="p">,</span> <span class="n">ytest</span><span class="p">)</span>
@@ -8998,7 +9187,7 @@ Majority-class accuracy: 0.449
 </div>
 </div>
 <div class="jp-OutputArea-child jp-OutputArea-executeResult">
-<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[24]:</div>
+<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[29]:</div>
 <div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/html" tabindex="0">
 <div>
 <style scoped="">
@@ -9084,7 +9273,7 @@ Majority-class accuracy: 0.449
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [25]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [30]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
 <div class="highlight hl-ipython3"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">make_mlp</span><span class="p">(</span><span class="n">width</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">16</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">:</span>
@@ -9151,7 +9340,7 @@ Validation loss after 200 updates: MLP 0.0612, linear 0.1218
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [26]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [31]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
 <div class="highlight hl-ipython3"><pre><span></span><span class="c1"># Try the two experiments here.</span>
@@ -9179,7 +9368,7 @@ Validation loss after 200 updates: MLP 0.0612, linear 0.1218
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [27]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [32]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
 <div class="highlight hl-ipython3"><pre><span></span><span class="n">torch</span><span class="o">.</span><span class="n">manual_seed</span><span class="p">(</span><span class="mi">7</span><span class="p">)</span>
@@ -9247,7 +9436,7 @@ Validation loss after 200 updates: MLP 0.0612, linear 0.1218
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [28]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [33]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
 <div class="highlight hl-ipython3"><pre><span></span><span class="n">analysis_model</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">lr_models</span><span class="p">[</span><span class="mf">0.1</span><span class="p">])</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">double</span><span class="p">()</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
@@ -9314,7 +9503,7 @@ Validation loss after 200 updates: MLP 0.0612, linear 0.1218
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [29]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [34]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
 <div class="highlight hl-ipython3"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">torch.func</span><span class="w"> </span><span class="kn">import</span> <span class="n">functional_call</span><span class="p">,</span> <span class="n">grad</span><span class="p">,</span> <span class="n">vmap</span>
@@ -9372,7 +9561,7 @@ Validation loss after 200 updates: MLP 0.0612, linear 0.1218
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [30]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [35]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
 <div class="highlight hl-ipython3"><pre><span></span><span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
@@ -9501,7 +9690,7 @@ easy, changed label            84    Adelie 7.3561         4.0911               
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [31]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [36]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
 <div class="highlight hl-ipython3"><pre><span></span><span class="n">image_side</span> <span class="o">=</span> <span class="mi">32</span>
@@ -9559,7 +9748,7 @@ easy, changed label            84    Adelie 7.3561         4.0911               
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [32]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [37]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
 <div class="highlight hl-ipython3"><pre><span></span><span class="c1"># Define the coordinate MLP, train on the observed pixels, and compare encodings.</span>
@@ -9586,7 +9775,7 @@ easy, changed label            84    Adelie 7.3561         4.0911               
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [33]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [38]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
 <div class="highlight hl-ipython3"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">CoordinateMLP</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
@@ -9648,7 +9837,7 @@ easy, changed label            84    Adelie 7.3561         4.0911               
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [34]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [39]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
 <div class="highlight hl-ipython3"><pre><span></span><span class="n">image_summary_rows</span> <span class="o">=</span> <span class="p">[]</span>

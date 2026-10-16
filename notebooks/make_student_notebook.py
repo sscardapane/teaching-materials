@@ -53,6 +53,8 @@ def build_pt02():
         "d4bcbb0d", "f90a471e", "7b7b80ce", "21fe67f8", "per-example-instructor",
         "image-reference-intro", "image-reference-model", "image-reference-results",
         "image-reference-discussion", "mlp-reference-text", "mlp-reference",
+        "900865a5", "suspect-reference-plot", "lr-activity-reference",
+        "minibatch-activity-reference",
     }
     if reference_ids != expected_reference_ids:
         raise RuntimeError(
@@ -67,7 +69,7 @@ def build_pt02():
 
 Given a few measurements of a penguin, can we predict its species? In this lab we build a linear classifier, train it with gradient descent and evaluate it.
 
-You should be comfortable with PT01 up to its short check: tensor operations, `backward()` and parameter updates. Data loading and plotting are provided. You write four pieces yourself: the forward pass, the loss, the training step, and a diagnosis of a faulty training step. We then compare learning rates, switch to PyTorch's standard components and train on mini-batches. After the MLP lecture, Section 9 replaces the linear model with an MLP, keeping the rest of the code.
+You should be comfortable with PT01 up to its short check: tensor operations, `backward()` and parameter updates. Data loading and plotting are provided. There are six activities. In the first three you write the forward pass, the loss and the training step. Then you investigate why the largest learning rate wins on this data, diagnose a faulty training step, and check when a mini-batch update equals a full-batch one. Along the way we switch to PyTorch's standard components and train on mini-batches. After the MLP lecture, Section 9 replaces the linear model with an MLP, keeping the rest of the code.
 
 Two optional sections close the notebook. The first uses per-example gradients to look inside the trained classifier. The second is an exercise for after the MLP lecture, where we reuse the same training loop with an MLP to fit an image.
 

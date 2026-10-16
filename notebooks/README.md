@@ -32,13 +32,13 @@ download/upload step.
   material follow the main path. Exercise answers are in the instructor notebook.
 - `PT01_Introduction_to_PyTorch_solutions.ipynb`: instructor source with readiness
   answers, tensor-semantics solutions and autograd diagnoses as executable cells.
-- `PT02_Logistic_regression.ipynb`: student lab with four activities: forward
-  computation, loss, training, and investigation, followed by learning-rate
-  and mini-batch experiments. An optional per-example-gradient demonstration and
+- `PT02_Logistic_regression.ipynb`: student lab with six activities: forward
+  computation, loss and training step, then why the largest learning rate wins,
+  a faulty training step, and a full-size mini-batch check. An optional per-example-gradient demonstration and
   a coordinate-to-RGB reader exercise follow the core. It contains no exercise
   reference implementations.
-- `PT02_Logistic_regression_solutions.ipynb`: instructor copy with the four
-  core references and runnable fallbacks, discussion notes for the gradient
+- `PT02_Logistic_regression_solutions.ipynb`: instructor copy with the
+  activity references and runnable fallbacks, discussion notes for the gradient
   diagnostic, and a complete coordinate-MLP reference experiment.
 - Matching `.html` files: reading previews; use the notebooks to edit or run
   code.
@@ -74,7 +74,8 @@ examples, with explicit edge cases.
 
 PT02 supplies data handling, plotting, the model class and accuracy.
 Students write the batched forward pass, a stable cross-entropy loss and the training step, then investigate
-a step that unintentionally accumulates gradients. The student notebook stops
+why the largest learning rate wins, a step that unintentionally accumulates gradients, and a full-size
+mini-batch update. The student notebook stops
 with a clear error when an activity is unfinished. Reference implementations
 and automatic fallbacks exist only in the solutions notebook; they are not
 present in the student `.ipynb` or its HTML preview.
@@ -137,7 +138,7 @@ code, timing, and this paragraph should be discussed in the next review.
 | Backward-node traversal/counting cosines | Deferred to the later autodiff unit; no private graph attributes in the required path. |
 | PT02 penguin classification | Retained. Uses four unscaled numeric measurements with a fixed stratified split. |
 | Pre-normalized CSV | Replaced by the dataset maintainers' unscaled CSV; normalization uses the training split only. No claim that leakage in the old CSV was established. |
-| Model, loss, accuracy, training TODOs | Regrouped into four activities, with continuous runnable sections and reference fallbacks. |
+| Model, loss, accuracy, training TODOs | Regrouped into six activities, with continuous runnable sections and reference fallbacks. |
 | Probability-based cross-entropy | Logits-based implementation, checked against built-in loss values and gradients. |
 | Training curves only | Adds validation curves, a diagnostic comparison, final test evaluation, a majority-class baseline, and a confusion matrix. |
 | Framework syntax and shape annotations | Restored jaxtyping at function boundaries after instructor review, using torch.Tensor rather than the JAX-specific Array alias. Shapes remain in prose/comments too. |
@@ -238,6 +239,23 @@ Two questions, with instructor answers and asserted reference runs, show what
 the linear model hid: `lr=10` makes the MLP's loss explode (about 2e5 in the
 recorded run, NaN at 30), and zero initialization leaves every weight at zero,
 so only the output bias learns. The image exercise now builds on this section.
+
+PT02 activity revision (Simone, October 16). The original activities were too
+easy for students who already had an ML course, so they now ask for more. Section 4 describes the
+four parts of a step in prose; the worked step is an instructor-only cell, so
+Activity 3 is written rather than copied. The suspect-step activity (now Activity 5) gives only the
+function: students design the comparison, and the loss and gradient-norm plot is
+an instructor-only cell. Two prompts that already appeared in the text became activities with
+instructor references and student `<details>` discussions. Activity 4 covers
+weight norm, continued training and direction on separable data, plus the
+first updates at `lr=100` and `lr=1000`. Activity 6 checks that one shuffled
+full-size `DataLoader` batch gives the full-batch update. In the recorded run
+the `lr=10` norm grows from 15.8 to 23.8 over 2000 further updates, the
+training loss falls without reaching zero, and the cosine between consecutive directions reaches 1.0000;
+both large rates overshoot on the first update and then converge. The PT01/PT02
+verifier passed on CPU (Python 3.12.4, PyTorch 2.14.1). The autodiff step was
+skipped because the PT03 student source was edited by hand in `4716bcf` and no
+longer matches its generator; PT03 was not changed.
 
 ## PT03: automatic differentiation from scratch
 
