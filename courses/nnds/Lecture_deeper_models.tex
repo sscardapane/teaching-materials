@@ -71,28 +71,30 @@
         \end{column}
         \begin{column}{0.49\textwidth}%
             \small%
-            \setlength{\parskip}{6pt}%
+            \setlength{\parskip}{4pt}%
             \RaggedRight\setlength{\parindent}{0pt}%
             Every jump in depth needed a new trick to keep training working.
 
             \textbf{2012} ReLU, dropout, data augmentation.
 
-            \textbf{2014} \textcolor{drawgray}{Starting from a trained shallow
-            network (VGG); extra classifiers halfway through the network (GoogLeNet).}
+            \textbf{2014} Starting from a trained shallow network (VGG);
+            extra classifiers halfway through the network (GoogLeNet).
 
             \textbf{2015} He initialization, \myalert{batch normalization},
             gated shortcuts, \myalert{residual connections}.
 
-            \textcolor{drawgray}{In gray: tricks that were dropped.}
+            \textbf{2016--17} Stochastic depth, dense connections (DenseNet),
+            squeeze-and-excitation (SENet, the last winner: 2.3\%).
         \end{column}
     \end{columns}
 
     \medskip
-    The rest is still in use today: this lecture is about what they do, and why
-    they work.
+    Not all tricks remain useful today, so we only cover the most important
+    subset.
 
     \SlideSource{Szegedy et al. (2015), Table 2; Simonyan and Zisserman (2015);
-        He et al. (2015); Ioffe and Szegedy (2015); Srivastava et al. (2015); He et al. (2016).}
+        He et al. (2015); Ioffe and Szegedy (2015); Srivastava et al. (2015); He et al. (2016);
+        Huang et al. (2016, 2017); Hu et al. (2018).}
 
 \end{frame}
 
