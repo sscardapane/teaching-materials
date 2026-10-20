@@ -371,6 +371,34 @@
 
 \end{frame}
 
+\begin{frame}{Fusing batch normalization at inference}
+    \setlength{\parskip}{4pt}\setlength{\abovedisplayskip}{4pt}\setlength{\belowdisplayskip}{4pt}
+
+    BN usually sits between a linear layer and its activation:
+    $\vc{h} = \phi\left(\text{BN}(\vc{W}\vc{x} + \vc{b})\right)$. At inference,
+    $\mu_j$ and $\sigma_j^2$ are fixed, so BN is just an elementwise affine map:
+    \[
+        \text{BN}(\vc{z}) = \vc{a} \odot \vc{z} + \vc{c} \,, \qquad
+        a_j = \frac{\gamma_j}{\sqrt{\sigma_j^2 + \varepsilon}} \,, \quad
+        c_j = \beta_j - a_j \mu_j \,.
+    \]
+    Two affine maps in a row are one affine map, so we can fold BN into the layer:
+    \[
+        \text{BN}(\vc{W}\vc{x} + \vc{b}) = \vc{W}'\vc{x} + \vc{b}' \,, \qquad
+        \vc{W}' = \text{diag}(\vc{a})\,\vc{W} \,, \quad
+        \vc{b}' = \vc{a} \odot \vc{b} + \vc{c} \,.
+    \]
+
+    \begin{tcolorbox}[nndsgreen]
+        After training, BN costs nothing at inference. The same works for a
+        convolution, one output channel at a time.
+    \end{tcolorbox}
+
+    {\small\RaggedRight In PyTorch: \texttt{fuse\_linear\_bn\_eval} and
+    \texttt{fuse\_conv\_bn\_eval} in \texttt{torch.nn.utils.fusion}.\par}
+
+\end{frame}
+
 \begin{frame}{Batch normalization in CNNs}
     \setlength{\parskip}{3pt}
 
