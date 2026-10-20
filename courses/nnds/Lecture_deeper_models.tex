@@ -327,6 +327,8 @@
         between the two modes: forgetting \texttt{model.eval()} is a classic bug.
     \end{tcolorbox}
 
+    \SlideSource{Wu and Johnson (2021), \textit{Rethinking ``batch'' in BatchNorm}.}
+
 \end{frame}
 
 \begin{frame}{How the running average works}
@@ -370,7 +372,7 @@
 \end{frame}
 
 \begin{frame}{Batch normalization in CNNs}
-    \setlength{\parskip}{4pt}
+    \setlength{\parskip}{3pt}
 
     After a convolutional layer, the outputs on a mini-batch are
     $\vc{Z}\sim(B,H,W,C)$. Each channel is the same filter applied at every
@@ -381,7 +383,7 @@
         \widetilde{\sigma}_c^2 = \frac{1}{BHW}\sum_{b,i,j} \left(\idx{\vc{Z}}{b,i,j,c} - \widetilde{\mu}_c\right)^2 .
     \]
     Each channel is then standardized and rescaled as before, with one pair
-    $\gamma_c, \beta_c$ per channel.
+    $\gamma_c, \beta_c$ per channel ($2C$ parameters).
 
     \begin{tcolorbox}[nndsblue]
         A channel plays the role of a feature: the mean is taken over the
@@ -449,7 +451,8 @@
         \end{column}
     \end{columns}
 
-    \SlideSource{Zhang and Sennrich (2019), \textit{Root mean square layer normalization}, NeurIPS.}
+    \SlideSource{Wu and He (2018), \textit{Group normalization}, ECCV; Zhang and Sennrich (2019),
+        \textit{Root mean square layer normalization}, NeurIPS.}
 
 \end{frame}
 
@@ -476,7 +479,8 @@
     understand why.
 
     \SlideSource{Santurkar et al. (2018), \textit{How does batch normalization help optimization?}, NeurIPS;
-        Bjorck et al. (2018), \textit{Understanding batch normalization}, NeurIPS.}
+        Bjorck et al. (2018), \textit{Understanding batch normalization}, NeurIPS;
+        Lipton and Steinhardt (2018), \textit{Troubling trends in machine learning scholarship}.}
 
 \end{frame}
 
