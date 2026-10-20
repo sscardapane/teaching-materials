@@ -4,6 +4,7 @@
 \usetikzlibrary{arrows.meta,calc}
 \usepackage{pgfplots}
 \pgfplotsset{compat=1.18}
+\usepgfplotslibrary{groupplots}
 \graphicspath{{assets/}{../../shared/assets/}}
 
 % Draft by Claude (2026-10-20): refresh of the 2024 "Building deep networks"
@@ -163,6 +164,99 @@
 
     \SlideSource{LeCun et al. (1998), Proc.\ IEEE; Krizhevsky et al. (2012), NeurIPS.
         Figure: Dive into Deep Learning, Sec.~8.1 (CC BY-SA 4.0).}
+
+\end{frame}
+
+% Opening experiment (Written by Claude, 2026-10-20). Data: opener.csv from
+% assets/images/deeper/opener_table.py over depth_sweep.py runs (plain
+% networks, 30 epochs, best of three learning rates per point, one seed).
+\begin{frame}{Can we just stack more layers?}
+
+    \begin{columns}[c,onlytextwidth]
+        \begin{column}{0.36\textwidth}%
+            \small\setlength{\parskip}{6pt}%
+            \RaggedRight\setlength{\parindent}{0pt}%
+            A plain CNN on \textbf{CIFAR-10} (60,000 small color images,
+            10 classes): blocks of two $3\times3$ convolutions with ReLU, global
+            pooling, a linear classifier.
+
+            We change only the depth and the initialization, keeping the best
+            of three learning rates.
+        \end{column}
+        \begin{column}{0.62\textwidth}
+            \centering
+            \begin{tikzpicture}
+                \begin{groupplot}[
+                        group style={group size=2 by 1, horizontal sep=1.1cm},
+                        width=0.56\linewidth, height=0.46\textheight,
+                        xmin=4, xmax=60, xtick={8,20,32,44,56},
+                        tick label style={font=\scriptsize},
+                        label style={font=\small}, title style={font=\small},
+                        axis lines=left, axis line style={drawgray},
+                        xlabel={Layers},
+                        unbounded coords=jump,
+                        every axis plot/.append style={thick, mark=*, mark size=1.6pt},
+                    ]
+                    \nextgroupplot[title={Training loss}, ymin=0, ymax=2.5]
+                    \addplot[drawgray!60, dashed, thin, mark=none, forget plot] coordinates {(4,2.3026) (60,2.3026)};
+                    \addplot[drawblue] table[x=depth, y=he_loss, col sep=comma] {assets/images/deeper/opener.csv};
+                    \addplot[draworange] table[x=depth, y=default_loss, col sep=comma] {assets/images/deeper/opener.csv};
+                    \node[font=\scriptsize, text=drawgray, anchor=north east] at (axis cs:59,2.25) {chance};
+                    \nextgroupplot[title={Test accuracy (\%)}, ymin=0, ymax=100,
+                        legend columns=2, legend style={font=\scriptsize, draw=none, fill=none,
+                            at={(-0.2,-0.5)}, anchor=north, /tikz/every even column/.append style={column sep=8pt}}]
+                    \addplot[drawgray!60, dashed, thin, mark=none, forget plot] coordinates {(4,10) (60,10)};
+                    \addplot[drawblue] table[x=depth, y=he_acc, col sep=comma] {assets/images/deeper/opener.csv};
+                    \addplot[draworange] table[x=depth, y=default_acc, col sep=comma] {assets/images/deeper/opener.csv};
+                    \legend{He init, PyTorch default}
+                \end{groupplot}
+            \end{tikzpicture}
+        \end{column}
+    \end{columns}
+
+    \medskip
+    \begin{tcolorbox}[nndsorange]
+        Deeper plain networks are worse on the \textbf{training} set, so this is
+        not overfitting: we simply cannot optimize them.
+    \end{tcolorbox}
+
+    \SlideSource{Krizhevsky (2009), \textit{Learning multiple layers of features from tiny images}.}
+
+\end{frame}
+
+\begin{frame}{The rest of the lecture}
+    \setlength{\parskip}{6pt}
+
+    A good initialization (such as He's) only fixes the scale of the
+    activations at the first step. Nothing keeps it there during training, and
+    the gradient must cross every layer to reach the first ones.
+
+    We look at three groups of techniques, and close each one by running the
+    experiment again:
+
+    \begin{columns}[T,onlytextwidth]
+        \begin{column}{0.32\textwidth}
+            \begin{tcolorbox}[nndsblue,courseheight={roadmap}{}]
+                \textbf{Normalization}
+
+                Keep the scale of the activations under control during training.
+            \end{tcolorbox}
+        \end{column}
+        \begin{column}{0.32\textwidth}
+            \begin{tcolorbox}[nndsblue,courseheight={roadmap}{}]
+                \textbf{Residuals}
+
+                Make the identity the default, so every block only adds a small change.
+            \end{tcolorbox}
+        \end{column}
+        \begin{column}{0.32\textwidth}
+            \begin{tcolorbox}[nndsblue,courseheight={roadmap}{}]
+                \textbf{Regularization}
+
+                Once the network trains, make it generalize.
+            \end{tcolorbox}
+        \end{column}
+    \end{columns}
 
 \end{frame}
 
