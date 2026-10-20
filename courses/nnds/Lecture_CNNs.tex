@@ -549,45 +549,8 @@
 
 \end{frame}
 
-\begin{frame}{A few landmark CNNs}
-    \setlength{\parskip}{3pt}
-
-    \begin{columns}[T,onlytextwidth]
-        \begin{column}{0.32\textwidth}
-            \begin{tcolorbox}[nndsblue,courseheight={cnn-landmarks}{}]
-                \textbf{LeNet-5 (1998)}
-
-                Two convolution and pooling stages and a fully-connected
-                classifier, for handwritten digits.
-            \end{tcolorbox}
-        \end{column}
-        \begin{column}{0.32\textwidth}
-            \begin{tcolorbox}[nndsblue,courseheight={cnn-landmarks}{}]
-                \textbf{VGG (2014)}
-
-                Blocks of $3\times3$ convolutions and max-pooling, up to
-                19 layers.
-            \end{tcolorbox}
-        \end{column}
-        \begin{column}{0.32\textwidth}
-            \begin{tcolorbox}[nndsblue,courseheight={cnn-landmarks}{}]
-                \textbf{ConvNeXt (2022)}
-
-                Depthwise $7\times7$ convolutions and pointwise MLPs, with
-                lessons from transformers.
-            \end{tcolorbox}
-        \end{column}
-    \end{columns}
-
-    \medskip
-    Stacking small kernels, as in VGG, grows the receptive field cheaply.
-    Going much deeper needs \myalert{residual connections}, introduced with
-    ResNet (2016): we will see them in the next lecture.
-
-    \SlideSource{LeCun et al. (1998), Proc.\ IEEE; Simonyan and Zisserman (2015), ICLR;
-        Liu et al. (2022), \textit{A ConvNet for the 2020s}, CVPR.}
-
-\end{frame}
+% "A few landmark CNNs" moved to the deeper-models deck (LeNet/AlexNet and
+% ImageNet slides) at Simone's request, 2026-10-20.
 
 \section{Convolutions beyond images}
 \subsection{Sequences, text and generation}

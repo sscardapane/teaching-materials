@@ -32,6 +32,36 @@
 
 \section{Why depth is hard}
 
+% LeNet/AlexNet figure from the 2024 deck (Dive into Deep Learning, Sec. 8.1,
+% CC BY-SA 4.0). MNIST strip: assets/images/deeper/mnist_strip.py.
+\begin{frame}{From LeNet to AlexNet}
+
+    \begin{columns}[c,onlytextwidth]
+        \begin{column}{0.42\textwidth}
+            \centering
+            \includegraphics[height=0.76\textheight]{images/deeper/lenet_alexnet.pdf}
+
+            {\scriptsize LeNet-5 (1998) and AlexNet (2012), simplified.}
+        \end{column}
+        \begin{column}{0.52\textwidth}%
+            \setlength{\parskip}{6pt}%
+            \RaggedRight\setlength{\parindent}{0pt}%
+            In 1998, \myalert{LeNet-5} already read handwritten digits
+            (\textbf{MNIST}) with convolutions, pooling and a small classifier.
+
+            \includegraphics[width=\linewidth]{images/deeper/mnist_strip.png}
+
+            AlexNet is essentially a bigger LeNet. What changed in 2012 was
+            GPUs, a large labelled dataset (ImageNet, 1.2M images) and a few
+            training tricks.
+        \end{column}
+    \end{columns}
+
+    \SlideSource{LeCun et al. (1998), Proc.\ IEEE; Krizhevsky et al. (2012), NeurIPS.
+        Figure: Dive into Deep Learning, Sec.~8.1 (CC BY-SA 4.0).}
+
+\end{frame}
+
 % Depth and top-5 error: ILSVRC table in Szegedy et al. (2015), Table 2
 % (no external data), He et al. (2016) abstract. Tricks: Krizhevsky et al.
 % (2012); Simonyan and Zisserman (2015), Sec. 3.1 (initialising deeper nets
