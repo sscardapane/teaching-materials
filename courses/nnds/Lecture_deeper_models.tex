@@ -49,7 +49,7 @@
             \end{tcolorbox}
         \end{column}
         \begin{column}{0.48\textwidth}
-            \begin{tcolorbox}[nndsblue,courseheight={imagenet}{}]
+            \begin{tcolorbox}[nndsred,courseheight={imagenet}{}]
                 \textbf{ILSVRC (2010-2017)}
 
                 A yearly competition on a subset: 1,000 classes, 1.28 million
@@ -59,7 +59,7 @@
     \end{columns}
 
     \medskip
-    \begin{tcolorbox}[nndsblue]
+    \begin{tcolorbox}[nndsgreen]
         The \textbf{top-5 error} is the fraction of test images whose true
         class is not among the five classes with the highest score.
     \end{tcolorbox}
@@ -345,7 +345,7 @@
             \textbf{exponential moving average}. With $m=0.1$, the last 10
             mini-batches make up 65\% of the value, the last 50 over 99\%.
 
-            Example: PyTorch starts from $\mu_j = 0$. If every mini-batch gives
+            Example: starting from $\mu_j = 0$, if every mini-batch gives
             $\widetilde{\mu}_j = 1$, the running mean is $0.1$ after one step,
             $0.65$ after 10 and $0.99$ after 50.
         \end{column}
@@ -394,9 +394,6 @@
         convolution, one output channel at a time.
     \end{tcolorbox}
 
-    {\small\RaggedRight In PyTorch: \texttt{fuse\_linear\_bn\_eval} and
-    \texttt{fuse\_conv\_bn\_eval} in \texttt{torch.nn.utils.fusion}.\par}
-
 \end{frame}
 
 \begin{frame}{Batch normalization in CNNs}
@@ -438,10 +435,10 @@
     \begin{center}
         \small
         \begin{tabular}{lll}
-            & \textbf{Statistics over} & \textbf{Parameters} $\gamma, \beta$ \\
+               & \textbf{Statistics over}            & \textbf{Parameters} $\gamma, \beta$ \\
             \hline
-            BN & each feature, across the mini-batch & one pair per feature \\
-            LN & each example, across its features & one pair per feature \\
+            BN & each feature, across the mini-batch & one pair per feature                \\
+            LN & each example, across its features   & one pair per feature                \\
         \end{tabular}
     \end{center}
 
