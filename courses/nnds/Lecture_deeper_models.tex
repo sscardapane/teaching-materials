@@ -32,6 +32,7 @@
 }
 
 \section{Why depth is hard}
+\subsection{Going deeper}
 
 % Figures from Russakovsky et al. (2015), IJCV: Sec. 2 (21,841 synsets,
 % 14,197,122 images as of August 2014), Table 2 (ILSVRC2012 split), Sec. 4.1
@@ -260,13 +261,14 @@
 \end{frame}
 
 \section{Normalization}
+\subsection{Normalization layers}
 
 % Written by Claude (2026-10-20). Fixes the 2024 slide: column index in the
 % statistics, and "Hessian of X" (the Hessian is that of the least-squares loss).
 \begin{frame}{Normalizing the inputs}
     \setlength{\parskip}{6pt}
 
-    Given a dataset $\vc{X}\sim(N,d)$, we usually standardize each column
+    Given a dataset $\vc{X}\sim(N,D)$, we usually standardize each column
     (feature) to zero mean and unit variance:
     \[
         \idx{\vc{X}'}{i,j} = \frac{\idx{\vc{X}}{i,j} - \mu_j}{\sigma_j} \,, \qquad
@@ -288,7 +290,7 @@
 \begin{frame}{Batch normalization}
     \setlength{\parskip}{5pt}
 
-    Take the outputs of a layer on a mini-batch, $\vc{H}\sim(B,F)$. We
+    Take the outputs of a layer on a mini-batch, $\vc{H}\sim(B,D)$. We
     estimate the statistics of each column on the mini-batch, and standardize:
     \[
         \widetilde{\mu}_j = \frac{1}{B}\sum_i \idx{\vc{H}}{i,j} \,, \quad
@@ -296,7 +298,7 @@
         \idx{\vc{H}'}{i,j} = \frac{\idx{\vc{H}}{i,j} - \widetilde{\mu}_j}{\sqrt{\widetilde{\sigma}_j^2 + \varepsilon}} \,.
     \]
     A \myalert{batch normalization} (BN) layer then sets a new mean and scale
-    for each column, with $2F$ trainable parameters:
+    for each column, with $2D$ trainable parameters:
     \[
         \idx{\text{BN}(\vc{H})}{i,j} = \gamma_j \idx{\vc{H}'}{i,j} + \beta_j \,.
     \]
@@ -376,12 +378,14 @@
     Layer normalization avoids all three: it is the standard in transformers. Most recent LLMs use an even simpler variant, \myalert{RMSNorm},
     which skips the mean and only rescales each vector:
     \[
-        \text{RMSNorm}(\vc{h}) = \vc{\gamma} \odot \frac{\vc{h}}{\sqrt{\frac{1}{F}\sum_j h_j^2 + \varepsilon}} \,.
+        \text{RMSNorm}(\vc{h}) = \vc{\gamma} \odot \frac{\vc{h}}{\sqrt{\frac{1}{D}\sum_j h_j^2 + \varepsilon}} \,.
     \]
 
     \SlideSource{Zhang and Sennrich (2019), \textit{Root mean square layer normalization}, NeurIPS.}
 
 \end{frame}
+
+\subsection{Why normalization works}
 
 \begin{frame}{Why does normalization help?}
     \setlength{\parskip}{6pt}
