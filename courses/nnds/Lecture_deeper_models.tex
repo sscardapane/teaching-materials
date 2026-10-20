@@ -199,15 +199,15 @@
                     ]
                     \nextgroupplot[title={Training loss}, ymin=0, ymax=2.5]
                     \addplot[drawgray!60, dashed, thin, mark=none, forget plot] coordinates {(4,2.3026) (60,2.3026)};
-                    \addplot[drawblue] table[x=depth, y=he_loss, col sep=comma] {assets/images/deeper/opener.csv};
-                    \addplot[draworange] table[x=depth, y=default_loss, col sep=comma] {assets/images/deeper/opener.csv};
+                    \addplot[drawblue] table[x=depth, y=plain_he_loss, col sep=comma] {assets/images/deeper/opener.csv};
+                    \addplot[draworange] table[x=depth, y=plain_default_loss, col sep=comma] {assets/images/deeper/opener.csv};
                     \node[font=\scriptsize, text=drawgray, anchor=north east] at (axis cs:59,2.25) {chance};
                     \nextgroupplot[title={Test accuracy (\%)}, ymin=0, ymax=100,
                         legend columns=2, legend style={font=\scriptsize, draw=none, fill=none,
                                 at={(-0.2,-0.5)}, anchor=north, /tikz/every even column/.append style={column sep=8pt}}]
                     \addplot[drawgray!60, dashed, thin, mark=none, forget plot] coordinates {(4,10) (60,10)};
-                    \addplot[drawblue] table[x=depth, y=he_acc, col sep=comma] {assets/images/deeper/opener.csv};
-                    \addplot[draworange] table[x=depth, y=default_acc, col sep=comma] {assets/images/deeper/opener.csv};
+                    \addplot[drawblue] table[x=depth, y=plain_he_acc, col sep=comma] {assets/images/deeper/opener.csv};
+                    \addplot[draworange] table[x=depth, y=plain_default_acc, col sep=comma] {assets/images/deeper/opener.csv};
                     \legend{He init, PyTorch default}
                 \end{groupplot}
             \end{tikzpicture}
@@ -256,6 +256,180 @@
             \end{tcolorbox}
         \end{column}
     \end{columns}
+
+\end{frame}
+
+\section{Normalization}
+
+% Written by Claude (2026-10-20). Fixes the 2024 slide: column index in the
+% statistics, and "Hessian of X" (the Hessian is that of the least-squares loss).
+\begin{frame}{Normalizing the inputs}
+    \setlength{\parskip}{6pt}
+
+    Given a dataset $\vc{X}\sim(N,d)$, we usually standardize each column
+    (feature) to zero mean and unit variance:
+    \[
+        \idx{\vc{X}'}{i,j} = \frac{\idx{\vc{X}}{i,j} - \mu_j}{\sigma_j} \,, \qquad
+        \mu_j = \frac{1}{N}\sum_i \idx{\vc{X}}{i,j} \,, \quad
+        \sigma_j^2 = \frac{1}{N}\sum_i \left(\idx{\vc{X}}{i,j} - \mu_j\right)^2 .
+    \]
+    For least squares, the Hessian of the loss is $\frac{2}{N}\vc{X}^\top\vc{X}$.
+    After standardization its diagonal is constant, so the problem is usually
+    better \textbf{conditioned}: remember the elongated valley in the
+    preliminaries.
+
+    \begin{tcolorbox}[nndsgreen]
+        Idea: do the same inside the network, on the output of every layer.
+        The difficulty is that these outputs change at every step of training.
+    \end{tcolorbox}
+
+\end{frame}
+
+\begin{frame}{Batch normalization}
+    \setlength{\parskip}{5pt}
+
+    Take the outputs of a layer on a mini-batch, $\vc{H}\sim(B,F)$. We
+    estimate the statistics of each column on the mini-batch, and standardize:
+    \[
+        \widetilde{\mu}_j = \frac{1}{B}\sum_i \idx{\vc{H}}{i,j} \,, \quad
+        \widetilde{\sigma}_j^2 = \frac{1}{B}\sum_i \left(\idx{\vc{H}}{i,j} - \widetilde{\mu}_j\right)^2 , \quad
+        \idx{\vc{H}'}{i,j} = \frac{\idx{\vc{H}}{i,j} - \widetilde{\mu}_j}{\sqrt{\widetilde{\sigma}_j^2 + \varepsilon}} \,.
+    \]
+    A \myalert{batch normalization} (BN) layer then sets a new mean and scale
+    for each column, with $2F$ trainable parameters:
+    \[
+        \idx{\text{BN}(\vc{H})}{i,j} = \gamma_j \idx{\vc{H}'}{i,j} + \beta_j \,.
+    \]
+    It usually goes between a linear (or convolutional) layer and its
+    activation, whose bias becomes redundant.
+
+    \SlideSource{Ioffe and Szegedy (2015), \textit{Batch normalization: accelerating deep network training by reducing internal covariate shift}, ICML.}
+
+\end{frame}
+
+\begin{frame}{Batch normalization at inference}
+    \setlength{\parskip}{6pt}
+
+    During training, the output for one example depends on the other examples
+    in its mini-batch. At inference we want a deterministic prediction, even for
+    a single input.
+
+    During training, BN keeps a running average of the mini-batch statistics,
+    for example
+    \[
+        \mu_j \leftarrow (1-m)\,\mu_j + m\,\widetilde{\mu}_j \,, \qquad m = 0.1 \,,
+    \]
+    and the same for the variance. At inference, it uses $\mu_j$ and
+    $\sigma_j^2$ in place of $\widetilde{\mu}_j$ and $\widetilde{\sigma}_j^2$.
+
+    \begin{tcolorbox}[nndsorange]
+        The same layer behaves differently in training and inference. In
+        PyTorch, \texttt{model.train()} and \texttt{model.eval()} switch between
+        the two modes: forgetting \texttt{model.eval()} is a classic bug.
+    \end{tcolorbox}
+
+    \SlideSource{Wu and Johnson (2021), \textit{Rethinking ``batch'' in BatchNorm}.}
+
+\end{frame}
+
+% Figure: S. Scardapane, Alice's Adventures in a Differentiable Wonderland.
+\begin{frame}{Which axes do we normalize?}
+
+    \begin{columns}[c,onlytextwidth]
+        \begin{column}{0.46\textwidth}
+            \centering
+            \includegraphics[width=\linewidth]{images/deeper/normalization_axes.pdf}
+        \end{column}
+        \begin{column}{0.5\textwidth}%
+            \small\setlength{\parskip}{6pt}%
+            \RaggedRight\setlength{\parindent}{0pt}%
+            The statistics (blue) can be computed along different axes.
+
+            \textbf{Batch normalization} averages over the mini-batch: one mean
+            per feature, or per channel for images $(B,H,W,C)$.
+
+            \myalert{Layer normalization} (LN) averages over the features of each
+            example, independently of the others. For images, either over the
+            whole image (variant A) or over the channels at each pixel
+            (variant B).
+
+            The parameters $\gamma, \beta$ have one entry per normalized
+            feature or channel.
+        \end{column}
+    \end{columns}
+
+    \SlideSource{Ba et al. (2016), \textit{Layer normalization}; Wu and He (2018), \textit{Group normalization}, ECCV.}
+
+\end{frame}
+
+\begin{frame}{From batch to layer normalization}
+    \setlength{\parskip}{6pt}
+
+    Batch normalization works very well for CNNs, but tying each example to its
+    mini-batch has a cost:
+    \begin{itemize}
+        \item noisy estimates with small mini-batches;
+        \item a poor fit for sequences of different lengths, or for training
+              split across many devices;
+        \item different behavior in training and inference.
+    \end{itemize}
+    Layer normalization avoids all three: it is the standard in transformers. Most recent LLMs use an even simpler variant, \myalert{RMSNorm},
+    which skips the mean and only rescales each vector:
+    \[
+        \text{RMSNorm}(\vc{h}) = \vc{\gamma} \odot \frac{\vc{h}}{\sqrt{\frac{1}{F}\sum_j h_j^2 + \varepsilon}} \,.
+    \]
+
+    \SlideSource{Zhang and Sennrich (2019), \textit{Root mean square layer normalization}, NeurIPS.}
+
+\end{frame}
+
+\begin{frame}{Why does normalization help?}
+    \setlength{\parskip}{6pt}
+
+    The original explanation was \textbf{internal covariate shift}: each layer
+    sees inputs whose distribution keeps changing as the previous layers train,
+    and BN would stabilize them.
+
+    Later experiments do not support it: injecting noise after BN to shift the
+    distributions again barely hurts training. A better-supported view is that
+    BN makes the loss landscape \textbf{smoother}, so the gradient stays
+    predictive over longer steps.
+
+    \begin{tcolorbox}[nndsgreen]
+        In practice, the most robust effect is that normalized networks train
+        stably with much \textbf{larger learning rates}.
+    \end{tcolorbox}
+
+    The full picture is still debated: methods often work long before we
+    understand why.
+
+    \SlideSource{Santurkar et al. (2018), \textit{How does batch normalization help optimization?}, NeurIPS;
+        Bjorck et al. (2018), \textit{Understanding batch normalization}, NeurIPS.}
+
+\end{frame}
+
+\begin{frame}{Normalized layers ignore the scale of their weights}
+    \setlength{\parskip}{6pt}
+
+    If a unit with weights $\vc{w}$ is followed by normalization, scaling
+    $\vc{w}$ by any $a > 0$ changes nothing:
+    \[
+        \text{BN}(a\,\vc{X}\vc{w}) = \text{BN}(\vc{X}\vc{w}) \,.
+    \]
+    Only the direction of $\vc{w}$ matters. Two consequences for gradient descent:
+    \begin{itemize}
+        \item the gradient is orthogonal to $\vc{w}$, so plain steps can only
+              make $\lVert\vc{w}\rVert$ grow;
+        \item the gradient shrinks as $1/\lVert\vc{w}\rVert$, so the effective
+              step on the direction is about $\eta / \lVert\vc{w}\rVert^2$.
+    \end{itemize}
+
+    \begin{tcolorbox}[nndsorange]
+        For these weights, weight decay does not regularize the function: by keeping
+        $\lVert\vc{w}\rVert$ small, it sets the \textbf{effective learning rate}.
+    \end{tcolorbox}
+
+    \SlideSource{van Laarhoven (2017), \textit{L2 regularization versus batch and weight normalization}.}
 
 \end{frame}
 
