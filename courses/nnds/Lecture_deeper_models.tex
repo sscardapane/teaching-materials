@@ -312,7 +312,7 @@
     \setlength{\parskip}{3pt}
 
     During training, each output depends on the rest of its mini-batch. At
-    inference we want a deterministic prediction, even for a single input, so
+    inference we want a deterministic prediction, so
     we need fixed values $\mu_j$ and $\sigma_j^2$.
 
     We could compute them on the training set after training. In practice, BN
@@ -323,6 +323,7 @@
     and similarly for $\sigma_j^2$, with the unbiased estimate
     $\frac{B}{B-1}\widetilde{\sigma}_j^2$. They replace the estimates at inference.
 
+    \vspace{0.5em}
     \begin{tcolorbox}[nndsorange]
         In PyTorch, \texttt{model.train()} and \texttt{model.eval()} switch
         between the two modes: forgetting \texttt{model.eval()} is a classic bug.
@@ -411,6 +412,7 @@
     Each channel is then standardized and rescaled as before, with one pair
     $\gamma_c, \beta_c$ per channel ($2C$ parameters).
 
+    \vspace{0.5em}
     \begin{tcolorbox}[nndsblue]
         A channel plays the role of a feature: the mean is taken over the
         mini-batch \emph{and} over all spatial positions.
@@ -492,11 +494,9 @@
     hidden layers?
     \begin{itemize}\small
         \item \textbf{Hidden units are interchangeable.} They come from the same
-              kind of linear map and start identically distributed. He
-              initialization reasons about the average squared activation over
-              a layer's units: LN enforces it for every example, at every step.
+              kind of linear map and start identically distributed (same reasoning as He initialization).
         \item \textbf{LN fixes the norm of the representation.} Without $\gamma,
-              \beta$, LN maps $\vc{z}$ to $\sqrt{D}\,\vc{u}$, with $\vc{u}$ a
+                  \beta$, LN maps $\vc{z}$ to $\sqrt{D}\,\vc{u}$, with $\vc{u}$ a
               unit vector orthogonal to $\vc{1}$. Then $\gamma, \beta$ give each
               feature its own scale and offset back.
         \item \textbf{It removes different nuisances than BN.} LN is invariant to
@@ -544,7 +544,7 @@
 
     The original explanation was \textbf{internal covariate shift}: each layer
     sees inputs whose distribution keeps changing as the previous layers train,
-    and BN would stabilize them.
+    and BN stabilize them.
 
     Later experiments do not support it: injecting noise after BN to shift the
     distributions again barely hurts training. A better-supported view is that
@@ -556,8 +556,7 @@
         stably with much \textbf{larger learning rates}.
     \end{tcolorbox}
 
-    The full picture is still debated: methods often work long before we
-    understand why.
+    The full picture is still debated!
 
     \SlideSource{Santurkar et al. (2018), \textit{How does batch normalization help optimization?}, NeurIPS;
         Bjorck et al. (2018), \textit{Understanding batch normalization}, NeurIPS;
