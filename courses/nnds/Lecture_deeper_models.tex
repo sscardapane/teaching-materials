@@ -495,10 +495,8 @@
     \begin{itemize}\small
         \item \textbf{Hidden units are interchangeable.} They come from the same
               kind of linear map and start identically distributed (same reasoning as He initialization).
-        \item \textbf{LN fixes the norm of the representation.} Without $\gamma,
-                  \beta$, LN maps $\vc{z}$ to $\sqrt{D}\,\vc{u}$, with $\vc{u}$ a
-              unit vector orthogonal to $\vc{1}$. Then $\gamma, \beta$ give each
-              feature its own scale and offset back.
+        \item \textbf{LN fixes the length of the representation}, as we see
+              in the next slide.
         \item \textbf{It removes different nuisances than BN.} LN is invariant to
               rescaling the whole weight matrix and to rescaling a single input;
               BN to rescaling the weights of each unit.
@@ -510,6 +508,49 @@
     \end{tcolorbox}
 
     \SlideSource{Ba et al. (2016), \textit{Layer normalization}, Secs.~5.1 and~6.7.}
+
+\end{frame}
+
+\begin{frame}{What layer normalization does to a vector}
+
+    \begin{columns}[c,onlytextwidth]
+        \begin{column}{0.56\textwidth}%
+            \small\setlength{\parskip}{5pt}%
+            \RaggedRight\setlength{\parindent}{0pt}%
+            Leave $\gamma, \beta$ aside. LN does two things to each vector
+            $\vc{z} \in \mathbb{R}^D$:
+
+            \textbf{1. Centering.} Subtracting the mean removes the part of
+            $\vc{z}$ along $\vc{1} = (1, \ldots, 1)$. What is left, $\vc{P}\vc{z}$,
+            is orthogonal to $\vc{1}$.
+
+            \textbf{2. Scaling.} The standard deviation is
+            $\sigma = \lVert\vc{P}\vc{z}\rVert / \sqrt{D}$, so dividing by it
+            gives a vector of length exactly $\sqrt{D}$.
+
+            Every example leaves LN with the \textbf{same length}, whatever its
+            scale: only its direction is kept. Then $\gamma, \beta$ give each
+            feature its own scale and offset back.
+        \end{column}
+        \begin{column}{0.4\textwidth}
+            \centering
+            \begin{tikzpicture}[scale=0.95]
+                \draw[drawblue, thick] (0,0) circle (1.4);
+                \node[font=\scriptsize, text=drawblue] at (1.25,-1.35) {radius $\sqrt{D}$};
+                \foreach \ang/\len in {20/0.7, 75/2.3, 140/1.0, 250/1.9} {
+                    \draw[-{Stealth[length=2mm]}, drawgray] (0,0) -- (\ang:\len);
+                    \draw[dashed, drawgray!60] (\ang:\len) -- (\ang:1.4);
+                    \fill[drawblue] (\ang:1.4) circle (1.6pt);
+                }
+                \fill (0,0) circle (1pt);
+                \node[font=\scriptsize, anchor=west, text=drawgray] at (75:2.3) {$\vc{P}\vc{z}$};
+                \node[font=\scriptsize, anchor=west, text=drawblue] at (20:1.45) {$\text{LN}(\vc{z})$};
+            \end{tikzpicture}
+
+            {\scriptsize Centered vectors (gray) and their LN outputs (blue),
+            in the subspace orthogonal to $\vc{1}$.}
+        \end{column}
+    \end{columns}
 
 \end{frame}
 
@@ -544,7 +585,7 @@
 
     The original explanation was \textbf{internal covariate shift}: each layer
     sees inputs whose distribution keeps changing as the previous layers train,
-    and BN stabilize them.
+    and BN stabilizes them.
 
     Later experiments do not support it: injecting noise after BN to shift the
     distributions again barely hurts training. A better-supported view is that
@@ -565,19 +606,60 @@
 \end{frame}
 
 \begin{frame}{Normalized layers ignore the scale of their weights}
+
+    \begin{columns}[c,onlytextwidth]
+        \begin{column}{0.56\textwidth}%
+            \setlength{\parskip}{4pt}%
+            \RaggedRight\setlength{\parindent}{0pt}%
+            If a unit with weights $\vc{w}$ is followed by normalization,
+            scaling $\vc{w}$ by any $a > 0$ changes nothing:
+            \[
+                \text{BN}(a\,\vc{X}\vc{w}) = \text{BN}(\vc{X}\vc{w}) \,,
+                \quad \text{so} \quad \mathcal{L}(a\vc{w}) = \mathcal{L}(\vc{w}) \,.
+            \]
+            Only the direction of $\vc{w}$ matters: the loss is constant along
+            every ray from the origin.
+
+            Making $\vc{w}$ longer or shorter does not change the loss, so the
+            gradient has no component along $\vc{w}$: it is
+            \textbf{orthogonal to $\vc{w}$}, tangent to the circle of radius
+            $\lVert\vc{w}\rVert$.
+        \end{column}
+        \begin{column}{0.4\textwidth}
+            \centering
+            \begin{tikzpicture}[scale=0.95]
+                \foreach \ang in {5,25,...,165} {
+                    \draw[drawgray!35] (0,0) -- (\ang:2.8);
+                }
+                \draw[drawgray] (0,0) circle (2);
+                \draw[-{Stealth[length=2mm]}, thick, drawblue] (0,0) -- (40:2)
+                    node[midway, below right, font=\scriptsize] {$\vc{w}$};
+                \draw[-{Stealth[length=2mm]}, thick, draworange] (40:2) -- ++(130:1.1)
+                    node[above, font=\scriptsize] {$-\eta\nabla\mathcal{L}$};
+                \draw[dashed, drawgray] (0,0) -- ($(40:2) + (130:1.1)$);
+                \fill (0,0) circle (1pt);
+            \end{tikzpicture}
+
+            {\scriptsize The loss is constant along each gray ray.}
+        \end{column}
+    \end{columns}
+
+    \SlideSource{van Laarhoven (2017), \textit{L2 regularization versus batch and weight normalization}.}
+
+\end{frame}
+
+\begin{frame}{Weight decay as a learning rate}
     \setlength{\parskip}{6pt}
 
-    If a unit with weights $\vc{w}$ is followed by normalization, scaling
-    $\vc{w}$ by any $a > 0$ changes nothing:
-    \[
-        \text{BN}(a\,\vc{X}\vc{w}) = \text{BN}(\vc{X}\vc{w}) \,.
-    \]
-    Only the direction of $\vc{w}$ matters. Two consequences for gradient descent:
+    Two consequences for gradient descent on these weights:
     \begin{itemize}
-        \item the gradient is orthogonal to $\vc{w}$, so plain steps can only
-              make $\lVert\vc{w}\rVert$ grow;
-        \item the gradient shrinks as $1/\lVert\vc{w}\rVert$, so the effective
-              step on the direction is about $\eta / \lVert\vc{w}\rVert^2$.
+        \item The step is orthogonal to $\vc{w}$, so it moves $\vc{w}$ off the
+              circle, outwards (Pythagoras):
+              $\lVert\vc{w} - \eta\nabla\mathcal{L}\rVert^2 = \lVert\vc{w}\rVert^2 + \eta^2\lVert\nabla\mathcal{L}\rVert^2$.
+              Plain steps can only make $\lVert\vc{w}\rVert$ grow.
+        \item The gradient shrinks as $1/\lVert\vc{w}\rVert$, so the effective
+              step on the direction is about $\eta / \lVert\vc{w}\rVert^2$: the
+              longer $\vc{w}$, the slower its direction changes.
     \end{itemize}
 
     \begin{tcolorbox}[nndsorange]
