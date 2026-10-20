@@ -290,96 +290,164 @@
 \begin{frame}{Batch normalization}
     \setlength{\parskip}{5pt}
 
-    Take the outputs of a layer on a mini-batch, $\vc{H}\sim(B,D)$. We
-    estimate the statistics of each column on the mini-batch, and standardize:
+    Ideally, we would standardize each unit with its mean and variance over the
+    whole training set. But these change at every step, and recomputing them
+    would need a full pass over the data (with gradients through all of it).
+    Instead, we estimate them on the mini-batch. For outputs $\vc{Z}\sim(B,D)$:
     \[
-        \widetilde{\mu}_j = \frac{1}{B}\sum_i \idx{\vc{H}}{i,j} \,, \quad
-        \widetilde{\sigma}_j^2 = \frac{1}{B}\sum_i \left(\idx{\vc{H}}{i,j} - \widetilde{\mu}_j\right)^2 , \quad
-        \idx{\vc{H}'}{i,j} = \frac{\idx{\vc{H}}{i,j} - \widetilde{\mu}_j}{\sqrt{\widetilde{\sigma}_j^2 + \varepsilon}} \,.
+        \widetilde{\mu}_j = \frac{1}{B}\sum_b \idx{\vc{Z}}{b,j} \,, \quad
+        \widetilde{\sigma}_j^2 = \frac{1}{B}\sum_b \left(\idx{\vc{Z}}{b,j} - \widetilde{\mu}_j\right)^2 , \quad
+        \idx{\text{BN}(\vc{Z})}{b,j} = \gamma_j \frac{\idx{\vc{Z}}{b,j} - \widetilde{\mu}_j}{\sqrt{\widetilde{\sigma}_j^2 + \varepsilon}} + \beta_j \,.
     \]
-    A \myalert{batch normalization} (BN) layer then sets a new mean and scale
-    for each column, with $2D$ trainable parameters:
-    \[
-        \idx{\text{BN}(\vc{H})}{i,j} = \gamma_j \idx{\vc{H}'}{i,j} + \beta_j \,.
-    \]
-    It usually goes between a linear (or convolutional) layer and its
-    activation, whose bias becomes redundant.
+    A \myalert{batch normalization} (BN) layer standardizes each column, then
+    learns a new mean $\beta_j$ and scale $\gamma_j$ for it ($2D$ trainable
+    parameters). It usually goes between a linear layer and its activation,
+    whose bias becomes redundant.
 
     \SlideSource{Ioffe and Szegedy (2015), \textit{Batch normalization: accelerating deep network training by reducing internal covariate shift}, ICML.}
 
 \end{frame}
 
 \begin{frame}{Batch normalization at inference}
-    \setlength{\parskip}{6pt}
+    \setlength{\parskip}{4pt}
 
-    During training, the output for one example depends on the other examples
-    in its mini-batch. At inference we want a deterministic prediction, even for
-    a single input.
+    During training, each output depends on the rest of its mini-batch. At
+    inference we want a deterministic prediction, even for a single input, so
+    we need fixed values $\mu_j$ and $\sigma_j^2$.
 
-    During training, BN keeps a running average of the mini-batch statistics,
-    for example
+    We could compute them on the training set after training. In practice, BN
+    keeps a running average of the mini-batch statistics, at almost no cost:
     \[
-        \mu_j \leftarrow (1-m)\,\mu_j + m\,\widetilde{\mu}_j \,, \qquad m = 0.1 \,,
+        \mu_j \leftarrow (1-m)\,\mu_j + m\,\widetilde{\mu}_j \qquad (m = 0.1 \text{ in PyTorch})
     \]
-    and the same for the variance. At inference, it uses $\mu_j$ and
-    $\sigma_j^2$ in place of $\widetilde{\mu}_j$ and $\widetilde{\sigma}_j^2$.
+    and the same for $\sigma_j^2$, which replace the estimates at inference.
 
     \begin{tcolorbox}[nndsorange]
-        The same layer behaves differently in training and inference. In
-        PyTorch, \texttt{model.train()} and \texttt{model.eval()} switch between
-        the two modes: forgetting \texttt{model.eval()} is a classic bug.
+        In PyTorch, \texttt{model.train()} and \texttt{model.eval()} switch
+        between the two modes: forgetting \texttt{model.eval()} is a classic bug.
     \end{tcolorbox}
 
-    \SlideSource{Wu and Johnson (2021), \textit{Rethinking ``batch'' in BatchNorm}.}
+\end{frame}
+
+\begin{frame}{How the running average works}
+
+    \begin{columns}[c,onlytextwidth]
+        \begin{column}{0.5\textwidth}%
+            \small\setlength{\parskip}{5pt}%
+            \RaggedRight\setlength{\parindent}{0pt}%
+            Unrolling the update over past mini-batches:
+            \[
+                \mu_j = m \sum_{k \ge 0} (1-m)^k \, \widetilde{\mu}_j^{(t-k)} \,.
+            \]
+            Older estimates count exponentially less: an
+            \textbf{exponential moving average}. With $m=0.1$, the last 10
+            mini-batches make up 65\% of the value, the last 50 over 99\%.
+
+            Example: PyTorch starts from $\mu_j = 0$. If every mini-batch gives
+            $\widetilde{\mu}_j = 1$, the running mean is $0.1$ after one step,
+            $0.65$ after 10 and $0.99$ after 50.
+        \end{column}
+        \begin{column}{0.46\textwidth}
+            \centering
+            \begin{tikzpicture}
+                \begin{axis}[
+                        width=\linewidth, height=0.55\textheight,
+                        ybar, bar width=2.2pt, ymin=0, ymax=0.11,
+                        xmin=-1, xmax=30, x dir=reverse,
+                        xlabel={Mini-batches ago ($k$)}, ylabel={Weight},
+                        label style={font=\small}, tick label style={font=\scriptsize},
+                        yticklabel style={/pgf/number format/fixed, /pgf/number format/precision=2},
+                        axis lines=left, axis line style={drawgray},
+                    ]
+                    \addplot[fill=drawblue, draw=none, domain=0:29, samples=30] {0.1*0.9^x};
+                \end{axis}
+            \end{tikzpicture}
+
+            {\scriptsize Weight $m(1-m)^k$ of each past estimate ($m=0.1$).}
+        \end{column}
+    \end{columns}
+
+\end{frame}
+
+\begin{frame}{Batch normalization in CNNs}
+    \setlength{\parskip}{4pt}
+
+    After a convolutional layer, the outputs on a mini-batch are
+    $\vc{Z}\sim(B,H,W,C)$. Each channel is the same filter applied at every
+    position, so we treat every position of every image as one more sample of
+    that channel:
+    \[
+        \widetilde{\mu}_c = \frac{1}{BHW}\sum_{b,i,j} \idx{\vc{Z}}{b,i,j,c} \,, \qquad
+        \widetilde{\sigma}_c^2 = \frac{1}{BHW}\sum_{b,i,j} \left(\idx{\vc{Z}}{b,i,j,c} - \widetilde{\mu}_c\right)^2 .
+    \]
+    Each channel is then standardized and rescaled as before, with one pair
+    $\gamma_c, \beta_c$ per channel.
+
+    \begin{tcolorbox}[nndsblue]
+        A channel plays the role of a feature: the mean is taken over the
+        mini-batch \emph{and} over all spatial positions.
+    \end{tcolorbox}
+
+    In PyTorch, this is \texttt{nn.BatchNorm2d(C)} (with channels first).
+
+\end{frame}
+
+\begin{frame}{Layer normalization}
+    \setlength{\parskip}{5pt}
+
+    Tying each example to its mini-batch is costly: noisy estimates with small
+    mini-batches, a poor fit for variable-length sequences or many devices, and
+    different behavior in training and inference. \myalert{Layer normalization}
+    (LN) computes the statistics of each example over its own features:
+    \[
+        \widetilde{\mu}_b = \frac{1}{D}\sum_j \idx{\vc{Z}}{b,j} \,, \quad
+        \widetilde{\sigma}_b^2 = \frac{1}{D}\sum_j \left(\idx{\vc{Z}}{b,j} - \widetilde{\mu}_b\right)^2 , \quad
+        \idx{\text{LN}(\vc{Z})}{b,j} = \gamma_j \frac{\idx{\vc{Z}}{b,j} - \widetilde{\mu}_b}{\sqrt{\widetilde{\sigma}_b^2 + \varepsilon}} + \beta_j \,.
+    \]
+
+    \begin{center}
+        \small
+        \begin{tabular}{lll}
+            & \textbf{Statistics over} & \textbf{Parameters} $\gamma, \beta$ \\
+            \hline
+            BN & each feature, across the mini-batch & one pair per feature \\
+            LN & each example, across its features & one pair per feature \\
+        \end{tabular}
+    \end{center}
+
+    Nothing depends on other examples: the same computation in training and
+    inference, even with $B=1$. LN is the standard in transformers.
+
+    \SlideSource{Ba et al. (2016), \textit{Layer normalization}.}
 
 \end{frame}
 
 % Figure: S. Scardapane, Alice's Adventures in a Differentiable Wonderland.
-\begin{frame}{Which axes do we normalize?}
+\begin{frame}{Layer normalization for images and for LLMs}
 
     \begin{columns}[c,onlytextwidth]
         \begin{column}{0.46\textwidth}
             \centering
             \includegraphics[width=\linewidth]{images/deeper/normalization_axes.pdf}
+
+            {\scriptsize In blue: values sharing one mean and variance.}
         \end{column}
         \begin{column}{0.5\textwidth}%
             \small\setlength{\parskip}{6pt}%
             \RaggedRight\setlength{\parindent}{0pt}%
-            The statistics (blue) can be computed along different axes.
+            For images, LN has two common variants:
 
-            \textbf{Batch normalization} averages over the mini-batch: one mean
-            per feature, or per channel for images $(B,H,W,C)$.
+            \textbf{A}: statistics over the whole image, all $H\!\times\!W\!\times\!C$
+            values (\texttt{nn.LayerNorm} learns one $\gamma, \beta$ per value).
 
-            \myalert{Layer normalization} (LN) averages over the features of each
-            example, independently of the others. For images, either over the
-            whole image (variant A) or over the channels at each pixel
-            (variant B).
+            \textbf{B}: statistics over the $C$ channels at each position, with
+            $\gamma, \beta \in \mathbb{R}^C$, as in ConvNeXt. Transformers do the
+            same on each token.
 
-            The parameters $\gamma, \beta$ have one entry per normalized
-            feature or channel.
+            Most recent LLMs use \myalert{RMSNorm}: LN without subtracting the
+            mean, $\vc{\gamma} \odot \vc{z} / \sqrt{\tfrac{1}{D}\sum_j z_j^2 + \varepsilon}$.
         \end{column}
     \end{columns}
-
-    \SlideSource{Ba et al. (2016), \textit{Layer normalization}; Wu and He (2018), \textit{Group normalization}, ECCV.}
-
-\end{frame}
-
-\begin{frame}{From batch to layer normalization}
-    \setlength{\parskip}{6pt}
-
-    Batch normalization works very well for CNNs, but tying each example to its
-    mini-batch has a cost:
-    \begin{itemize}
-        \item noisy estimates with small mini-batches;
-        \item a poor fit for sequences of different lengths, or for training
-              split across many devices;
-        \item different behavior in training and inference.
-    \end{itemize}
-    Layer normalization avoids all three: it is the standard in transformers. Most recent LLMs use an even simpler variant, \myalert{RMSNorm},
-    which skips the mean and only rescales each vector:
-    \[
-        \text{RMSNorm}(\vc{h}) = \vc{\gamma} \odot \frac{\vc{h}}{\sqrt{\frac{1}{D}\sum_j h_j^2 + \varepsilon}} \,.
-    \]
 
     \SlideSource{Zhang and Sennrich (2019), \textit{Root mean square layer normalization}, NeurIPS.}
 
