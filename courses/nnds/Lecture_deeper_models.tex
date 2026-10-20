@@ -309,7 +309,7 @@
 \end{frame}
 
 \begin{frame}{Batch normalization at inference}
-    \setlength{\parskip}{4pt}
+    \setlength{\parskip}{3pt}
 
     During training, each output depends on the rest of its mini-batch. At
     inference we want a deterministic prediction, even for a single input, so
@@ -320,7 +320,8 @@
     \[
         \mu_j \leftarrow (1-m)\,\mu_j + m\,\widetilde{\mu}_j \qquad (m = 0.1 \text{ in PyTorch})
     \]
-    and the same for $\sigma_j^2$, which replace the estimates at inference.
+    and similarly for $\sigma_j^2$, with the unbiased estimate
+    $\frac{B}{B-1}\widetilde{\sigma}_j^2$. They replace the estimates at inference.
 
     \begin{tcolorbox}[nndsorange]
         In PyTorch, \texttt{model.train()} and \texttt{model.eval()} switch
@@ -478,6 +479,61 @@
 
     \SlideSource{Wu and He (2018), \textit{Group normalization}, ECCV; Zhang and Sennrich (2019),
         \textit{Root mean square layer normalization}, NeurIPS.}
+
+\end{frame}
+
+% Written by Claude (2026-10-20). Ba et al. (2016): Sec. 5.1 and Table 1
+% (invariances), Sec. 6.7 (similar contributions of hidden units; CNN caveat).
+\begin{frame}{Why normalize across features?}
+    \setlength{\parskip}{3pt}
+
+    Standardizing each column suits inputs measured in different units. LN
+    averages across the features of one example: why is this reasonable in
+    hidden layers?
+    \begin{itemize}\small
+        \item \textbf{Hidden units are interchangeable.} They come from the same
+              kind of linear map and start identically distributed. He
+              initialization reasons about the average squared activation over
+              a layer's units: LN enforces it for every example, at every step.
+        \item \textbf{LN fixes the norm of the representation.} Without $\gamma,
+              \beta$, LN maps $\vc{z}$ to $\sqrt{D}\,\vc{u}$, with $\vc{u}$ a
+              unit vector orthogonal to $\vc{1}$. Then $\gamma, \beta$ give each
+              feature its own scale and offset back.
+        \item \textbf{It removes different nuisances than BN.} LN is invariant to
+              rescaling the whole weight matrix and to rescaling a single input;
+              BN to rescaling the weights of each unit.
+    \end{itemize}
+
+    \begin{tcolorbox}[nndsorange]
+        This assumes units contribute in similar ways. In CNNs, units near the
+        image border behave differently: there, BN still works better.
+    \end{tcolorbox}
+
+    \SlideSource{Ba et al. (2016), \textit{Layer normalization}, Secs.~5.1 and~6.7.}
+
+\end{frame}
+
+\begin{frame}{Why can we drop the mean?}
+    \setlength{\parskip}{6pt}
+
+    Centering is a linear map:
+    $\vc{z} - \text{mean}(\vc{z})\,\vc{1} = \vc{P}\vc{z}$, with
+    $\vc{P} = \vc{I} - \frac{1}{D}\vc{1}\vc{1}^\top$. When LN follows a linear
+    layer, $\vc{P}$ can be folded into it:
+    \[
+        \text{LN}(\vc{W}\vc{x} + \vc{b}) = \text{RMSNorm}(\vc{P}\vc{W}\vc{x} + \vc{P}\vc{b}) + \vc{\beta} \,.
+    \]
+    So centering adds nothing that the previous layer cannot learn. The only
+    nonlinear part of LN is the division by the norm, which RMSNorm keeps. In a
+    transformer, everything added to the residual stream comes out of a linear
+    layer, so the same argument holds.
+
+    \begin{tcolorbox}[nndsgreen]
+        In practice, RMSNorm matches LN in accuracy and reduces running time by
+        7--64\% across models.
+    \end{tcolorbox}
+
+    \SlideSource{Zhang and Sennrich (2019), \textit{Root mean square layer normalization}, NeurIPS.}
 
 \end{frame}
 
