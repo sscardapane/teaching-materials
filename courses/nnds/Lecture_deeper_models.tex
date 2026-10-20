@@ -52,13 +52,51 @@
             \includegraphics[width=\linewidth]{images/deeper/mnist_strip.png}
 
             AlexNet is essentially a bigger LeNet. What changed in 2012 was
-            GPUs, a large labelled dataset (ImageNet, 1.2M images) and a few
-            training tricks.
+            GPUs, a large labelled dataset and a few training tricks.
         \end{column}
     \end{columns}
 
     \SlideSource{LeCun et al. (1998), Proc.\ IEEE; Krizhevsky et al. (2012), NeurIPS.
         Figure: Dive into Deep Learning, Sec.~8.1 (CC BY-SA 4.0).}
+
+\end{frame}
+
+% Figures from Russakovsky et al. (2015), IJCV: Sec. 2 (21,841 synsets,
+% 14,197,122 images as of August 2014), Table 2 (ILSVRC2012 split), Sec. 4.1
+% (top-5 metric, 120 dog breeds).
+\begin{frame}{ImageNet and its challenge}
+
+    \begin{columns}[T,onlytextwidth]
+        \begin{column}{0.48\textwidth}
+            \begin{tcolorbox}[nndsblue,courseheight={imagenet}{}]
+                \textbf{ImageNet (2009)}
+
+                About 14 million images, labelled by hand into some 22,000
+                categories of the WordNet hierarchy.
+            \end{tcolorbox}
+        \end{column}
+        \begin{column}{0.48\textwidth}
+            \begin{tcolorbox}[nndsblue,courseheight={imagenet}{}]
+                \textbf{ILSVRC (2010--2017)}
+
+                A yearly competition on a subset: 1,000 classes, 1.28 million
+                training and 50,000 validation images.
+            \end{tcolorbox}
+        \end{column}
+    \end{columns}
+
+    \medskip
+    \begin{tcolorbox}[nndsblue]
+        The \textbf{top-5 error} is the fraction of test images whose true
+        class is not among the five classes with the highest score.
+    \end{tcolorbox}
+
+    \medskip
+    Why five guesses? An image often contains several objects but has a
+    single label, and some classes are very close: there are 120 dog breeds
+    alone.
+
+    \SlideSource{Deng et al. (2009), CVPR; Russakovsky et al. (2015), IJCV.}
 
 \end{frame}
 
