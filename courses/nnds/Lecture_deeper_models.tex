@@ -204,7 +204,7 @@
                     \node[font=\scriptsize, text=drawgray, anchor=north east] at (axis cs:59,2.25) {chance};
                     \nextgroupplot[title={Test accuracy (\%)}, ymin=0, ymax=100,
                         legend columns=2, legend style={font=\scriptsize, draw=none, fill=none,
-                            at={(-0.2,-0.5)}, anchor=north, /tikz/every even column/.append style={column sep=8pt}}]
+                                at={(-0.2,-0.5)}, anchor=north, /tikz/every even column/.append style={column sep=8pt}}]
                     \addplot[drawgray!60, dashed, thin, mark=none, forget plot] coordinates {(4,10) (60,10)};
                     \addplot[drawblue] table[x=depth, y=he_acc, col sep=comma] {assets/images/deeper/opener.csv};
                     \addplot[draworange] table[x=depth, y=default_acc, col sep=comma] {assets/images/deeper/opener.csv};
@@ -231,8 +231,7 @@
     activations at the first step. Nothing keeps it there during training, and
     the gradient must cross every layer to reach the first ones.
 
-    We look at three groups of techniques, and close each one by running the
-    experiment again:
+    We look at three possible solutions to improve training at scale:
 
     \begin{columns}[T,onlytextwidth]
         \begin{column}{0.32\textwidth}
@@ -243,14 +242,14 @@
             \end{tcolorbox}
         \end{column}
         \begin{column}{0.32\textwidth}
-            \begin{tcolorbox}[nndsblue,courseheight={roadmap}{}]
+            \begin{tcolorbox}[nndsred,courseheight={roadmap}{}]
                 \textbf{Residuals}
 
                 Make the identity the default, so every block only adds a small change.
             \end{tcolorbox}
         \end{column}
         \begin{column}{0.32\textwidth}
-            \begin{tcolorbox}[nndsblue,courseheight={roadmap}{}]
+            \begin{tcolorbox}[nndsgreen,courseheight={roadmap}{}]
                 \textbf{Regularization}
 
                 Once the network trains, make it generalize.
