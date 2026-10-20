@@ -202,7 +202,7 @@
                     \addplot[drawgray!60, dashed, thin, mark=none, forget plot] coordinates {(4,2.3026) (60,2.3026)};
                     \addplot[drawblue] table[x=depth, y=plain_he_loss, col sep=comma] {assets/images/deeper/opener.csv};
                     \addplot[draworange] table[x=depth, y=plain_default_loss, col sep=comma] {assets/images/deeper/opener.csv};
-                    \node[font=\scriptsize, text=drawgray, anchor=north east] at (axis cs:59,2.25) {chance};
+                    \node[font=\scriptsize, text=drawgray, anchor=north] at (axis cs:28,2.25) {chance};
                     \nextgroupplot[title={Test accuracy (\%)}, ymin=0, ymax=100,
                         legend columns=2, legend style={font=\scriptsize, draw=none, fill=none,
                                 at={(-0.2,-0.5)}, anchor=north, /tikz/every even column/.append style={column sep=8pt}}]
