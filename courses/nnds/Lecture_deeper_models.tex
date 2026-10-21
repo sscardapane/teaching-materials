@@ -480,9 +480,10 @@
 
     \begin{columns}[c,onlytextwidth]
         \begin{column}{0.56\textwidth}%
-            \small\setlength{\parskip}{5pt}%
+            \small\setlength{\parskip}{3pt}%
             \RaggedRight\setlength{\parindent}{0pt}%
-            Leave $\gamma, \beta$ aside and take $\vc{z} = (1, 2, 6)$, so $D = 3$.
+            We neglect $\varepsilon$, leave $\gamma, \beta$ aside, and take
+            $\vc{z} = (1, 2, 6)$, so $D = 3$.
 
             \textbf{1. Centering.} Subtract the mean, $3$, to get
             \mbox{$\vc{P}\vc{z} = (-2, -1, 3)$}. The entries now sum to zero,
@@ -614,10 +615,47 @@
 
 \end{frame}
 
+% Written by Codex (2026-10-21). Original vector panels, not a local
+% reproduction: Santurkar et al. (2018), Fig. 4(a,b), arXiv v5, PDF p. 5.
+\begin{frame}{A more predictive gradient}
+    \small
+    \setlength{\parskip}{4pt}
+
+    During VGG training on CIFAR-10, Santurkar et al. probe several step lengths
+    along the current gradient: $\vc{\theta} - \alpha\vc{g}$,
+    where $\vc{g} = \nabla\mathcal{L}(\vc{\theta})$.
+
+    \begin{columns}[c,onlytextwidth]
+        \begin{column}{0.65\textwidth}
+            \includegraphics[width=\linewidth]{images/deeper/bn_smoothing.pdf}
+        \end{column}
+        \begin{column}{0.31\textwidth}
+            \RaggedRight
+            Shaded bands span the tested step lengths.
+
+            \textbf{Left:} loss values.
+
+            \textbf{Right:} change in gradient,
+            \[
+                \lVert\nabla\mathcal{L}(\vc{\theta}-\alpha\vc{g})-\vc{g}\rVert \,.
+            \]
+        \end{column}
+    \end{columns}
+
+    \begin{tcolorbox}[nndsgreen]
+        In this experiment, BN makes the gradient change less along the step.
+        It stays predictive over longer steps, helping explain larger learning rates.
+    \end{tcolorbox}
+
+    \SlideSource{Santurkar et al. (2018), \textit{How does batch normalization help optimization?}, Fig.~4(a,b).}
+
+\end{frame}
+
 % Learning-rate experiment (Written by Claude, 2026-10-21). Data: lr.csv from
 % assets/images/deeper/lr_table.py over depth_sweep.py runs (20 layers, He
 % initialization, 30 epochs, one seed per point).
 \begin{frame}{Normalization allows larger learning rates}
+    \setlength{\parskip}{3pt}
 
     \begin{columns}[c,onlytextwidth]
         \begin{column}{0.36\textwidth}%
@@ -662,40 +700,82 @@
         \end{column}
     \end{columns}
 
-    \medskip
+    \smallskip
     \begin{tcolorbox}[nndsgreen]
         Best test accuracy: 79.7\% without BN ($\eta = 0.02$), 88.9\% with BN
         ($\eta = 0.1$).
     \end{tcolorbox}
 
+    {\small BN allows a larger nominal $\eta$. But how much does a step
+    change the function? For normalized weights, their norm also matters.}
+
 \end{frame}
 
+% Written by Codex (2026-10-21). Scope: the pre-normalization parameter
+% block, with no other path using it; training BN statistics, fixed gamma/beta,
+% positive scale and epsilon neglected. LN's block includes any preceding bias.
 \begin{frame}{Normalized layers ignore the scale of their weights}
+    \small
+    \setlength{\parskip}{5pt}
+    \setlength{\abovedisplayskip}{5pt}\setlength{\belowdisplayskip}{5pt}
+
+    A unit produces $\vc{z}=\vc{X}\vc{w}$, followed by BN. For $a>0$,
+    the batch mean and standard deviation scale with its weights:
+    \[
+        \mu(a\vc{z})=a\mu(\vc{z}) \,, \qquad
+        \sigma(a\vc{z})=a\sigma(\vc{z}) \,.
+    \]
+    We neglect $\varepsilon$ and keep $\gamma,\beta$ fixed. The scale cancels:
+    \[
+        \text{BN}(a\vc{z})
+        = \gamma\,\frac{a\vc{z}-a\mu(\vc{z})\vc{1}}{a\sigma(\vc{z})}
+          +\beta\vc{1}
+        = \text{BN}(\vc{z}) \,.
+    \]
+
+    \begin{tcolorbox}[nndsblue]
+        The predictions, and hence the data loss, do not change:
+        $\mathcal{L}(a\vc{w})=\mathcal{L}(\vc{w})$.
+        Only the \textbf{direction} of these weights matters to the function.
+    \end{tcolorbox}
+
+    LN has the same invariance for the \emph{whole} preceding affine map
+    (bias included), or for the input vector of one example.
+
+    \SlideSource{van Laarhoven (2017), \textit{L2 regularization versus batch and weight normalization}.}
+
+\end{frame}
+
+\begin{frame}{Scale invariance determines the gradient}
 
     \begin{columns}[c,onlytextwidth]
-        \begin{column}{0.56\textwidth}%
-            \setlength{\parskip}{4pt}%
+        \begin{column}{0.6\textwidth}%
+            \setlength{\parskip}{5pt}%
             \RaggedRight\setlength{\parindent}{0pt}%
             \small
-            If a unit with weights $\vc{w}$ is followed by BN, scaling $\vc{w}$
-            by any $a > 0$ changes nothing:
+            Write $\vc{g}(\vc{w})=\nabla\mathcal{L}(\vc{w})$.
+            We differentiate $\mathcal{L}(a\vc{w})=\mathcal{L}(\vc{w})$
+            in two ways.
+
+            \textbf{1. In the scalar $a$, at $a=1$:}
             \[
-                \text{BN}(a\,\vc{X}\vc{w}) = \text{BN}(\vc{X}\vc{w}) \,,
-                \quad \text{so} \quad \mathcal{L}(a\vc{w}) = \mathcal{L}(\vc{w}) \,.
+                \left.\frac{\mathrm d}{\mathrm da}\mathcal{L}(a\vc{w})\right|_{a=1}
+                =\vc{w}^{\top}\vc{g}(\vc{w})=0 \,.
             \]
-            (For LN: the whole weight matrix, or a single input.)
-            Differentiating this identity:
-            \begin{itemize}
-                \item in $a$, at $a = 1$: $\vc{w}^\top\nabla\mathcal{L}(\vc{w}) = 0$.
-                      A gradient is orthogonal to the level sets; these contain
-                      every ray, so it is \textbf{orthogonal to $\vc{w}$}.
-                \item in $\vc{w}$: $\nabla\mathcal{L}(a\vc{w}) = \nabla\mathcal{L}(\vc{w}) / a$.
-                      Longer weights get \textbf{smaller gradients}.
-            \end{itemize}
+            The gradient is \textbf{orthogonal to $\vc{w}$}, tangent to its sphere.
+
+            \textbf{2. In the vector $\vc{w}$, with $a$ fixed:}
+            \[
+                a\,\vc{g}(a\vc{w})=\vc{g}(\vc{w})
+                \quad\Longrightarrow\quad
+                \vc{g}(a\vc{w})=\frac{\vc{g}(\vc{w})}{a} \,.
+            \]
+            The chain rule supplies the factor $a$ on the left.
+            Longer weights get \textbf{smaller gradients}.
         \end{column}
-        \begin{column}{0.4\textwidth}
+        \begin{column}{0.36\textwidth}
             \centering
-            \begin{tikzpicture}[scale=0.95]
+            \begin{tikzpicture}[scale=0.86]
                 \foreach \ang in {5,25,...,165} {
                     \draw[drawgray!35] (0,0) -- (\ang:2.8);
                 }
@@ -703,7 +783,7 @@
                 \draw[-{Stealth[length=2mm]}, thick, drawblue] (0,0) -- (40:2)
                     node[midway, below right, font=\scriptsize] {$\vc{w}$};
                 \draw[-{Stealth[length=2mm]}, thick, draworange] (40:2) -- ++(130:1.1)
-                    node[above, font=\scriptsize] {$-\eta\nabla\mathcal{L}$};
+                    node[above left, font=\scriptsize] {$-\eta\nabla\mathcal{L}$};
                 \draw[dashed, drawgray] (0,0) -- ($(40:2) + (130:1.1)$);
                 \fill (0,0) circle (1pt);
             \end{tikzpicture}
@@ -717,26 +797,112 @@
 
 \end{frame}
 
-\begin{frame}{Weight decay as a learning rate}
-    \setlength{\parskip}{6pt}
+\begin{frame}{The weight norm sets the effective learning rate}
+    \small
+    \setlength{\parskip}{5pt}
+    \setlength{\abovedisplayskip}{5pt}\setlength{\belowdisplayskip}{5pt}
 
-    Two consequences for gradient descent on these weights:
-    \begin{itemize}
-        \item The step is orthogonal to $\vc{w}$, so it moves $\vc{w}$ off the
-              circle, outwards (Pythagoras):
-              $\lVert\vc{w} - \eta\nabla\mathcal{L}\rVert^2 = \lVert\vc{w}\rVert^2 + \eta^2\lVert\nabla\mathcal{L}\rVert^2$.
-              Plain steps can only make $\lVert\vc{w}\rVert$ grow.
-        \item The gradient shrinks as $1/\lVert\vc{w}\rVert$, so the effective
-              step on the direction is about $\eta / \lVert\vc{w}\rVert^2$: the
-              longer $\vc{w}$, the slower its direction changes.
-    \end{itemize}
+    We separate length and direction: $\vc{w}=r\vc{u}$, with
+    $r=\lVert\vc{w}\rVert$ and $\lVert\vc{u}\rVert=1$.
+    The previous identity gives $\vc{g}(r\vc{u})=\vc{g}(\vc{u})/r$.
+    A gradient-descent step is therefore
+    \[
+        \vc{w}^{+}=r\vc{u}-\frac{\eta}{r}\vc{g}(\vc{u})
+        =r\left(\vc{u}-\frac{\eta}{r^2}\vc{g}(\vc{u})\right) \,.
+    \]
+    We divide by its new norm to recover the direction:
+    \[
+        \vc{u}^{+}
+        =\frac{\vc{u}-\eta_{\mathrm{eff}}\vc{g}(\vc{u})}
+        {\lVert\vc{u}-\eta_{\mathrm{eff}}\vc{g}(\vc{u})\rVert}
+        \,,\qquad
+        {\color{drawblue}\eta_{\mathrm{eff}}=\frac{\eta}{r^2}} \,.
+    \]
 
-    \begin{tcolorbox}[nndsorange]
-        For these weights, weight decay does not regularize the function: by keeping
-        $\lVert\vc{w}\rVert$ small, it sets the \textbf{effective learning rate}.
+    \begin{tcolorbox}[nndsgreen]
+        For a small step, $\vc{u}^{+}-\vc{u}\approx
+        -\eta_{\mathrm{eff}}\vc{g}(\vc{u})$.
+        Doubling $r$ divides this change in direction by four,
+        with identical predictions before the step.
     \end{tcolorbox}
 
+    \SlideSource{van Laarhoven (2017), \textit{L2 regularization versus batch and weight normalization}. Gradient descent, without momentum.}
+
+\end{frame}
+
+\begin{frame}{Weight decay as a learning rate}
+    \small
+    \setlength{\parskip}{3pt}
+    \setlength{\abovedisplayskip}{5pt}\setlength{\belowdisplayskip}{5pt}
+
+    Since $\vc{w}^{\top}\vc{g}(\vc{w})=0$, Pythagoras gives
+    \[
+        \lVert\vc{w}-\eta\vc{g}(\vc{w})\rVert^2
+        =r^2+\eta^2\lVert\vc{g}(\vc{w})\rVert^2 \,.
+    \]
+    Plain gradient steps increase $r$, which reduces $\eta_{\mathrm{eff}}=\eta/r^2$.
+
+    \textbf{Weight decay} shrinks the weights at each step:
+    $\vc{w}^{+}=(1-\eta\lambda)\vc{w}-\eta\vc{g}(\vc{w})$.
+    Again by orthogonality,
+    \[
+        (r^{+})^2=
+        \underbrace{(1-\eta\lambda)^2r^2}_{\text{decay shrinks the norm}}
+        +\underbrace{\eta^2\lVert\vc{g}(\vc{w})\rVert^2}_{\text{gradient step grows it}} \,.
+    \]
+
+    \begin{tcolorbox}[nndsorange]
+        For this scale-invariant block, shrinking the weights alone leaves
+        the function unchanged. Decay counters norm growth and controls the
+        \textbf{effective learning rate}. Other parameters can still be regularized.
+    \end{tcolorbox}
+
+    {\scriptsize Gradient descent, $0<\eta\lambda<1$.
+    Equivalent to a loss penalty $\tfrac{\lambda}{2}\lVert\vc{w}\rVert^2$.}
+
     \SlideSource{van Laarhoven (2017), \textit{L2 regularization versus batch and weight normalization}.}
+
+\end{frame}
+
+\begin{frame}{BN and LN: the same operation on different vectors}
+    \small
+    \setlength{\parskip}{3pt}
+
+    Both center a vector and fix its length. Before $\gamma,\beta$, and
+    neglecting $\varepsilon$, both ignore its common shift and positive scale:
+    $\text{Norm}(a\vc{z}+c\vc{1})=\text{Norm}(\vc{z})$, $a>0$.
+
+    \begin{columns}[T,onlytextwidth]
+        \begin{column}{0.48\textwidth}
+            \begin{tcolorbox}[nndsblue,courseheight={bnlngeometry}{}]
+                \textbf{BN: one feature, whole batch}
+
+                $B$ entries, one per example ($BHW$ for a CNN channel).
+                The sphere describes a \emph{batch}, rather than fixing
+                the length of one example's representation.
+
+                Each unit's incoming weights can be scaled independently:
+                the norm argument applies \textbf{per unit or filter}.
+            \end{tcolorbox}
+        \end{column}
+        \begin{column}{0.48\textwidth}
+            \begin{tcolorbox}[nndsgreen,courseheight={bnlngeometry}{}]
+                \textbf{LN: one example, all features}
+
+                $D$ entries, one per feature. The sphere describes that
+                example's representation, as in our three-dimensional figure.
+
+                Scaling the whole affine map is invariant. Scaling one unit
+                alone changes the output: the norm argument applies
+                \textbf{to the block}.
+            \end{tcolorbox}
+        \end{column}
+    \end{columns}
+
+    {\small The optimization argument also holds for LN, but gives a coarser,
+    layer-wide view. The representation geometry is more immediate there.}
+
+    \SlideSource{Ba et al. (2016), \textit{Layer normalization}, Sec.~5.1 and Table~1; van Laarhoven (2017).}
 
 \end{frame}
 
