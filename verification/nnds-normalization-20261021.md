@@ -174,3 +174,27 @@ added, removed or reordered (still 28 PDF pages); every citation kept, two added
 
 Build: same two pre-existing overflow warnings (title, BN at inference); all
 revised slides inspected at full size.
+
+## Smoothing evidence and section wrap-up — Claude, 2026-10-21
+
+Written by Claude (2026-10-21). Simone was not convinced by the Santurkar figure
+slide or the closing BN/LN slide, and chose our own measurement and a wrap-up.
+
+- **A more predictive gradient:** the cropped Santurkar Fig. 4(a,b) is replaced
+  by our measurement on the 20-layer plain CNN with and without BN (eta = 0.02,
+  the depth-sweep optimizer and schedule). Every 100 steps: a probe step of
+  0.05 along the gradient on 512 fixed training images. Scripts
+  `smoothing_probe.py` and `smoothing_table.py`, data `smoothing.csv` (5-probe
+  moving average). Raw runs are in the ignored `results/smoothing/`, including
+  BN at eta = 0.1 (not plotted). After epoch 10 the gradient change ratio is
+  7 to 20 times; the plain loss change turns positive from about epoch 6.
+  Santurkar et al. stays as the source of the method. `bn_smoothing.pdf` and
+  its extraction script stay in the repository but are no longer used.
+- **Last slide:** “BN and LN: the same operation on different vectors” becomes
+  “Why normalization works: BN and LN side by side”. It has a four-row table, a
+  takeaway box and a bridge to residual connections (opener.csv: plain-bn 88.9%
+  at 20 layers, 81.6% at 56). Dropped by Simone's choice: the description of
+  BN's sphere as a batch and the remark that the geometry picture fits LN
+  better. The invariance formula is on “Understanding LN”.
+
+Still 28 PDF pages; same two pre-existing overflow warnings.

@@ -531,38 +531,63 @@
 
 \end{frame}
 
-% Written by Codex (2026-10-21): original Santurkar Fig. 4(a,b).
+% Gradient predictiveness (Written by Claude, 2026-10-21), after Santurkar et
+% al. (2018), Fig. 4. Data: smoothing.csv from assets/images/deeper/
+% smoothing_table.py over smoothing_probe.py runs (20 layers, eta = 0.02,
+% probe every 100 steps on 512 fixed training images, 5-probe moving average).
 \begin{frame}{A more predictive gradient}
-    \small
-    \setlength{\parskip}{4pt}
-
-    During VGG training on CIFAR-10, Santurkar et al. probe several step lengths
-    along the current gradient: $\vc{\theta} - \alpha\vc{g}$,
-    where $\vc{g} = \nabla\mathcal{L}(\vc{\theta})$.
+    \setlength{\parskip}{3pt}
 
     \begin{columns}[c,onlytextwidth]
-        \begin{column}{0.65\textwidth}
-            \includegraphics[width=\linewidth]{images/deeper/bn_smoothing.pdf}
+        \begin{column}{0.36\textwidth}%
+            \small\setlength{\parskip}{6pt}%
+            \RaggedRight\setlength{\parindent}{0pt}%
+            The same 20-layer CNNs, both trained with $\eta = 0.02$. Every 100
+            steps, we pause and take a step of length $0.05$ along the current
+            gradient $\vc{g}$, a rate at which the plain network cannot train.
+
+            We measure how much the loss changes, and how far the new gradient
+            is from $\vc{g}$.
         \end{column}
-        \begin{column}{0.31\textwidth}
-            \RaggedRight
-            Shaded bands span the values over the tested step lengths.
-
-            \textbf{Left:} loss along the step.
-
-            \textbf{Right:} change in gradient,
-            \[
-                \lVert\nabla\mathcal{L}(\vc{\theta}-\alpha\vc{g})-\vc{g}\rVert \,.
-            \]
+        \begin{column}{0.62\textwidth}
+            \centering
+            \begin{tikzpicture}
+                \begin{groupplot}[
+                        group style={group size=2 by 1, horizontal sep=1.3cm},
+                        width=0.56\linewidth, height=0.46\textheight,
+                        xmin=0, xmax=30, xtick={0,10,20,30},
+                        tick label style={font=\scriptsize},
+                        label style={font=\small}, title style={font=\small},
+                        axis lines=left, axis line style={drawgray},
+                        xlabel={Epoch},
+                        unbounded coords=jump,
+                        every axis plot/.append style={thick, mark=none},
+                    ]
+                    \nextgroupplot[title={Loss change}, ymin=-0.2, ymax=1.5,
+                        ytick={0,0.5,1,1.5}]
+                    \addplot[drawgray!60, dashed, thin, forget plot] coordinates {(0,0) (30,0)};
+                    \addplot[draworange] table[x=epoch, y=plain_loss_0.05, col sep=comma] {assets/images/deeper/smoothing.csv};
+                    \addplot[drawblue] table[x=epoch, y=bn_loss_0.05, col sep=comma] {assets/images/deeper/smoothing.csv};
+                    \nextgroupplot[title={Gradient change (\%)}, ymode=log, ymin=0.1, ymax=20,
+                        ytick={0.1,1,10}, yticklabels={10,100,1000},
+                        legend columns=2, legend style={font=\scriptsize, draw=none, fill=none,
+                                at={(-0.2,-0.5)}, anchor=north, /tikz/every even column/.append style={column sep=8pt}}]
+                    \addplot[draworange] table[x=epoch, y=plain_grad_0.05, col sep=comma] {assets/images/deeper/smoothing.csv};
+                    \addplot[drawblue] table[x=epoch, y=bn_grad_0.05, col sep=comma] {assets/images/deeper/smoothing.csv};
+                    \legend{No normalization, BN}
+                \end{groupplot}
+            \end{tikzpicture}
         \end{column}
     \end{columns}
 
+    \smallskip
     \begin{tcolorbox}[nndsgreen]
-        In this experiment, BN makes the gradient change less along the step.
-        It stays predictive over longer steps, helping explain larger learning rates.
+        Without BN, the step soon increases the loss. With BN, the loss keeps
+        decreasing and the gradient changes far less: it stays
+        \textbf{predictive over longer steps}.
     \end{tcolorbox}
 
-    \SlideSource{Santurkar et al. (2018), \textit{How does batch normalization help optimization?}, Fig.~4(a,b).}
+    \SlideSource{Measurement after Santurkar et al. (2018), \textit{How does batch normalization help optimization?}, NeurIPS, Fig.~4.}
 
 \end{frame}
 
@@ -859,44 +884,33 @@
 
 \end{frame}
 
-\begin{frame}{BN and LN: the same operation on different vectors}
+% Section wrap-up (Written by Claude, 2026-10-21). Replaces the two-card
+% BN/LN comparison. Bridge numbers: opener.csv (plain-bn, 20 vs 56 layers).
+\begin{frame}{Why normalization works: BN and LN side by side}
     \small
-    \setlength{\parskip}{3pt}
+    \setlength{\parskip}{4pt}
 
-    Both center a vector and fix its length. Before $\gamma,\beta$, and
-    neglecting $\varepsilon$, both ignore its common shift and positive scale:
-    $\text{Norm}(a\vc{z}+c\vc{1})=\text{Norm}(\vc{z})$, $a>0$.
+    \begin{center}
+        \renewcommand{\arraystretch}{1.35}
+        \begin{tabular}{@{}l@{\hspace{2em}}l@{\hspace{2em}}l@{}}
+                                    & \textbf{BN}                               & \textbf{LN}                                \\
+            \hline
+            Normalizes              & a feature, across the batch               & an example, across its features            \\
+            Ignores the scale of    & each unit's weights                       & the whole layer's weights                  \\
+            Effective learning rate & one per unit, $\eta/\lVert\vc{w}\rVert^2$ & one per layer, $\eta/\lVert\vc{W}\rVert^2$ \\
+            At inference            & running averages                          & same as in training                        \\
+        \end{tabular}
+    \end{center}
 
-    \begin{columns}[T,onlytextwidth]
-        \begin{column}{0.48\textwidth}
-            \begin{tcolorbox}[nndsblue,courseheight={bnlngeometry}{}]
-                \textbf{BN: one feature, whole batch}
+    \begin{tcolorbox}[nndsgreen]
+        Normalization keeps the gradient predictive and turns the weight norm
+        into an automatic learning-rate control, tuned by weight decay. Both let
+        us train with \textbf{larger learning rates}.
+    \end{tcolorbox}
 
-                $B$ entries, one per example ($BHW$ for a CNN channel).
-                The sphere describes a \emph{batch}, rather than fixing
-                the length of one example's representation.\par\vspace{2pt}
-
-                Each unit's incoming weights can be scaled independently:
-                the norm argument applies \textbf{per unit or filter}.
-            \end{tcolorbox}
-        \end{column}
-        \begin{column}{0.48\textwidth}
-            \begin{tcolorbox}[nndsgreen,courseheight={bnlngeometry}{}]
-                \textbf{LN: one example, all features}
-
-                $D$ entries, one per feature. The sphere describes that
-                example's representation, as in our three-dimensional figure.\par\vspace{2pt}
-
-                Scaling the whole affine map is invariant. Scaling one unit
-                alone changes the output: the norm argument applies
-                \textbf{to the block}.
-            \end{tcolorbox}
-        \end{column}
-    \end{columns}
-
-    {\small With LN, a single effective learning rate is set by the norm of the
-    whole layer, a coarser control than BN's. The more immediate picture for LN
-    is the geometry of each representation.}
+    Normalization is not enough on its own: with BN, our 56-layer plain
+    network still reaches only 81.6\% test accuracy, against 88.9\% at 20
+    layers. Going deeper needs \myalert{residual connections}.
 
     \SlideSource{Ba et al. (2016), \textit{Layer normalization}, Sec.~5.1 and Table~1; van Laarhoven (2017).}
 
