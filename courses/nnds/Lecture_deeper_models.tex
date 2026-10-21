@@ -536,55 +536,39 @@
 % smoothing_table.py over smoothing_probe.py runs (20 layers, eta = 0.02,
 % probe every 100 steps on 512 fixed training images, 5-probe moving average).
 \begin{frame}{A more predictive gradient}
-    \setlength{\parskip}{3pt}
 
-    \begin{columns}[c,onlytextwidth]
-        \begin{column}{0.36\textwidth}%
-            \small\setlength{\parskip}{6pt}%
-            \RaggedRight\setlength{\parindent}{0pt}%
-            The same 20-layer CNNs, both trained with $\eta = 0.02$. Every 100
-            steps, we pause and take a step of length $0.05$ along the current
-            gradient $\vc{g}$, a rate at which the plain network cannot train.
+    Every 100 training steps ($\eta = 0.02$), we try a step of $0.05$ along the gradient:
 
-            We measure how much the loss changes, and how far the new gradient
-            is from $\vc{g}$.
-        \end{column}
-        \begin{column}{0.62\textwidth}
-            \centering
-            \begin{tikzpicture}
-                \begin{groupplot}[
-                        group style={group size=2 by 1, horizontal sep=1.3cm},
-                        width=0.56\linewidth, height=0.46\textheight,
-                        xmin=0, xmax=30, xtick={0,10,20,30},
-                        tick label style={font=\scriptsize},
-                        label style={font=\small}, title style={font=\small},
-                        axis lines=left, axis line style={drawgray},
-                        xlabel={Epoch},
-                        unbounded coords=jump,
-                        every axis plot/.append style={thick, mark=none},
-                    ]
-                    \nextgroupplot[title={Loss change}, ymin=-0.2, ymax=1.5,
-                        ytick={0,0.5,1,1.5}]
-                    \addplot[drawgray!60, dashed, thin, forget plot] coordinates {(0,0) (30,0)};
-                    \addplot[draworange] table[x=epoch, y=plain_loss_0.05, col sep=comma] {assets/images/deeper/smoothing.csv};
-                    \addplot[drawblue] table[x=epoch, y=bn_loss_0.05, col sep=comma] {assets/images/deeper/smoothing.csv};
-                    \nextgroupplot[title={Gradient change (\%)}, ymode=log, ymin=0.1, ymax=20,
-                        ytick={0.1,1,10}, yticklabels={10,100,1000},
-                        legend columns=2, legend style={font=\scriptsize, draw=none, fill=none,
-                                at={(-0.2,-0.5)}, anchor=north, /tikz/every even column/.append style={column sep=8pt}}]
-                    \addplot[draworange] table[x=epoch, y=plain_grad_0.05, col sep=comma] {assets/images/deeper/smoothing.csv};
-                    \addplot[drawblue] table[x=epoch, y=bn_grad_0.05, col sep=comma] {assets/images/deeper/smoothing.csv};
-                    \legend{No normalization, BN}
-                \end{groupplot}
-            \end{tikzpicture}
-        \end{column}
-    \end{columns}
+    \begin{center}
+        \begin{tikzpicture}
+            \begin{groupplot}[
+                    group style={group size=2 by 1, horizontal sep=1.8cm},
+                    width=0.42\textwidth, height=0.5\textheight,
+                    xmin=0, xmax=30, xtick={0,10,20,30},
+                    tick label style={font=\scriptsize},
+                    label style={font=\small}, title style={font=\small},
+                    axis lines=left, axis line style={drawgray},
+                    xlabel={Epoch},
+                    unbounded coords=jump,
+                    every axis plot/.append style={thick, mark=none},
+                ]
+                \nextgroupplot[title={Loss change}, ymin=-0.2, ymax=1.5,
+                    ytick={0,0.5,1,1.5}]
+                \addplot[drawgray!60, dashed, thin, forget plot] coordinates {(0,0) (30,0)};
+                \addplot[draworange] table[x=epoch, y=plain_loss_0.05, col sep=comma] {assets/images/deeper/smoothing.csv};
+                \addplot[drawblue] table[x=epoch, y=bn_loss_0.05, col sep=comma] {assets/images/deeper/smoothing.csv};
+                \nextgroupplot[title={Gradient change (\%)}, ymode=log, ymin=0.1, ymax=20,
+                    ytick={0.1,1,10}, yticklabels={10,100,1000},
+                    legend pos=outer north east, legend cell align=left, legend style={font=\scriptsize, draw=none, fill=none}]
+                \addplot[draworange] table[x=epoch, y=plain_grad_0.05, col sep=comma] {assets/images/deeper/smoothing.csv};
+                \addplot[drawblue] table[x=epoch, y=bn_grad_0.05, col sep=comma] {assets/images/deeper/smoothing.csv};
+                \legend{No norm., BN}
+            \end{groupplot}
+        \end{tikzpicture}
+    \end{center}
 
-    \smallskip
     \begin{tcolorbox}[nndsgreen]
-        Without BN, the step soon increases the loss. With BN, the loss keeps
-        decreasing and the gradient changes far less: it stays
-        \textbf{predictive over longer steps}.
+        With BN, the gradient stays \textbf{predictive over longer steps}.
     \end{tcolorbox}
 
     \SlideSource{Measurement after Santurkar et al. (2018), \textit{How does batch normalization help optimization?}, NeurIPS, Fig.~4.}
@@ -903,14 +887,11 @@
     \end{center}
 
     \begin{tcolorbox}[nndsgreen]
-        Normalization keeps the gradient predictive and turns the weight norm
-        into an automatic learning-rate control, tuned by weight decay. Both let
-        us train with \textbf{larger learning rates}.
+        A predictive gradient and a self-tuning rate allow \textbf{larger learning rates}.
     \end{tcolorbox}
 
-    Normalization is not enough on its own: with BN, our 56-layer plain
-    network still reaches only 81.6\% test accuracy, against 88.9\% at 20
-    layers. Going deeper needs \myalert{residual connections}.
+    Still, with BN, 56 plain layers lose to 20 (81.6\% vs 88.9\%).
+    Next: \myalert{residual connections}.
 
     \SlideSource{Ba et al. (2016), \textit{Layer normalization}, Sec.~5.1 and Table~1; van Laarhoven (2017).}
 

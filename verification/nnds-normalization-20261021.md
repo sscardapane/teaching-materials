@@ -198,3 +198,12 @@ slide or the closing BN/LN slide, and chose our own measurement and a wrap-up.
   better. The invariance formula is on “Understanding LN”.
 
 Still 28 PDF pages; same two pre-existing overflow warnings.
+
+## Lighter text on the new slides — Claude, 2026-10-21
+
+Simone found the new slides text-heavy, especially the experiment. The
+experiment slide is now one setup line, full-width plots and a one-line
+takeaway. Dropped from the slide, to be said aloud: that 0.05 is a rate the
+plain network cannot train at; the measurement description; the detailed
+box (loss rises without BN, gradient changes far less with BN). The wrap-up's
+box and bridge are each one line, with the same content in shorter form.
