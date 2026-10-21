@@ -9,6 +9,35 @@ optimization. These are slide-specific edits to
 `courses/nnds/Lecture_deeper_models.tex`; the existing visual system is retained.
 The screenshots are for instructor review. No public PDF export is included.
 
+## Upstream reconciliation
+
+The first candidate pass used the local source at
+`7323f4a01332bbea789368fd67da5a1036e72718` without checking the current remote.
+Simone then pointed out his push. Read-only GitHub comparison showed the remote
+was one commit ahead:
+[`8c3ff6e098fa20ad7770c186bcd9702eeb9e02af`](https://github.com/sscardapane/teaching-materials/commit/8c3ff6e098fa20ad7770c186bcd9702eeb9e02af),
+“refactor: reorganize slides on normalization scale invariance and weight decay mechanics”.
+
+The candidates were reconciled onto that upstream file, rather than retaining
+the stale order. Its source SHA256 is
+`303881733e642a090eacd274d21fcb0807a35cbadc3d7a01b86cd5a22db63b03`.
+
+- Kept “Why does BN help?” and its revised wording verbatim, including Simone's
+  removal of the “full picture” sentence.
+- Kept the upstream sequence: BN explanation; scale invariance; weight decay;
+  learning-rate experiment; why normalize across features; “Understanding LN”.
+  Added derivation slides within that sequence.
+- Kept Simone's “Understanding LN” rewrite and geometry, with the epsilon
+  approximation stated and paragraph spacing adjusted. Did not restore the
+  numeric example he replaced.
+- Expanded the scale and decay derivations without removing the gradient
+  identities, squared-norm recurrence or any of the three consequences in
+  Simone's version. The experiment's bridge now refers back to the derivation.
+- Added the BN/LN comparison after “Understanding LN”.
+
+The earlier screenshots are superseded by the reconciled set. No Git operation,
+public PDF export or deployment was performed in this reconciliation.
+
 ## Dependencies and notation
 
 | Explanation | Prerequisites already introduced | Notation and scope |
@@ -29,13 +58,16 @@ stability.
 
 ## Coverage of the original source
 
-The baseline source SHA256 was
-`e692545fcf903eca0557a01bb78fe2b5ac8bf0be6aa92b7a867d97df082d2ec5`.
-There were 21 explicit frames (24 PDF pages, including subsection dividers).
-There are now 25 explicit frames (28 PDF pages). No original frame, citation,
-figure, experiment result or derivation was removed.
+The authoritative baseline for the reconciled pass is the upstream commit above:
+21 explicit frames (24 PDF pages, including subsection dividers). The revised
+deck has 25 explicit frames (28 PDF pages). Every upstream frame is retained in
+its relative order; all upstream citations and figures remain.
 
-| Original frame | Preservation status | Location or change |
+The earlier local baseline SHA256 was
+`e692545fcf903eca0557a01bb78fe2b5ac8bf0be6aa92b7a867d97df082d2ec5`.
+The original preservation check against that file did not establish freshness.
+
+| Upstream frame | Preservation status | Location or change |
 | --- | --- | --- |
 | Title page | leave | Unchanged |
 | ImageNet and its challenge | leave | Unchanged |
@@ -50,14 +82,14 @@ figure, experiment result or derivation was removed.
 | How the running average works | leave | Unchanged |
 | Fusing batch normalization at inference | leave | Unchanged |
 | Layer normalization | leave | Unchanged |
-| Why normalize across features? | leave | Unchanged |
-| What layer normalization does to a vector | light edit | Explicit epsilon approximation and local paragraph spacing; example and native geometry retained |
 | Layer normalization for images and for LLMs | leave | Unchanged |
 | RMSNorm: dropping the mean | leave | Unchanged |
-| Why does normalization help? | leave | Preserved, including all three references and the uncertainty statement; followed by visual evidence |
-| Normalization allows larger learning rates | light edit | Existing experiment, curves and all numbers retained; added bridge from nominal learning rate to weight norm |
-| Normalized layers ignore the scale of their weights | substantial edit | Expanded scale cancellation; both gradient identities and the original ray figure preserved on the next slide |
-| Weight decay as a learning rate | substantial edit | Original inverse-square effective rate is derived on the preceding added slide; Pythagorean norm growth retained here, followed by explicit decay update and its norm recurrence |
+| Why does BN help? | leave | Upstream title and wording unchanged, with all three references |
+| Normalized layers ignore the scale of their weights | substantial edit | Expanded cancellation and chain-rule derivations; original ray figure, identities and norm-growth result retained across the following slides |
+| Weight decay as a learning rate | substantial edit | Explicit effective-rate and decay updates explain all three upstream consequences |
+| Normalization allows larger learning rates | light edit | Curves, numbers and prose retained; bridge refers back to the effective-rate derivation |
+| Why normalize across features? | leave | Upstream location and spacing retained |
+| Understanding LN | light edit | Upstream rewrite and geometry retained; explicit epsilon approximation and paragraph spacing |
 
 ## Added frames
 
@@ -90,19 +122,55 @@ and Table 1, <https://arxiv.org/abs/1607.06450>.
 
 ## Verification
 
-- Built with the repository LuaLaTeX build script: 28 PDF pages.
-- The required full NNDS build also passed for all six registered decks.
-- Rendered and inspected all eight changed or added full slides at 1600 pixels
-  wide, including title, body, plots, equations, captions and footer. Corrected
-  overflow and a diagram label placement before delivery.
+- Rebuilt the reconciled deck with the repository LuaLaTeX build script:
+  28 PDF pages. The full NNDS build passed for all six registered decks.
+- Command: `TEXMFCACHE=build/normalization-review-20261021/tex-cache TEXMFVAR=build/normalization-review-20261021/tex-cache python3 scripts/build.py nnds --outdir build/normalization-sync-render-20261021`,
+  with both cache paths supplied as absolute paths in the actual invocation.
+  The writable existing cache avoids LuaLaTeX's default cache restriction.
+- Rendered and inspected all ten full slides in the reconciled explanation
+  block (PDF pages 19-28) at 1600 pixels wide, including title, body, plots,
+  equations, captions and footer. Eight replacement screenshots cover the
+  revised or added slides, in narrative order.
 - No overfull horizontal or vertical boxes on the revised slides. The two
   existing vertical warnings remain on the unchanged title page (29.87 pt)
   and Batch normalization (4.92 pt).
-- Compared every original frame against the pre-edit source; 17 are verbatim,
-  four are edited as mapped above, and every original citation remains.
+- Compared every upstream frame against the reconciled source: 17 are verbatim,
+  four are edited as mapped above, all 21 retain their relative order, and every
+  upstream citation remains. No conflict markers remain.
 - Independently checked scale invariance, gradient orthogonality, inverse
   gradient scaling, the exact direction update and the norm update with decay
   using finite differences of a normalized linear model. Largest residual was
   below `4e-10`.
 - Instructor acceptance of these candidates remains pending. Residual connections
   and the rest of the lecture are outside this revision.
+
+## Final pass on “Why normalization works” — Claude, 2026-10-21
+
+Written by Claude (2026-10-21). Polish on the reconciled candidate; no frame
+added, removed or reordered (still 28 PDF pages); every citation kept, two added.
+
+- **A more predictive gradient:** side labels now say what the bands show.
+- **Normalized layers ignore the scale of their weights:** scaling stated in
+  terms of the weights; the LN sentence now says invariance holds only for the
+  whole layer (weights and bias) and points to the closing comparison.
+- **Scale invariance determines the gradient:** figure label `-eta g` matches the text.
+- **The weight norm sets the effective learning rate:** box reworded (same function,
+  four times slower change of direction).
+- **Weight decay as a learning rate:** Pythagoras step inlined to make room for
+  the equilibrium result: balancing the two norm terms gives an angular update
+  of about `sqrt(2 eta lambda)` per step, so eta and lambda act through their
+  product. Derivation: `r^4 (2 eta lambda) ≈ eta^2 ||g(u)||^2`, so
+  `eta_eff ||g(u)|| = sqrt(2 eta lambda)`. Added Li, Lyu and Arora (2020), NeurIPS.
+- **Normalization allows larger learning rates:** “every rate from 0.005 to 1”
+  corrected to every tested rate (0.002 also trains, `lr.csv`); the bridge now
+  says that an oversized step grows the norm and lowers the effective rate
+  (auto rate-tuning). Added Arora, Li and Lyu (2019), ICLR.
+- **Understanding LN:** `z - mu 1`; the `r` in “radius r = sqrt(D)” dropped,
+  since `r` means the weight norm on earlier slides; `sigma^2 = ||z_c||^2 / D`
+  added to justify the radius; the invariance uses `a` and `\vc{}` like the rest
+  of the section. Simone's wording otherwise kept.
+- **BN and LN:** paragraph spacing inside the cards; the closing note now says
+  concretely that LN has one effective rate per layer.
+
+Build: same two pre-existing overflow warnings (title, BN at inference); all
+revised slides inspected at full size.

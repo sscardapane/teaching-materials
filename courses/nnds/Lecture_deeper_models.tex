@@ -452,88 +452,6 @@
 
 \end{frame}
 
-% Written by Claude (2026-10-20). Ba et al. (2016): Sec. 5.1 and Table 1
-% (invariances), Sec. 6.7 (similar contributions of hidden units; CNN caveat).
-\begin{frame}{Why normalize across features?}
-    \setlength{\parskip}{3pt}
-
-    Standardizing each column suits inputs measured in different units. LN
-    averages across the features of one example: why is this reasonable in
-    hidden layers?
-    \begin{itemize}\small
-        \item \textbf{Hidden units are interchangeable.} They come from the same
-              kind of linear map and start identically distributed (same reasoning as He initialization).
-        \item \textbf{LN fixes the length of the representation}, as we see
-              in the next slide.
-    \end{itemize}
-
-    \begin{tcolorbox}[nndsorange]
-        This assumes units contribute in similar ways. In CNNs, units near the
-        image border behave differently: there, BN still works better.
-    \end{tcolorbox}
-
-    \SlideSource{Ba et al. (2016), \textit{Layer normalization}, Secs.~5.1 and~6.7.}
-
-\end{frame}
-
-\begin{frame}{What layer normalization does to a vector}
-
-    \begin{columns}[c,onlytextwidth]
-        \begin{column}{0.56\textwidth}%
-            \small\setlength{\parskip}{3pt}%
-            \RaggedRight\setlength{\parindent}{0pt}%
-            We neglect $\varepsilon$, leave $\gamma, \beta$ aside, and take
-            $\vc{z} = (1, 2, 6)$, so $D = 3$.
-
-            \textbf{1. Centering.} Subtract the mean, $3$, to get
-            \mbox{$\vc{P}\vc{z} = (-2, -1, 3)$}. The entries now sum to zero,
-            so $\vc{P}\vc{z}$ is orthogonal to $\vc{1} = (1, \ldots, 1)$.
-
-            \textbf{2. Scaling.} The variance is the average squared entry,
-            $\sigma^2 = \frac{4 + 1 + 9}{3} = \lVert\vc{P}\vc{z}\rVert^2 / D$.
-            After dividing by $\sigma$, the squared entries average to $1$:
-            the length is exactly $\sqrt{D}$.
-
-            The input $10\vc{z} = (10, 20, 60)$ gives the same output. Every
-            example leaves LN with the \textbf{same length}, whatever its scale:
-            only its direction is kept. Then $\gamma, \beta$ give each feature
-            its own scale and offset back.
-        \end{column}
-        \begin{column}{0.4\textwidth}
-            \centering
-            \begin{tikzpicture}[scale=0.95]
-                % Perspective view (D = 3): the plane where entries sum to
-                % zero is flattened into ellipses, the direction of 1 points up.
-                \fill[drawgray!8] (0,0) ellipse (2.4 and 0.86);
-                \draw[drawgray!50] (0,0) ellipse (2.4 and 0.86);
-                \draw[drawblue, thick] (0,0) ellipse (1.4 and 0.5);
-                \node[font=\scriptsize, text=drawblue, anchor=east] at (-1.42,0.12) {radius $\sqrt{D}$};
-                \draw[-{Stealth[length=2mm]}, drawgray] (0,0) -- (0,2)
-                    node[above, font=\scriptsize] {$\vc{1}$};
-                \coordinate (Pz) at (1.82,-0.375);
-                \coordinate (z) at (1.82,1.45);
-                \coordinate (LN) at (1.21,-0.25);
-                \draw[-{Stealth[length=2mm]}, thick] (0,0) -- (z)
-                    node[above, font=\scriptsize] {$\vc{z}$};
-                \draw[dashed, draworange, thick] (z) -- (Pz)
-                    node[pos=0.45, right, font=\scriptsize, text=draworange] {1.};
-                \draw[-{Stealth[length=2mm]}, thick, black!55] (0,0) -- (Pz)
-                    node[below right, font=\scriptsize] {$\vc{P}\vc{z}$};
-                \fill[drawblue] (LN) circle (1.8pt);
-                \node[font=\scriptsize, text=drawblue, anchor=south] at ($(LN)+(0,0.06)$) {2.};
-                \draw[drawblue!70] (LN) -- (0.9,-0.95)
-                    node[below, font=\scriptsize, text=drawblue] {$\text{LN}(\vc{z})$};
-                \fill (0,0) circle (1pt);
-            \end{tikzpicture}
-
-            {\scriptsize For $D = 3$. \textbf{1.} Centering drops $\vc{z}$ onto
-            the plane where entries sum to zero (shaded). \textbf{2.} Scaling
-            moves it along its ray to the circle of radius $\sqrt{D}$ (blue).\par}
-        \end{column}
-    \end{columns}
-
-\end{frame}
-
 % Figure: S. Scardapane, Alice's Adventures in a Differentiable Wonderland.
 \begin{frame}{Layer normalization for images and for LLMs}
 
@@ -590,14 +508,14 @@
 
 \subsection{Why normalization works}
 
-\begin{frame}{Why does normalization help?}
+\begin{frame}{Why does BN help?}
     \setlength{\parskip}{6pt}
 
     The original explanation was \textbf{internal covariate shift}: each layer
     sees inputs whose distribution keeps changing as the previous layers train,
     and BN stabilizes them.
 
-    Later experiments do not support it: injecting noise after BN to shift the
+    Later experiments challenged this explanation: injecting noise after BN to shift the
     distributions again barely hurts training. A better-supported view is that
     BN makes the loss landscape \textbf{smoother}, so the gradient stays
     predictive over longer steps.
@@ -607,16 +525,13 @@
         stably with much \textbf{larger learning rates}.
     \end{tcolorbox}
 
-    The full picture is still debated!
-
     \SlideSource{Santurkar et al. (2018), \textit{How does batch normalization help optimization?}, NeurIPS;
         Bjorck et al. (2018), \textit{Understanding batch normalization}, NeurIPS;
         Lipton and Steinhardt (2018), \textit{Troubling trends in machine learning scholarship}.}
 
 \end{frame}
 
-% Written by Codex (2026-10-21). Original vector panels, not a local
-% reproduction: Santurkar et al. (2018), Fig. 4(a,b), arXiv v5, PDF p. 5.
+% Written by Codex (2026-10-21): original Santurkar Fig. 4(a,b).
 \begin{frame}{A more predictive gradient}
     \small
     \setlength{\parskip}{4pt}
@@ -631,9 +546,9 @@
         \end{column}
         \begin{column}{0.31\textwidth}
             \RaggedRight
-            Shaded bands span the tested step lengths.
+            Shaded bands span the values over the tested step lengths.
 
-            \textbf{Left:} loss values.
+            \textbf{Left:} loss along the step.
 
             \textbf{Right:} change in gradient,
             \[
@@ -651,76 +566,16 @@
 
 \end{frame}
 
-% Learning-rate experiment (Written by Claude, 2026-10-21). Data: lr.csv from
-% assets/images/deeper/lr_table.py over depth_sweep.py runs (20 layers, He
-% initialization, 30 epochs, one seed per point).
-\begin{frame}{Normalization allows larger learning rates}
-    \setlength{\parskip}{3pt}
 
-    \begin{columns}[c,onlytextwidth]
-        \begin{column}{0.36\textwidth}%
-            \small\setlength{\parskip}{6pt}%
-            \RaggedRight\setlength{\parindent}{0pt}%
-            The same 20-layer plain CNN on CIFAR-10, with and without BN after
-            each convolution. We change only the learning rate.
-
-            Without BN, training fails for any rate above $0.02$. With BN,
-            every rate from $0.005$ to $1$ trains, and the best one is
-            $5\times$ larger.
-        \end{column}
-        \begin{column}{0.62\textwidth}
-            \centering
-            \begin{tikzpicture}
-                \begin{groupplot}[
-                        group style={group size=2 by 1, horizontal sep=1.1cm},
-                        width=0.56\linewidth, height=0.46\textheight,
-                        xmode=log, xmin=0.0015, xmax=1.4,
-                        xtick={0.001,0.01,0.1,1}, xticklabels={$10^{-3}$,$10^{-2}$,$10^{-1}$,$1$},
-                        tick label style={font=\scriptsize},
-                        label style={font=\small}, title style={font=\small},
-                        axis lines=left, axis line style={drawgray},
-                        xlabel={Learning rate},
-                        unbounded coords=jump,
-                        every axis plot/.append style={thick, mark=*, mark size=1.6pt},
-                    ]
-                    \nextgroupplot[title={Training loss}, ymin=0, ymax=2.5]
-                    \addplot[drawgray!60, dashed, thin, mark=none, forget plot] coordinates {(0.0015,2.3026) (1.4,2.3026)};
-                    \addplot[draworange] table[x=lr, y=plain_loss, col sep=comma] {assets/images/deeper/lr.csv};
-                    \addplot[drawblue] table[x=lr, y=plainbn_loss, col sep=comma] {assets/images/deeper/lr.csv};
-                    \node[font=\scriptsize, text=drawgray, anchor=north] at (axis cs:0.006,2.25) {chance};
-                    \nextgroupplot[title={Test accuracy (\%)}, ymin=0, ymax=100,
-                        legend columns=2, legend style={font=\scriptsize, draw=none, fill=none,
-                                at={(-0.2,-0.5)}, anchor=north, /tikz/every even column/.append style={column sep=8pt}}]
-                    \addplot[drawgray!60, dashed, thin, mark=none, forget plot] coordinates {(0.0015,10) (1.4,10)};
-                    \addplot[draworange] table[x=lr, y=plain_acc, col sep=comma] {assets/images/deeper/lr.csv};
-                    \addplot[drawblue] table[x=lr, y=plainbn_acc, col sep=comma] {assets/images/deeper/lr.csv};
-                    \legend{No normalization, BN}
-                \end{groupplot}
-            \end{tikzpicture}
-        \end{column}
-    \end{columns}
-
-    \smallskip
-    \begin{tcolorbox}[nndsgreen]
-        Best test accuracy: 79.7\% without BN ($\eta = 0.02$), 88.9\% with BN
-        ($\eta = 0.1$).
-    \end{tcolorbox}
-
-    {\small BN allows a larger nominal $\eta$. But how much does a step
-    change the function? For normalized weights, their norm also matters.}
-
-\end{frame}
-
-% Written by Codex (2026-10-21). Scope: the pre-normalization parameter
-% block, with no other path using it; training BN statistics, fixed gamma/beta,
-% positive scale and epsilon neglected. LN's block includes any preceding bias.
+% Expanded by Codex (2026-10-21): training BN statistics, fixed gamma/beta,
+% positive scale and epsilon neglected; parameters used only through this path.
 \begin{frame}{Normalized layers ignore the scale of their weights}
     \small
     \setlength{\parskip}{5pt}
     \setlength{\abovedisplayskip}{5pt}\setlength{\belowdisplayskip}{5pt}
 
-    A unit produces $\vc{z}=\vc{X}\vc{w}$, followed by BN. For $a>0$,
-    the batch mean and standard deviation scale with its weights:
+    A unit produces $\vc{z}=\vc{X}\vc{w}$, followed by BN. If we scale its
+    weights by $a>0$, the batch mean and standard deviation scale by $a$:
     \[
         \mu(a\vc{z})=a\mu(\vc{z}) \,, \qquad
         \sigma(a\vc{z})=a\sigma(\vc{z}) \,.
@@ -739,8 +594,8 @@
         Only the \textbf{direction} of these weights matters to the function.
     \end{tcolorbox}
 
-    LN has the same invariance for the \emph{whole} preceding affine map
-    (bias included), or for the input vector of one example.
+    For LN, the same holds only when we scale the \emph{whole} preceding
+    layer, weights and bias together: we come back to this at the end.
 
     \SlideSource{van Laarhoven (2017), \textit{L2 regularization versus batch and weight normalization}.}
 
@@ -783,7 +638,7 @@
                 \draw[-{Stealth[length=2mm]}, thick, drawblue] (0,0) -- (40:2)
                     node[midway, below right, font=\scriptsize] {$\vc{w}$};
                 \draw[-{Stealth[length=2mm]}, thick, draworange] (40:2) -- ++(130:1.1)
-                    node[above left, font=\scriptsize] {$-\eta\nabla\mathcal{L}$};
+                    node[above left, font=\scriptsize] {$-\eta\vc{g}$};
                 \draw[dashed, drawgray] (0,0) -- ($(40:2) + (130:1.1)$);
                 \fill (0,0) circle (1pt);
             \end{tikzpicture}
@@ -822,8 +677,8 @@
     \begin{tcolorbox}[nndsgreen]
         For a small step, $\vc{u}^{+}-\vc{u}\approx
         -\eta_{\mathrm{eff}}\vc{g}(\vc{u})$.
-        Doubling $r$ divides this change in direction by four,
-        with identical predictions before the step.
+        Doubling $r$ leaves the function unchanged, but divides this change
+        in direction by four.
     \end{tcolorbox}
 
     \SlideSource{van Laarhoven (2017), \textit{L2 regularization versus batch and weight normalization}. Gradient descent, without momentum.}
@@ -836,11 +691,9 @@
     \setlength{\abovedisplayskip}{5pt}\setlength{\belowdisplayskip}{5pt}
 
     Since $\vc{w}^{\top}\vc{g}(\vc{w})=0$, Pythagoras gives
-    \[
-        \lVert\vc{w}-\eta\vc{g}(\vc{w})\rVert^2
-        =r^2+\eta^2\lVert\vc{g}(\vc{w})\rVert^2 \,.
-    \]
-    Plain gradient steps increase $r$, which reduces $\eta_{\mathrm{eff}}=\eta/r^2$.
+    $\lVert\vc{w}-\eta\vc{g}(\vc{w})\rVert^2=r^2+\eta^2\lVert\vc{g}(\vc{w})\rVert^2$:
+    plain gradient steps only increase $r$, so $\eta_{\mathrm{eff}}=\eta/r^2$
+    keeps falling.
 
     \textbf{Weight decay} shrinks the weights at each step:
     $\vc{w}^{+}=(1-\eta\lambda)\vc{w}-\eta\vc{g}(\vc{w})$.
@@ -850,17 +703,159 @@
         \underbrace{(1-\eta\lambda)^2r^2}_{\text{decay shrinks the norm}}
         +\underbrace{\eta^2\lVert\vc{g}(\vc{w})\rVert^2}_{\text{gradient step grows it}} \,.
     \]
+    The norm settles where the two terms balance. Using
+    $\lVert\vc{g}(\vc{w})\rVert=\lVert\vc{g}(\vc{u})\rVert/r$, each step then
+    turns $\vc{u}$ by about $\sqrt{2\eta\lambda}$, whatever the gradient size.
 
     \begin{tcolorbox}[nndsorange]
         For this scale-invariant block, shrinking the weights alone leaves
         the function unchanged. Decay counters norm growth and controls the
-        \textbf{effective learning rate}. Other parameters can still be regularized.
+        \textbf{effective learning rate}, through the product $\eta\lambda$.
+        Other parameters can still be regularized.
     \end{tcolorbox}
 
-    {\scriptsize Gradient descent, $0<\eta\lambda<1$.
+    {\scriptsize Gradient descent, $0<\eta\lambda<1$; the balance uses $\eta\lambda\ll1$.
     Equivalent to a loss penalty $\tfrac{\lambda}{2}\lVert\vc{w}\rVert^2$.}
 
-    \SlideSource{van Laarhoven (2017), \textit{L2 regularization versus batch and weight normalization}.}
+    \SlideSource{van Laarhoven (2017), \textit{L2 regularization versus batch and weight normalization};
+        Li et al.\ (2020), \textit{Reconciling modern deep learning with traditional optimization analyses: the intrinsic learning rate}, NeurIPS.}
+
+\end{frame}
+
+% Learning-rate experiment (Written by Claude, 2026-10-21). Data: lr.csv from
+% assets/images/deeper/lr_table.py over depth_sweep.py runs (20 layers, He
+% initialization, 30 epochs, one seed per point).
+\begin{frame}{Normalization allows larger learning rates}
+    \setlength{\parskip}{3pt}
+
+    \begin{columns}[c,onlytextwidth]
+        \begin{column}{0.36\textwidth}%
+            \small\setlength{\parskip}{6pt}%
+            \RaggedRight\setlength{\parindent}{0pt}%
+            The same 20-layer plain CNN on CIFAR-10, with and without BN after
+            each convolution. We change only the learning rate.
+
+            Without BN, training fails for any rate above $0.02$. With BN,
+            every rate we tried trains, up to $1$, and the best one is
+            $5\times$ larger.
+        \end{column}
+        \begin{column}{0.62\textwidth}
+            \centering
+            \begin{tikzpicture}
+                \begin{groupplot}[
+                        group style={group size=2 by 1, horizontal sep=1.1cm},
+                        width=0.56\linewidth, height=0.46\textheight,
+                        xmode=log, xmin=0.0015, xmax=1.4,
+                        xtick={0.001,0.01,0.1,1}, xticklabels={$10^{-3}$,$10^{-2}$,$10^{-1}$,$1$},
+                        tick label style={font=\scriptsize},
+                        label style={font=\small}, title style={font=\small},
+                        axis lines=left, axis line style={drawgray},
+                        xlabel={Learning rate},
+                        unbounded coords=jump,
+                        every axis plot/.append style={thick, mark=*, mark size=1.6pt},
+                    ]
+                    \nextgroupplot[title={Training loss}, ymin=0, ymax=2.5]
+                    \addplot[drawgray!60, dashed, thin, mark=none, forget plot] coordinates {(0.0015,2.3026) (1.4,2.3026)};
+                    \addplot[draworange] table[x=lr, y=plain_loss, col sep=comma] {assets/images/deeper/lr.csv};
+                    \addplot[drawblue] table[x=lr, y=plainbn_loss, col sep=comma] {assets/images/deeper/lr.csv};
+                    \node[font=\scriptsize, text=drawgray, anchor=north] at (axis cs:0.006,2.25) {chance};
+                    \nextgroupplot[title={Test accuracy (\%)}, ymin=0, ymax=100,
+                        legend columns=2, legend style={font=\scriptsize, draw=none, fill=none,
+                                at={(-0.2,-0.5)}, anchor=north, /tikz/every even column/.append style={column sep=8pt}}]
+                    \addplot[drawgray!60, dashed, thin, mark=none, forget plot] coordinates {(0.0015,10) (1.4,10)};
+                    \addplot[draworange] table[x=lr, y=plain_acc, col sep=comma] {assets/images/deeper/lr.csv};
+                    \addplot[drawblue] table[x=lr, y=plainbn_acc, col sep=comma] {assets/images/deeper/lr.csv};
+                    \legend{No normalization, BN}
+                \end{groupplot}
+            \end{tikzpicture}
+        \end{column}
+    \end{columns}
+
+    \smallskip
+    \begin{tcolorbox}[nndsgreen]
+        Best test accuracy: 79.7\% without BN ($\eta = 0.02$), 88.9\% with BN
+        ($\eta = 0.1$).
+    \end{tcolorbox}
+
+    {\small These are nominal rates $\eta$. As we just saw, a step that is too
+    large grows $\lVert\vc{w}\rVert$, which lowers the effective rate
+    $\eta/\lVert\vc{w}\rVert^2$: BN layers partly tune their own learning rate.}
+
+    \SlideSource{Arora et al.\ (2019), \textit{Theoretical analysis of auto rate-tuning by batch normalization}, ICLR.}
+
+\end{frame}
+
+
+% Written by Claude (2026-10-20). Ba et al. (2016): Sec. 5.1 and Table 1
+% (invariances), Sec. 6.7 (similar contributions of hidden units; CNN caveat).
+\begin{frame}{Why normalize across features?}
+    \setlength{\parskip}{3pt}
+
+    Standardizing each column suits inputs measured in different units. LN
+    averages across the features of one example: why is this reasonable in
+    hidden layers?
+    \begin{itemize}\small
+        \item \textbf{Hidden units are interchangeable.} They come from the same
+              kind of linear map and start identically distributed (same reasoning as He initialization).
+        \item \textbf{LN fixes the length of the representation}, as we see
+              in the next slide.
+    \end{itemize}
+
+    \vspace{0.5em}
+    \begin{tcolorbox}[nndsorange]
+        This assumes units contribute in similar ways. In CNNs, units near the
+        image border behave differently: there, BN still works better.
+    \end{tcolorbox}
+
+    \SlideSource{Ba et al. (2016), \textit{Layer normalization}, Secs.~5.1 and~6.7.}
+
+\end{frame}
+
+\begin{frame}{Understanding LN}
+
+    \begin{columns}[c,onlytextwidth]
+        \begin{column}{0.56\textwidth}%
+            \small\setlength{\parskip}{4pt}%
+            \RaggedRight\setlength{\parindent}{0pt}%
+
+            \textbf{1. Centering.} Given $\vc{z} \in \mathbb{R}^3$, centering with $\vc{z}_c = \vc{z} - \mu\vc{1}$ makes the vector orthogonal to $\vc{1}$ ($\vc{z}^\top_c\vc{1} = 0$) and is equivalent to projecting onto the subspace perpendicular to $\vc{1}$ (grey plane on the right).
+
+            \textbf{2. Scaling.} Since $\sigma^2 = \lVert\vc{z}_c\rVert^2/D$, dividing by $\sigma$ makes a second projection onto the sphere of radius $\sqrt{D}$ (blue circle on the right).
+
+            Neglecting $\varepsilon$, LN is invariant to two transformations: adding a constant to every coordinate and multiplying the vector by a positive scalar: $\text{LN}(a\vc{z}+c\vc{1})=\text{LN}(\vc{z})$ for $a>0$.
+        \end{column}
+        \begin{column}{0.4\textwidth}
+            \centering
+            \begin{tikzpicture}[scale=0.95]
+                % Perspective view (D = 3): the plane where entries sum to
+                % zero is flattened into ellipses, the direction of 1 points up.
+                \fill[drawgray!8] (0,0) ellipse (2.4 and 0.86);
+                \draw[drawgray!50] (0,0) ellipse (2.4 and 0.86);
+                \draw[drawblue, thick] (0,0) ellipse (1.4 and 0.5);
+                \node[font=\scriptsize, text=drawblue, anchor=east] at (-1.42,0.12) {radius $\sqrt{D}$};
+                \draw[-{Stealth[length=2mm]}, drawgray] (0,0) -- (0,2)
+                node[above, font=\scriptsize] {$\vc{1}$};
+                \coordinate (Pz) at (1.82,-0.375);
+                \coordinate (z) at (1.82,1.45);
+                \coordinate (LN) at (1.21,-0.25);
+                \draw[-{Stealth[length=2mm]}, thick] (0,0) -- (z)
+                node[above, font=\scriptsize] {$\vc{z}$};
+                \draw[dashed, draworange, thick] (z) -- (Pz)
+                node[pos=0.45, right, font=\scriptsize, text=draworange] {1.};
+                \draw[-{Stealth[length=2mm]}, thick, black!55] (0,0) -- (Pz)
+                node[below right, font=\scriptsize] {$\vc{P}\vc{z}$};
+                \fill[drawblue] (LN) circle (1.8pt);
+                \node[font=\scriptsize, text=drawblue, anchor=south] at ($(LN)+(0,0.06)$) {2.};
+                \draw[drawblue!70] (LN) -- (0.9,-0.95)
+                node[below, font=\scriptsize, text=drawblue] {$\text{LN}(\vc{z})$};
+                \fill (0,0) circle (1pt);
+            \end{tikzpicture}
+
+            {\scriptsize For $D = 3$. \textbf{1.} Centering drops $\vc{z}$ onto
+            the plane where entries sum to zero (shaded). \textbf{2.} Scaling
+            moves it along its ray to the circle of radius $\sqrt{D}$ (blue).\par}
+        \end{column}
+    \end{columns}
 
 \end{frame}
 
@@ -879,7 +874,7 @@
 
                 $B$ entries, one per example ($BHW$ for a CNN channel).
                 The sphere describes a \emph{batch}, rather than fixing
-                the length of one example's representation.
+                the length of one example's representation.\par\vspace{2pt}
 
                 Each unit's incoming weights can be scaled independently:
                 the norm argument applies \textbf{per unit or filter}.
@@ -890,7 +885,7 @@
                 \textbf{LN: one example, all features}
 
                 $D$ entries, one per feature. The sphere describes that
-                example's representation, as in our three-dimensional figure.
+                example's representation, as in our three-dimensional figure.\par\vspace{2pt}
 
                 Scaling the whole affine map is invariant. Scaling one unit
                 alone changes the output: the norm argument applies
@@ -899,8 +894,9 @@
         \end{column}
     \end{columns}
 
-    {\small The optimization argument also holds for LN, but gives a coarser,
-    layer-wide view. The representation geometry is more immediate there.}
+    {\small With LN, a single effective learning rate is set by the norm of the
+    whole layer, a coarser control than BN's. The more immediate picture for LN
+    is the geometry of each representation.}
 
     \SlideSource{Ba et al. (2016), \textit{Layer normalization}, Sec.~5.1 and Table~1; van Laarhoven (2017).}
 
