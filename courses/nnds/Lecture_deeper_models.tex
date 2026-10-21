@@ -501,21 +501,33 @@
         \begin{column}{0.4\textwidth}
             \centering
             \begin{tikzpicture}[scale=0.95]
-                \draw[drawblue, thick] (0,0) circle (1.4);
-                \node[font=\scriptsize, text=drawblue] at (1.25,-1.35) {radius $\sqrt{D}$};
-                \foreach \ang/\len in {20/0.7, 75/2.3, 140/1.0, 250/1.9} {
-                    \draw[-{Stealth[length=2mm]}, drawgray] (0,0) -- (\ang:\len);
-                    \draw[dashed, drawgray!60] (\ang:\len) -- (\ang:1.4);
-                    \fill[drawblue] (\ang:1.4) circle (1.6pt);
-                }
+                % Perspective view (D = 3): the plane where entries sum to
+                % zero is flattened into ellipses, the direction of 1 points up.
+                \fill[drawgray!8] (0,0) ellipse (2.4 and 0.86);
+                \draw[drawgray!50] (0,0) ellipse (2.4 and 0.86);
+                \draw[drawblue, thick] (0,0) ellipse (1.4 and 0.5);
+                \node[font=\scriptsize, text=drawblue, anchor=east] at (-1.42,0.12) {radius $\sqrt{D}$};
+                \draw[-{Stealth[length=2mm]}, drawgray] (0,0) -- (0,2)
+                    node[above, font=\scriptsize] {$\vc{1}$};
+                \coordinate (Pz) at (1.82,-0.375);
+                \coordinate (z) at (1.82,1.45);
+                \coordinate (LN) at (1.21,-0.25);
+                \draw[-{Stealth[length=2mm]}, thick] (0,0) -- (z)
+                    node[above, font=\scriptsize] {$\vc{z}$};
+                \draw[dashed, draworange, thick] (z) -- (Pz)
+                    node[pos=0.45, right, font=\scriptsize, text=draworange] {1.};
+                \draw[-{Stealth[length=2mm]}, thick, black!55] (0,0) -- (Pz)
+                    node[below right, font=\scriptsize] {$\vc{P}\vc{z}$};
+                \fill[drawblue] (LN) circle (1.8pt);
+                \node[font=\scriptsize, text=drawblue, anchor=south] at ($(LN)+(0,0.06)$) {2.};
+                \draw[drawblue!70] (LN) -- (0.9,-0.95)
+                    node[below, font=\scriptsize, text=drawblue] {$\text{LN}(\vc{z})$};
                 \fill (0,0) circle (1pt);
-                \node[font=\scriptsize, anchor=west, text=drawgray] at (75:2.3) {$\vc{P}\vc{z}$};
-                \node[font=\scriptsize, anchor=west, text=drawblue] at (20:1.45) {$\text{LN}(\vc{z})$};
             \end{tikzpicture}
 
-            {\scriptsize For $D = 3$, the centered vectors (gray) lie in the plane
-            where entries sum to zero. LN moves each one to the circle of
-            radius $\sqrt{D}$ (blue), keeping its direction.\par}
+            {\scriptsize For $D = 3$. \textbf{1.} Centering drops $\vc{z}$ onto
+            the plane where entries sum to zero (shaded). \textbf{2.} Scaling
+            moves it along its ray to the circle of radius $\sqrt{D}$ (blue).\par}
         \end{column}
     \end{columns}
 
