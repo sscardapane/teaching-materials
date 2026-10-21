@@ -308,6 +308,30 @@
 
 \end{frame}
 
+\begin{frame}{Batch normalization in CNNs}
+    \setlength{\parskip}{3pt}
+
+    After a convolutional layer, the outputs on a mini-batch are
+    $\vc{Z}\sim(B,H,W,C)$. Each channel is the same filter applied at every
+    position, so we treat every position of every image as one more sample of
+    that channel:
+    \[
+        \widetilde{\mu}_c = \frac{1}{BHW}\sum_{b,i,j} \idx{\vc{Z}}{b,i,j,c} \,, \qquad
+        \widetilde{\sigma}_c^2 = \frac{1}{BHW}\sum_{b,i,j} \left(\idx{\vc{Z}}{b,i,j,c} - \widetilde{\mu}_c\right)^2 .
+    \]
+    Each channel is then standardized and rescaled as before, with one pair
+    $\gamma_c, \beta_c$ per channel ($2C$ parameters).
+
+    \vspace{0.5em}
+    \begin{tcolorbox}[nndsblue]
+        A channel plays the role of a feature: the mean is taken over the
+        mini-batch \emph{and} over all spatial positions.
+    \end{tcolorbox}
+
+    In PyTorch, this is \texttt{nn.BatchNorm2d(C)} (with channels first).
+
+\end{frame}
+
 \begin{frame}{Batch normalization at inference}
     \setlength{\parskip}{3pt}
 
@@ -398,30 +422,6 @@
 
 \end{frame}
 
-\begin{frame}{Batch normalization in CNNs}
-    \setlength{\parskip}{3pt}
-
-    After a convolutional layer, the outputs on a mini-batch are
-    $\vc{Z}\sim(B,H,W,C)$. Each channel is the same filter applied at every
-    position, so we treat every position of every image as one more sample of
-    that channel:
-    \[
-        \widetilde{\mu}_c = \frac{1}{BHW}\sum_{b,i,j} \idx{\vc{Z}}{b,i,j,c} \,, \qquad
-        \widetilde{\sigma}_c^2 = \frac{1}{BHW}\sum_{b,i,j} \left(\idx{\vc{Z}}{b,i,j,c} - \widetilde{\mu}_c\right)^2 .
-    \]
-    Each channel is then standardized and rescaled as before, with one pair
-    $\gamma_c, \beta_c$ per channel ($2C$ parameters).
-
-    \vspace{0.5em}
-    \begin{tcolorbox}[nndsblue]
-        A channel plays the role of a feature: the mean is taken over the
-        mini-batch \emph{and} over all spatial positions.
-    \end{tcolorbox}
-
-    In PyTorch, this is \texttt{nn.BatchNorm2d(C)} (with channels first).
-
-\end{frame}
-
 \begin{frame}{Layer normalization}
     \setlength{\parskip}{5pt}
 
@@ -452,6 +452,75 @@
 
 \end{frame}
 
+% Written by Claude (2026-10-20). Ba et al. (2016): Sec. 5.1 and Table 1
+% (invariances), Sec. 6.7 (similar contributions of hidden units; CNN caveat).
+\begin{frame}{Why normalize across features?}
+    \setlength{\parskip}{3pt}
+
+    Standardizing each column suits inputs measured in different units. LN
+    averages across the features of one example: why is this reasonable in
+    hidden layers?
+    \begin{itemize}\small
+        \item \textbf{Hidden units are interchangeable.} They come from the same
+              kind of linear map and start identically distributed (same reasoning as He initialization).
+        \item \textbf{LN fixes the length of the representation}, as we see
+              in the next slide.
+    \end{itemize}
+
+    \begin{tcolorbox}[nndsorange]
+        This assumes units contribute in similar ways. In CNNs, units near the
+        image border behave differently: there, BN still works better.
+    \end{tcolorbox}
+
+    \SlideSource{Ba et al. (2016), \textit{Layer normalization}, Secs.~5.1 and~6.7.}
+
+\end{frame}
+
+\begin{frame}{What layer normalization does to a vector}
+
+    \begin{columns}[c,onlytextwidth]
+        \begin{column}{0.56\textwidth}%
+            \small\setlength{\parskip}{5pt}%
+            \RaggedRight\setlength{\parindent}{0pt}%
+            Leave $\gamma, \beta$ aside and take $\vc{z} = (1, 2, 6)$, so $D = 3$.
+
+            \textbf{1. Centering.} Subtract the mean, $3$, to get
+            \mbox{$\vc{P}\vc{z} = (-2, -1, 3)$}. The entries now sum to zero,
+            so $\vc{P}\vc{z}$ is orthogonal to $\vc{1} = (1, \ldots, 1)$.
+
+            \textbf{2. Scaling.} The variance is the average squared entry,
+            $\sigma^2 = \frac{4 + 1 + 9}{3} = \lVert\vc{P}\vc{z}\rVert^2 / D$.
+            After dividing by $\sigma$, the squared entries average to $1$:
+            the length is exactly $\sqrt{D}$.
+
+            The input $10\vc{z} = (10, 20, 60)$ gives the same output. Every
+            example leaves LN with the \textbf{same length}, whatever its scale:
+            only its direction is kept. Then $\gamma, \beta$ give each feature
+            its own scale and offset back.
+        \end{column}
+        \begin{column}{0.4\textwidth}
+            \centering
+            \begin{tikzpicture}[scale=0.95]
+                \draw[drawblue, thick] (0,0) circle (1.4);
+                \node[font=\scriptsize, text=drawblue] at (1.25,-1.35) {radius $\sqrt{D}$};
+                \foreach \ang/\len in {20/0.7, 75/2.3, 140/1.0, 250/1.9} {
+                    \draw[-{Stealth[length=2mm]}, drawgray] (0,0) -- (\ang:\len);
+                    \draw[dashed, drawgray!60] (\ang:\len) -- (\ang:1.4);
+                    \fill[drawblue] (\ang:1.4) circle (1.6pt);
+                }
+                \fill (0,0) circle (1pt);
+                \node[font=\scriptsize, anchor=west, text=drawgray] at (75:2.3) {$\vc{P}\vc{z}$};
+                \node[font=\scriptsize, anchor=west, text=drawblue] at (20:1.45) {$\text{LN}(\vc{z})$};
+            \end{tikzpicture}
+
+            {\scriptsize For $D = 3$, the centered vectors (gray) lie in the plane
+            where entries sum to zero. LN moves each one to the circle of
+            radius $\sqrt{D}$ (blue), keeping its direction.\par}
+        \end{column}
+    \end{columns}
+
+\end{frame}
+
 % Figure: S. Scardapane, Alice's Adventures in a Differentiable Wonderland.
 \begin{frame}{Layer normalization for images and for LLMs}
 
@@ -473,91 +542,19 @@
             \textbf{B}: statistics over the $C$ channels at each position, with
             $\gamma, \beta \in \mathbb{R}^C$, as in ConvNeXt. Transformers do the
             same on each token.
-
-            Most recent LLMs use \myalert{RMSNorm}: LN without subtracting the
-            mean, $\vc{\gamma} \odot \vc{z} / \sqrt{\tfrac{1}{D}\sum_j z_j^2 + \varepsilon}$.
         \end{column}
     \end{columns}
 
-    \SlideSource{Wu and He (2018), \textit{Group normalization}, ECCV; Zhang and Sennrich (2019),
-        \textit{Root mean square layer normalization}, NeurIPS.}
+    \SlideSource{Wu and He (2018), \textit{Group normalization}, ECCV.}
 
 \end{frame}
 
-% Written by Claude (2026-10-20). Ba et al. (2016): Sec. 5.1 and Table 1
-% (invariances), Sec. 6.7 (similar contributions of hidden units; CNN caveat).
-\begin{frame}{Why normalize across features?}
-    \setlength{\parskip}{3pt}
+\begin{frame}{RMSNorm: dropping the mean}
+    \setlength{\parskip}{4pt}\setlength{\abovedisplayskip}{4pt}\setlength{\belowdisplayskip}{4pt}
 
-    Standardizing each column suits inputs measured in different units. LN
-    averages across the features of one example: why is this reasonable in
-    hidden layers?
-    \begin{itemize}\small
-        \item \textbf{Hidden units are interchangeable.} They come from the same
-              kind of linear map and start identically distributed (same reasoning as He initialization).
-        \item \textbf{LN fixes the length of the representation}, as we see
-              in the next slide.
-        \item \textbf{It removes different nuisances than BN.} LN is invariant to
-              rescaling the whole weight matrix and to rescaling a single input;
-              BN to rescaling the weights of each unit.
-    \end{itemize}
+    Most recent LLMs skip the mean: \myalert{RMSNorm}$(\vc{z}) = \vc{\gamma} \odot \vc{z} / \sqrt{\tfrac{1}{D}\sum_j z_j^2 + \varepsilon}$.
 
-    \begin{tcolorbox}[nndsorange]
-        This assumes units contribute in similar ways. In CNNs, units near the
-        image border behave differently: there, BN still works better.
-    \end{tcolorbox}
-
-    \SlideSource{Ba et al. (2016), \textit{Layer normalization}, Secs.~5.1 and~6.7.}
-
-\end{frame}
-
-\begin{frame}{What layer normalization does to a vector}
-
-    \begin{columns}[c,onlytextwidth]
-        \begin{column}{0.56\textwidth}%
-            \small\setlength{\parskip}{5pt}%
-            \RaggedRight\setlength{\parindent}{0pt}%
-            Leave $\gamma, \beta$ aside. LN does two things to each vector
-            $\vc{z} \in \mathbb{R}^D$:
-
-            \textbf{1. Centering.} Subtracting the mean removes the part of
-            $\vc{z}$ along $\vc{1} = (1, \ldots, 1)$. What is left, $\vc{P}\vc{z}$,
-            is orthogonal to $\vc{1}$.
-
-            \textbf{2. Scaling.} The standard deviation is
-            $\sigma = \lVert\vc{P}\vc{z}\rVert / \sqrt{D}$, so dividing by it
-            gives a vector of length exactly $\sqrt{D}$.
-
-            Every example leaves LN with the \textbf{same length}, whatever its
-            scale: only its direction is kept. Then $\gamma, \beta$ give each
-            feature its own scale and offset back.
-        \end{column}
-        \begin{column}{0.4\textwidth}
-            \centering
-            \begin{tikzpicture}[scale=0.95]
-                \draw[drawblue, thick] (0,0) circle (1.4);
-                \node[font=\scriptsize, text=drawblue] at (1.25,-1.35) {radius $\sqrt{D}$};
-                \foreach \ang/\len in {20/0.7, 75/2.3, 140/1.0, 250/1.9} {
-                    \draw[-{Stealth[length=2mm]}, drawgray] (0,0) -- (\ang:\len);
-                    \draw[dashed, drawgray!60] (\ang:\len) -- (\ang:1.4);
-                    \fill[drawblue] (\ang:1.4) circle (1.6pt);
-                }
-                \fill (0,0) circle (1pt);
-                \node[font=\scriptsize, anchor=west, text=drawgray] at (75:2.3) {$\vc{P}\vc{z}$};
-                \node[font=\scriptsize, anchor=west, text=drawblue] at (20:1.45) {$\text{LN}(\vc{z})$};
-            \end{tikzpicture}
-
-            {\scriptsize Centered vectors (gray) and their LN outputs (blue),
-            in the subspace orthogonal to $\vc{1}$.}
-        \end{column}
-    \end{columns}
-
-\end{frame}
-
-\begin{frame}{Why can we drop the mean?}
-    \setlength{\parskip}{6pt}
-
-    Centering is a linear map:
+    Why can we drop the mean? Centering is a linear map:
     $\vc{z} - \text{mean}(\vc{z})\,\vc{1} = \vc{P}\vc{z}$, with
     $\vc{P} = \vc{I} - \frac{1}{D}\vc{1}\vc{1}^\top$. When LN follows a linear
     layer, $\vc{P}$ can be folded into it:
@@ -667,19 +664,22 @@
         \begin{column}{0.56\textwidth}%
             \setlength{\parskip}{4pt}%
             \RaggedRight\setlength{\parindent}{0pt}%
-            If a unit with weights $\vc{w}$ is followed by normalization,
-            scaling $\vc{w}$ by any $a > 0$ changes nothing:
+            \small
+            If a unit with weights $\vc{w}$ is followed by BN, scaling $\vc{w}$
+            by any $a > 0$ changes nothing:
             \[
                 \text{BN}(a\,\vc{X}\vc{w}) = \text{BN}(\vc{X}\vc{w}) \,,
                 \quad \text{so} \quad \mathcal{L}(a\vc{w}) = \mathcal{L}(\vc{w}) \,.
             \]
-            Only the direction of $\vc{w}$ matters: the loss is constant along
-            every ray from the origin.
-
-            Making $\vc{w}$ longer or shorter does not change the loss, so the
-            gradient has no component along $\vc{w}$: it is
-            \textbf{orthogonal to $\vc{w}$}, tangent to the circle of radius
-            $\lVert\vc{w}\rVert$.
+            (For LN: the whole weight matrix, or a single input.)
+            Differentiating this identity:
+            \begin{itemize}
+                \item in $a$, at $a = 1$: $\vc{w}^\top\nabla\mathcal{L}(\vc{w}) = 0$.
+                      A gradient is orthogonal to the level sets; these contain
+                      every ray, so it is \textbf{orthogonal to $\vc{w}$}.
+                \item in $\vc{w}$: $\nabla\mathcal{L}(a\vc{w}) = \nabla\mathcal{L}(\vc{w}) / a$.
+                      Longer weights get \textbf{smaller gradients}.
+            \end{itemize}
         \end{column}
         \begin{column}{0.4\textwidth}
             \centering
@@ -696,7 +696,8 @@
                 \fill (0,0) circle (1pt);
             \end{tikzpicture}
 
-            {\scriptsize The loss is constant along each gray ray.}
+            {\scriptsize The loss is constant along each gray ray, so the
+            gradient has no component along $\vc{w}$.\par}
         \end{column}
     \end{columns}
 
