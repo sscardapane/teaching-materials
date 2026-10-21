@@ -605,6 +605,62 @@
 
 \end{frame}
 
+% Learning-rate experiment (Written by Claude, 2026-10-21). Data: lr.csv from
+% assets/images/deeper/lr_table.py over depth_sweep.py runs (20 layers, He
+% initialization, 30 epochs, one seed per point).
+\begin{frame}{Normalization allows larger learning rates}
+
+    \begin{columns}[c,onlytextwidth]
+        \begin{column}{0.36\textwidth}%
+            \small\setlength{\parskip}{6pt}%
+            \RaggedRight\setlength{\parindent}{0pt}%
+            The same 20-layer plain CNN on CIFAR-10, with and without BN after
+            each convolution. We change only the learning rate.
+
+            Without BN, training fails for any rate above $0.02$. With BN,
+            every rate from $0.005$ to $1$ trains, and the best one is
+            $5\times$ larger.
+        \end{column}
+        \begin{column}{0.62\textwidth}
+            \centering
+            \begin{tikzpicture}
+                \begin{groupplot}[
+                        group style={group size=2 by 1, horizontal sep=1.1cm},
+                        width=0.56\linewidth, height=0.46\textheight,
+                        xmode=log, xmin=0.0015, xmax=1.4,
+                        xtick={0.001,0.01,0.1,1}, xticklabels={$10^{-3}$,$10^{-2}$,$10^{-1}$,$1$},
+                        tick label style={font=\scriptsize},
+                        label style={font=\small}, title style={font=\small},
+                        axis lines=left, axis line style={drawgray},
+                        xlabel={Learning rate},
+                        unbounded coords=jump,
+                        every axis plot/.append style={thick, mark=*, mark size=1.6pt},
+                    ]
+                    \nextgroupplot[title={Training loss}, ymin=0, ymax=2.5]
+                    \addplot[drawgray!60, dashed, thin, mark=none, forget plot] coordinates {(0.0015,2.3026) (1.4,2.3026)};
+                    \addplot[draworange] table[x=lr, y=plain_loss, col sep=comma] {assets/images/deeper/lr.csv};
+                    \addplot[drawblue] table[x=lr, y=plainbn_loss, col sep=comma] {assets/images/deeper/lr.csv};
+                    \node[font=\scriptsize, text=drawgray, anchor=north] at (axis cs:0.006,2.25) {chance};
+                    \nextgroupplot[title={Test accuracy (\%)}, ymin=0, ymax=100,
+                        legend columns=2, legend style={font=\scriptsize, draw=none, fill=none,
+                                at={(-0.2,-0.5)}, anchor=north, /tikz/every even column/.append style={column sep=8pt}}]
+                    \addplot[drawgray!60, dashed, thin, mark=none, forget plot] coordinates {(0.0015,10) (1.4,10)};
+                    \addplot[draworange] table[x=lr, y=plain_acc, col sep=comma] {assets/images/deeper/lr.csv};
+                    \addplot[drawblue] table[x=lr, y=plainbn_acc, col sep=comma] {assets/images/deeper/lr.csv};
+                    \legend{No normalization, BN}
+                \end{groupplot}
+            \end{tikzpicture}
+        \end{column}
+    \end{columns}
+
+    \medskip
+    \begin{tcolorbox}[nndsgreen]
+        Best test accuracy: 79.7\% without BN ($\eta = 0.02$), 88.9\% with BN
+        ($\eta = 0.1$).
+    \end{tcolorbox}
+
+\end{frame}
+
 \begin{frame}{Normalized layers ignore the scale of their weights}
 
     \begin{columns}[c,onlytextwidth]
