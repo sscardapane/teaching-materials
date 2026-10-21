@@ -207,3 +207,11 @@ takeaway. Dropped from the slide, to be said aloud: that 0.05 is a rate the
 plain network cannot train at; the measurement description; the detailed
 box (loss rises without BN, gradient changes far less with BN). The wrap-up's
 box and bridge are each one line, with the same content in shorter form.
+- Same treatment, with Simone's OK, for “Weight decay as a learning rate” and
+  “Normalization allows larger learning rates”. Dropped from the slides, to be
+  said aloud: the Pythagoras formula, the hint ‖g(w)‖ = ‖g(u)‖/r, “other
+  parameters can still be regularized”, the footnote (gradient descent,
+  ηλ ≪ 1, equivalence with an L2 penalty), the setup and results text beside
+  the learning-rate plot (failure above 0.02, every rate up to 1 trains with
+  BN, best rate 5× larger), and “these are nominal rates”. The learning-rate
+  plots are now full width.

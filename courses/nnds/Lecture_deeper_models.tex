@@ -695,36 +695,22 @@
 \end{frame}
 
 \begin{frame}{Weight decay as a learning rate}
-    \small
-    \setlength{\parskip}{3pt}
-    \setlength{\abovedisplayskip}{5pt}\setlength{\belowdisplayskip}{5pt}
+    \setlength{\parskip}{6pt}
 
-    Since $\vc{w}^{\top}\vc{g}(\vc{w})=0$, Pythagoras gives
-    $\lVert\vc{w}-\eta\vc{g}(\vc{w})\rVert^2=r^2+\eta^2\lVert\vc{g}(\vc{w})\rVert^2$:
-    plain gradient steps only increase $r$, so $\eta_{\mathrm{eff}}=\eta/r^2$
-    keeps falling.
-
-    \textbf{Weight decay} shrinks the weights at each step:
-    $\vc{w}^{+}=(1-\eta\lambda)\vc{w}-\eta\vc{g}(\vc{w})$.
-    Again by orthogonality,
+    Since $\vc{w}\perp\vc{g}$, plain gradient steps only grow $r$, so
+    $\eta_{\mathrm{eff}}=\eta/r^2$ keeps falling. \textbf{Weight decay},
+    $\vc{w}^{+}=(1-\eta\lambda)\vc{w}-\eta\vc{g}(\vc{w})$, pulls the other way:
     \[
         (r^{+})^2=
         \underbrace{(1-\eta\lambda)^2r^2}_{\text{decay shrinks the norm}}
-        +\underbrace{\eta^2\lVert\vc{g}(\vc{w})\rVert^2}_{\text{gradient step grows it}} \,.
+        +\underbrace{\eta^2\lVert\vc{g}(\vc{w})\rVert^2}_{\text{gradient step grows it}}
     \]
-    The norm settles where the two terms balance. Using
-    $\lVert\vc{g}(\vc{w})\rVert=\lVert\vc{g}(\vc{u})\rVert/r$, each step then
-    turns $\vc{u}$ by about $\sqrt{2\eta\lambda}$, whatever the gradient size.
+    When the two balance, each step turns $\vc{u}$ by about $\sqrt{2\eta\lambda}$.
 
     \begin{tcolorbox}[nndsorange]
-        For this scale-invariant block, shrinking the weights alone leaves
-        the function unchanged. Decay counters norm growth and controls the
-        \textbf{effective learning rate}, through the product $\eta\lambda$.
-        Other parameters can still be regularized.
+        Here decay does not change the function: it sets the
+        \textbf{effective learning rate}, through $\eta\lambda$.
     \end{tcolorbox}
-
-    {\scriptsize Gradient descent, $0<\eta\lambda<1$; the balance uses $\eta\lambda\ll1$.
-    Equivalent to a loss penalty $\tfrac{\lambda}{2}\lVert\vc{w}\rVert^2$.}
 
     \SlideSource{van Laarhoven (2017), \textit{L2 regularization versus batch and weight normalization};
         Li et al.\ (2020), \textit{Reconciling modern deep learning with traditional optimization analyses: the intrinsic learning rate}, NeurIPS.}
@@ -735,60 +721,44 @@
 % assets/images/deeper/lr_table.py over depth_sweep.py runs (20 layers, He
 % initialization, 30 epochs, one seed per point).
 \begin{frame}{Normalization allows larger learning rates}
-    \setlength{\parskip}{3pt}
 
-    \begin{columns}[c,onlytextwidth]
-        \begin{column}{0.36\textwidth}%
-            \small\setlength{\parskip}{6pt}%
-            \RaggedRight\setlength{\parindent}{0pt}%
-            The same 20-layer plain CNN on CIFAR-10, with and without BN after
-            each convolution. We change only the learning rate.
+    The same 20-layer CNN, with and without BN; we change only the learning rate:
 
-            Without BN, training fails for any rate above $0.02$. With BN,
-            every rate we tried trains, up to $1$, and the best one is
-            $5\times$ larger.
-        \end{column}
-        \begin{column}{0.62\textwidth}
-            \centering
-            \begin{tikzpicture}
-                \begin{groupplot}[
-                        group style={group size=2 by 1, horizontal sep=1.1cm},
-                        width=0.56\linewidth, height=0.46\textheight,
-                        xmode=log, xmin=0.0015, xmax=1.4,
-                        xtick={0.001,0.01,0.1,1}, xticklabels={$10^{-3}$,$10^{-2}$,$10^{-1}$,$1$},
-                        tick label style={font=\scriptsize},
-                        label style={font=\small}, title style={font=\small},
-                        axis lines=left, axis line style={drawgray},
-                        xlabel={Learning rate},
-                        unbounded coords=jump,
-                        every axis plot/.append style={thick, mark=*, mark size=1.6pt},
-                    ]
-                    \nextgroupplot[title={Training loss}, ymin=0, ymax=2.5]
-                    \addplot[drawgray!60, dashed, thin, mark=none, forget plot] coordinates {(0.0015,2.3026) (1.4,2.3026)};
-                    \addplot[draworange] table[x=lr, y=plain_loss, col sep=comma] {assets/images/deeper/lr.csv};
-                    \addplot[drawblue] table[x=lr, y=plainbn_loss, col sep=comma] {assets/images/deeper/lr.csv};
-                    \node[font=\scriptsize, text=drawgray, anchor=north] at (axis cs:0.006,2.25) {chance};
-                    \nextgroupplot[title={Test accuracy (\%)}, ymin=0, ymax=100,
-                        legend columns=2, legend style={font=\scriptsize, draw=none, fill=none,
-                                at={(-0.2,-0.5)}, anchor=north, /tikz/every even column/.append style={column sep=8pt}}]
-                    \addplot[drawgray!60, dashed, thin, mark=none, forget plot] coordinates {(0.0015,10) (1.4,10)};
-                    \addplot[draworange] table[x=lr, y=plain_acc, col sep=comma] {assets/images/deeper/lr.csv};
-                    \addplot[drawblue] table[x=lr, y=plainbn_acc, col sep=comma] {assets/images/deeper/lr.csv};
-                    \legend{No normalization, BN}
-                \end{groupplot}
-            \end{tikzpicture}
-        \end{column}
-    \end{columns}
+    \begin{center}
+        \begin{tikzpicture}
+            \begin{groupplot}[
+                    group style={group size=2 by 1, horizontal sep=1.8cm},
+                    width=0.42\textwidth, height=0.42\textheight,
+                    xmode=log, xmin=0.0015, xmax=1.4,
+                    xtick={0.001,0.01,0.1,1}, xticklabels={$10^{-3}$,$10^{-2}$,$10^{-1}$,$1$},
+                    tick label style={font=\scriptsize},
+                    label style={font=\small}, title style={font=\small},
+                    axis lines=left, axis line style={drawgray},
+                    xlabel={Learning rate},
+                    unbounded coords=jump,
+                    every axis plot/.append style={thick, mark=*, mark size=1.6pt},
+                ]
+                \nextgroupplot[title={Training loss}, ymin=0, ymax=2.5]
+                \addplot[drawgray!60, dashed, thin, mark=none, forget plot] coordinates {(0.0015,2.3026) (1.4,2.3026)};
+                \addplot[draworange] table[x=lr, y=plain_loss, col sep=comma] {assets/images/deeper/lr.csv};
+                \addplot[drawblue] table[x=lr, y=plainbn_loss, col sep=comma] {assets/images/deeper/lr.csv};
+                \node[font=\scriptsize, text=drawgray, anchor=north] at (axis cs:0.006,2.25) {chance};
+                \nextgroupplot[title={Test accuracy (\%)}, ymin=0, ymax=100,
+                    legend pos=outer north east, legend cell align=left,
+                    legend style={font=\scriptsize, draw=none, fill=none}]
+                \addplot[drawgray!60, dashed, thin, mark=none, forget plot] coordinates {(0.0015,10) (1.4,10)};
+                \addplot[draworange] table[x=lr, y=plain_acc, col sep=comma] {assets/images/deeper/lr.csv};
+                \addplot[drawblue] table[x=lr, y=plainbn_acc, col sep=comma] {assets/images/deeper/lr.csv};
+                \legend{No norm., BN}
+            \end{groupplot}
+        \end{tikzpicture}
+    \end{center}
 
-    \smallskip
     \begin{tcolorbox}[nndsgreen]
-        Best test accuracy: 79.7\% without BN ($\eta = 0.02$), 88.9\% with BN
-        ($\eta = 0.1$).
+        Best accuracy: 79.7\% without BN ($\eta = 0.02$), 88.9\% with BN ($\eta = 0.1$).
     \end{tcolorbox}
 
-    {\small These are nominal rates $\eta$. As we just saw, a step that is too
-    large grows $\lVert\vc{w}\rVert$, which lowers the effective rate
-    $\eta/\lVert\vc{w}\rVert^2$: BN layers partly tune their own learning rate.}
+    A step too large grows $\lVert\vc{w}\rVert$ and lowers $\eta/\lVert\vc{w}\rVert^2$: BN tunes its own rate.
 
     \SlideSource{Arora et al.\ (2019), \textit{Theoretical analysis of auto rate-tuning by batch normalization}, ICLR.}
 
