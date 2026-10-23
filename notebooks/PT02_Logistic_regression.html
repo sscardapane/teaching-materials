@@ -7820,7 +7820,21 @@ a.anchor-link {
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
 <p>As in PT01, <code>jaxtyping</code> annotations document the shapes of function inputs and outputs, for example <code>Float[torch.Tensor, "batch features"]</code>. Nothing checks them at runtime, and they say nothing about intermediate shapes: those you have to work out yourself.</p>
-<p>If the import fails, run <code>%pip install jaxtyping</code> in a new cell, then rerun the imports.</p>
+<p>Run the next cell to install <code>jaxtyping</code> before importing it.</p>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=install-jaxtyping">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="cm-editor cm-s-jupyter">
+<div class="highlight hl-ipython3"><pre><span></span><span class="o">%</span><span class="k">pip</span> install jaxtyping
+</pre></div>
+</div>
 </div>
 </div>
 </div>
@@ -8057,6 +8071,7 @@ a.anchor-link {
 <p>$$\ell(z,y)=\log\sum_c\exp(z_c)-z_y.$$</p>
 <h3 id="Activity-2:-the-loss">Activity 2: the loss<a class="anchor-link" href="#Activity-2:-the-loss">¶</a></h3><p>Implement <code>student_cross_entropy</code> from this formula, averaged over the examples in the batch. Use <code>torch.logsumexp</code> for the first term, and select the logit of the correct class from each row. Do not call <code>F.cross_entropy</code>: we use it below to check your result.</p>
 <p>Before writing code, work out the shapes of the first term, of the selected logits and of the final loss. The accuracy function is provided.</p>
+<p>Hint: see NumPy's <a href="https://numpy.org/doc/stable/user/basics.indexing.html">Indexing on ndarrays</a>, especially <a href="https://numpy.org/doc/stable/user/basics.indexing.html#integer-array-indexing">integer array indexing</a>, for selecting one element from each row. The same indexing pattern works with PyTorch tensors.</p>
 </div>
 </div>
 </div>
