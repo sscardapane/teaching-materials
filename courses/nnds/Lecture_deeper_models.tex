@@ -508,9 +508,7 @@
         \text{LN}(\vc{W}\vc{x} + \vc{b}) = \text{RMSNorm}(\vc{P}\vc{W}\vc{x} + \vc{P}\vc{b}) + \vc{\beta} \,.
     \]
     So centering adds nothing that the previous layer cannot learn. The only
-    nonlinear part of LN is the division by the norm, which RMSNorm keeps. In a
-    transformer, everything added to the residual stream comes out of a linear
-    layer, so the same argument holds.
+    nonlinear part of LN is the division by the norm, which RMSNorm keeps.
 
     \begin{tcolorbox}[nndsgreen]
         In practice, RMSNorm matches LN in accuracy and reduces running time by
@@ -632,9 +630,7 @@
             \setlength{\parskip}{5pt}%
             \RaggedRight\setlength{\parindent}{0pt}%
             \small
-            Write $\vc{g}(\vc{w})=\nabla\mathcal{L}(\vc{w})$.
-            We differentiate $\mathcal{L}(a\vc{w})=\mathcal{L}(\vc{w})$
-            in two ways.
+            Take $\vc{g}(\vc{w})=\nabla\mathcal{L}(\vc{w})$ and differentiate $\mathcal{L}(a\vc{w})=\mathcal{L}(\vc{w})$:
 
             \textbf{1. In the scalar $a$, at $a=1$:}
             \[
@@ -1309,6 +1305,7 @@
         training set while it gets worse on a separate validation set.
     \end{tcolorbox}
 
+    \vspace{0.5em}
     \begin{columns}[c,onlytextwidth]
         \begin{column}{0.44\textwidth}
             \centering
@@ -1328,24 +1325,6 @@
     \end{columns}
 
     \SlideSource{Zhang et al. (2017), \textit{Understanding deep learning requires rethinking generalization}, ICLR, Fig.~1a.}
-
-\end{frame}
-
-% 2024 "The double descent phenomenon" (OpenAI blog figure for Nakkiran et
-% al. 2020; legend cropped, explained in the text).
-\begin{frame}{The double descent phenomenon}
-    \setlength{\parskip}{5pt}
-
-    \begin{center}
-        \includegraphics[width=0.58\textwidth]{images/deeper/double_descent.png}
-    \end{center}
-
-    As the ResNet gets wider, the test error (purple) first gets worse, then
-    better again once the network fits the training set (green):
-    \textbf{double descent}. Regularization steers \textit{which} solution we
-    find.
-
-    \SlideSource{Nakkiran et al. (2020), \textit{Deep double descent}, ICLR (figure: OpenAI blog).}
 
 \end{frame}
 
