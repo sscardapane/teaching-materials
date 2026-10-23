@@ -220,7 +220,7 @@ def lesion(model, x, y):
 
 
 def run(variant, depth, seed, epochs, data, device, out, lr, batch, lesion_depths,
-        init="he", tag=""):
+        init="he", tag="", wd=5e-4, augment_data=True):
     path = out / f"{variant}-{depth}{tag}-s{seed}.json"
     if path.exists():
         print(f"skip {path.name}")
@@ -237,7 +237,7 @@ def run(variant, depth, seed, epochs, data, device, out, lr, batch, lesion_depth
     decay = [p for n, p in model.named_parameters() if p.ndim > 1]
     no_decay = [p for n, p in model.named_parameters() if p.ndim <= 1]
     opt = torch.optim.SGD(
-        [{"params": decay, "weight_decay": 5e-4}, {"params": no_decay, "weight_decay": 0.0}],
+        [{"params": decay, "weight_decay": wd}, {"params": no_decay, "weight_decay": 0.0}],
         lr=lr, momentum=0.9, nesterov=True,
     )
     steps_per_epoch = len(xtr) // batch
@@ -255,7 +255,8 @@ def run(variant, depth, seed, epochs, data, device, out, lr, batch, lesion_depth
         running = []
         for k in range(steps_per_epoch):
             idx = perm[k * batch:(k + 1) * batch]
-            loss = F.cross_entropy(model(augment(xtr[idx])), ytr[idx])
+            xb = augment(xtr[idx]) if augment_data else xtr[idx]
+            loss = F.cross_entropy(model(xb), ytr[idx])
             opt.zero_grad(set_to_none=True)
             loss.backward()
             opt.step()
@@ -280,7 +281,7 @@ def run(variant, depth, seed, epochs, data, device, out, lr, batch, lesion_depth
 
     result = {
         "variant": variant, "depth": depth, "seed": seed, "epochs": epochs,
-        "lr": lr, "init": init, "batch": batch, "params": params, "diverged": diverged,
+        "lr": lr, "init": init, "batch": batch, "weight_decay": wd, "augment": augment_data, "params": params, "diverged": diverged,
         "seconds": time.time() - start, "grad_norm_init": grad_init,
         "history": history,
     }
@@ -299,6 +300,10 @@ def main():
     ap.add_argument("--lr", nargs="+", type=float, default=[0.05])
     ap.add_argument("--init", nargs="+", default=["he"], choices=["he", "default"])
     ap.add_argument("--batch", type=int, default=128)
+    ap.add_argument("--wd", type=float, default=5e-4,
+                    help="weight decay on weights (not on biases and BN parameters)")
+    ap.add_argument("--no-augment", action="store_true",
+                    help="train without random shifts and flips")
     ap.add_argument("--lesion-depths", nargs="+", type=int, default=[56])
     ap.add_argument("--device", default=None)
     ap.add_argument("--out", type=Path, default=HERE / "results")
@@ -321,8 +326,11 @@ def main():
                 for init in args.init:
                     for lr in args.lr:
                         tag = f"-{init}-lr{lr:g}" if len(args.init) * len(args.lr) > 1 else ""
+                        tag += "" if args.wd == 5e-4 else f"-wd{args.wd:g}"
+                        tag += "-noaug" if args.no_augment else ""
                         run(variant, depth, seed, args.epochs, data, device, args.out,
-                            lr, args.batch, args.lesion_depths, init, tag)
+                            lr, args.batch, args.lesion_depths, init, tag,
+                            args.wd, not args.no_augment)
 
 
 if __name__ == "__main__":

@@ -7,6 +7,21 @@
 \usepgfplotslibrary{groupplots}
 \graphicspath{{assets/}{../../shared/assets/}}
 
+% Block-diagram styles, as in shared/slides/mlps.tex (residual figures).
+\tikzset{
+    nnblock/.style={
+            draw=drawblue, fill=drawblue_l!25!white, rounded corners=2pt,
+            minimum width=1.25cm, minimum height=0.65cm,
+            inner sep=5pt, font=\small
+        },
+    nnother/.style={nnblock, draw=drawgreen, fill=drawgreen_l!25!white},
+    nnmerge/.style={
+            circle, draw=drawgray, fill=white,
+            minimum size=0.55cm, inner sep=1pt, font=\small
+        },
+    nnedge/.style={->, thick, draw=drawgray}
+}
+
 % Draft by Claude (2026-10-20): refresh of the 2024 "Building deep networks"
 % deck. Table of contents agreed in the Courses side conversation; this file
 % starts with the opening section.
@@ -864,6 +879,947 @@
     Next: \myalert{residual connections}.
 
     \SlideSource{Ba et al. (2016), \textit{Layer normalization}, Sec.~5.1 and Table~1; van Laarhoven (2017).}
+
+\end{frame}
+
+% Residual connections (Written by Claude, 2026-10-22). Refresh of the 2024
+% "Residual connections" subsection (NNDS_2024/8_Building_Deep_Networks).
+% Experiments: depth_sweep.py runs in results/opener/ (He initialization, 30
+% epochs, best of three learning rates); tables from opener_table.py and
+% residual_table.py.
+\section{Residual connections}
+\subsection{Residual blocks}
+
+% 2024 "Adding layers": same argument, our training loss instead of He et al.
+% (2016), Fig. 1. Data: opener.csv (plain-bn).
+\begin{frame}{Deeper should not be worse}
+
+    \begin{columns}[c,onlytextwidth]
+        \begin{column}{0.5\textwidth}%
+            \setlength{\parskip}{6pt}%
+            \RaggedRight\setlength{\parindent}{0pt}%
+            Take a network $h(\vc{x})$ that works well, and add layers on top
+            of it: $f(\vc{x}) = g(h(\vc{x}))$.
+
+            If the new layers learned the identity, $g(\vc{x}) \approx \vc{x}$,
+            the deeper network would be at least as good as $h$.
+
+            In practice, even with BN, the \textbf{training} loss grows with
+            depth.
+        \end{column}
+        \begin{column}{0.46\textwidth}
+            \centering
+            \begin{tikzpicture}
+                \begin{axis}[
+                        width=\linewidth, height=0.52\textheight,
+                        xmin=4, xmax=60, xtick={8,20,32,44,56},
+                        ymin=0, ymax=0.6, ytick={0,0.2,0.4,0.6},
+                        yticklabel style={/pgf/number format/fixed},
+                        xlabel={Layers}, title={Training loss, plain CNN with BN},
+                        tick label style={font=\scriptsize},
+                        label style={font=\small}, title style={font=\small},
+                        axis lines=left, axis line style={drawgray},
+                        every axis plot/.append style={thick, mark=*, mark size=1.6pt},
+                    ]
+                    \addplot[drawblue] table[x=depth, y=plainbn_he_loss, col sep=comma] {assets/images/deeper/opener.csv};
+                \end{axis}
+            \end{tikzpicture}
+        \end{column}
+    \end{columns}
+
+    \medskip
+    \begin{tcolorbox}[nndsorange]
+        A stack of convolutions and ReLUs struggles to learn the identity: the
+        deeper network contains a good solution that SGD does not find.
+    \end{tcolorbox}
+
+    \SlideSource{He et al. (2016), \textit{Deep residual learning for image recognition}, CVPR.}
+
+\end{frame}
+
+\begin{frame}{Residual connections}
+    \setlength{\parskip}{6pt}
+
+    In a \myalert{residual network}, we add a \myalert{skip connection} around
+    each block $f$ (for example, two convolutions):
+
+    \begin{columns}[c,onlytextwidth]
+        \begin{column}{0.5\textwidth}
+            \[
+                r(\vc{x}) = f(\vc{x}) {\color{darkred} + \vc{x}} \,.
+            \]
+        \end{column}
+        \begin{column}{0.46\textwidth}
+            \centering
+            \scalebox{0.85}{\input{../../shared/assets/images/lecture_4/residual.tex}}
+        \end{column}
+    \end{columns}
+
+    \begin{tcolorbox}[nndsblue]
+        $r$ is a \textbf{residual block}: $f$ is the residual branch, $\vc{x}$
+        the skip path. With $f = 0$ the block is the identity, so every block
+        only learns a \textbf{change} to its input.
+    \end{tcolorbox}
+
+    If $\vc{x}$ and $f(\vc{x})$ have different shapes, we map $\vc{x}$ with a
+    linear layer (a $1\times1$ convolution for images). The same block is in
+    every modern architecture, transformers included.
+
+    \SlideSource{He et al. (2016), \textit{Deep residual learning for image recognition}, CVPR.}
+
+\end{frame}
+
+% Merges the three 2024 figure slides ("Residual connections in practice",
+% "Residual connections with rescaling" x2, from Dive into Deep Learning,
+% Sec. 7.6) into one TikZ figure with the same content.
+\begin{frame}{The residual block in practice}
+
+    \begin{columns}[c,onlytextwidth]
+        \begin{column}{0.48\textwidth}
+            \centering
+            \begin{tikzpicture}[x=1cm, y=0.95cm, scale=0.9, transform shape,
+                    blk/.style={nnblock, minimum width=2.5cm},
+                    lbl/.style={font=\scriptsize, text=drawgray}]
+                \foreach \x/\short in {0/0, 3.9/1} {
+                        \begin{scope}[xshift=\x cm]
+                            \node (in) at (0,1.05) {$\vc{x}$};
+                            \coordinate (split) at (0,0.6);
+                            \node[blk] (c1) at (0,0) {$3\times3$ conv, BN};
+                            \node[nnother, minimum width=2.5cm] (a1) at (0,-1) {ReLU};
+                            \node[blk] (c2) at (0,-2) {$3\times3$ conv, BN};
+                            \node[nnmerge] (m) at (0,-3) {$+$};
+                            \node[nnother, minimum width=2.5cm] (a2) at (0,-4) {ReLU};
+                            \draw[thick, drawgray] (in) -- (split);
+                            \fill[drawgray] (split) circle (1.5pt);
+                            \draw[nnedge] (split) -- (c1);
+                            \draw[nnedge] (c1) -- (a1);
+                            \draw[nnedge] (a1) -- (c2);
+                            \draw[nnedge] (c2) -- (m);
+                            \draw[nnedge] (m) -- (a2);
+                            \draw[nnedge] (a2) -- (0,-4.75);
+                            \draw[dashed, drawgray] (-1.45,-0.38) rectangle (1.45,-2.42);
+                            \node[lbl, anchor=north west] at (-1.45,-2.42) {$f$};
+                            \ifnum\short=0
+                                \draw[nnedge, draw=darkred] (split) -- (1.75,0.6) |- (m);
+                            \else
+                                \node[blk, minimum width=1.2cm, rotate=90] (p) at (1.9,-1.2) {$1\times1$ conv, BN};
+                                \draw[thick, drawgray] (split) -- (1.9,0.6);
+                                \draw[nnedge, draw=darkred] (1.9,0.6) -- (p.east);
+                                \draw[nnedge, draw=darkred] (p.west) |- (m);
+                            \fi
+                        \end{scope}
+                    }
+            \end{tikzpicture}
+        \end{column}
+        \begin{column}{0.48\textwidth}%
+            \small\setlength{\parskip}{6pt}%
+            \RaggedRight\setlength{\parindent}{0pt}%
+            The branch $f$ is two $3\times3$ convolutions with BN. The last
+            ReLU comes \textbf{after} the sum: inside $f$, every block could
+            only add a positive change.
+
+            When a stage halves the resolution and doubles the channels, the
+            skip path becomes a $1\times1$ convolution with stride 2 (right).
+
+            A \myalert{ResNet} stacks these blocks in stages. Our CIFAR-10
+            network has three stages of $n$ blocks (16, 32 and 64 channels),
+            for $6n+2$ layers.
+        \end{column}
+    \end{columns}
+
+    \SlideSource{He et al. (2016), \textit{Deep residual learning for image recognition}, CVPR, Sec.~4.2;
+        after Dive into Deep Learning, Sec.~8.6 (CC BY-SA 4.0).}
+
+\end{frame}
+
+\subsection{Why residuals work}
+
+% 2024 "Differentiating residual connections", plus our gradient measurement.
+% Data: grad_init.csv from residual_table.py (56 layers, at initialization,
+% RMS of the gradient of the first convolution in each block).
+\begin{frame}{Differentiating residual connections}
+
+    \begin{columns}[c,onlytextwidth]
+        \begin{column}{0.5\textwidth}%
+            \small\setlength{\parskip}{5pt}%
+            \RaggedRight\setlength{\parindent}{0pt}%
+            The Jacobian of a residual block is
+            \[
+                \partial r(\vc{x}) = \partial f(\vc{x}) + \vc{I} \,.
+            \]
+            In the backward pass, the VJP adds the incoming gradient back unchanged:
+            \[
+                \vc{v}^\top \partial r(\vc{x}) =
+                \underbrace{\vc{v}^\top \partial f(\vc{x})}_{\text{original VJP}}
+                + {\color{darkred} \vc{v}} \,.
+            \]
+        \end{column}
+        \begin{column}{0.46\textwidth}
+            \centering
+            \begin{tikzpicture}
+                \begin{axis}[
+                        width=\linewidth, height=0.5\textheight,
+                        ymode=log, ymin=1e-7, ymax=30,
+                        xmin=0, xmax=28, xtick={1,9,18,27},
+                        xlabel={Block (1 = input side)},
+                        title={Gradient at initialization, 56 layers},
+                        tick label style={font=\scriptsize},
+                        label style={font=\small}, title style={font=\small},
+                        axis lines=left, axis line style={drawgray},
+                        every axis plot/.append style={thick, mark=none},
+                    ]
+                    \addplot[draworange] table[x=block, y=plain, col sep=comma] {assets/images/deeper/grad_init.csv};
+                    \addplot[drawblue] table[x=block, y=plainbn, col sep=comma] {assets/images/deeper/grad_init.csv};
+                    \addplot[drawred] table[x=block, y=resbn, col sep=comma] {assets/images/deeper/grad_init.csv};
+                    \node[font=\scriptsize, text=drawblue, anchor=south west] at (axis cs:3,2) {Plain + BN};
+                    \node[font=\scriptsize, text=drawred, anchor=north west] at (axis cs:3,3e-3) {Residual + BN};
+                    \node[font=\scriptsize, text=draworange, anchor=north west] at (axis cs:12,3e-6) {Plain};
+                \end{axis}
+            \end{tikzpicture}
+
+            {\scriptsize With BN alone, the gradient grows 6{,}000 times towards the input.\par}
+        \end{column}
+    \end{columns}
+
+    \begin{tcolorbox}[nndsgreen]
+        The gradient reaches the first blocks through the skip path, whatever
+        happens in the branches.
+    \end{tcolorbox}
+
+    \SlideSource{Yang et al. (2019), \textit{A mean field theory of batch normalization}, ICLR.}
+
+\end{frame}
+
+% New (2026-10-22). De and Smith (2020) moved here from the 2024 definition
+% slide. Numbers: opener.csv (res, reszero and resbn at 56 layers; res
+% diverges at 0.02 and 0.05 and stays at chance at 0.005).
+\begin{frame}{Residuals without normalization}
+    \small
+    \setlength{\parskip}{5pt}
+
+    With He initialization and no BN, a branch keeps the scale of its input,
+    so every block roughly doubles the variance:
+    \[
+        \text{Var}(\vc{h}_{l+1}) \approx \text{Var}(\vc{h}_l) + \text{Var}(f(\vc{h}_l)) \approx 2\,\text{Var}(\vc{h}_l) \,.
+    \]
+    After 27 blocks, a factor of $2^{27} \approx 10^8$: our 56-layer network
+    never trains. Two fixes keep each branch small:
+
+    \begin{columns}[T,onlytextwidth]
+        \begin{column}{0.48\textwidth}
+            \begin{tcolorbox}[nndsblue,courseheight={resfix}{}]
+                \textbf{BN in the branch}
+
+                The branch has unit variance while the skip path grows, so
+                block $l$ adds only about $1/l$ of the variance.
+            \end{tcolorbox}
+        \end{column}
+        \begin{column}{0.48\textwidth}
+            \begin{tcolorbox}[nndsgreen,courseheight={resfix}{}]
+                \textbf{Start from the identity}
+
+                Zero the last layer of each branch, or use
+                $\vc{x} + \alpha f(\vc{x})$ with a learned $\alpha = 0$
+                at the start.
+            \end{tcolorbox}
+        \end{column}
+    \end{columns}
+
+    Zeroing the last convolution is enough: 88.1\% without BN ($\eta = 0.02$),
+    91.4\% with BN ($\eta = 0.1$).
+
+    \SlideSource{De and Smith (2020), \textit{Batch normalization biases residual blocks towards the identity function in deep networks}, NeurIPS;
+        Goyal et al. (2017); Zhang et al. (2019), Fixup; Bachlechner et al. (2021), ReZero.}
+
+\end{frame}
+
+% 2024 "ResNets as ensembles": same figure (Alice's Adventures in a
+% Differentiable Wonderland), lighter text.
+\begin{frame}{ResNets as ensembles}
+    \setlength{\parskip}{6pt}
+
+    Two stacked residual blocks create four \textit{paths} from input to output:
+
+    \begin{center}
+        \includegraphics[width=0.6\textwidth]{images/deeper/residual_paths.pdf}
+    \end{center}
+
+    With $L$ blocks there are $2^L$ paths, of every length from $0$ to $L$.
+    The network behaves like an \textbf{ensemble} of shallower networks, which
+    makes it robust. This view becomes very important in transformers.
+
+    \SlideSource{Veit et al. (2016), \textit{Residual networks behave like ensembles of relatively shallow networks}, NeurIPS.}
+
+\end{frame}
+
+% New (2026-10-22): lesion test after Veit et al. (2016), Fig. 3. Data:
+% lesion.csv from residual_table.py (56 layers, trained, test accuracy).
+\begin{frame}{Removing one block}
+
+    After training, we delete one block at a time and measure the test
+    accuracy (blocks that change the shape cannot be removed):
+
+    \begin{center}
+        \begin{tikzpicture}
+            \begin{axis}[
+                    width=0.72\textwidth, height=0.46\textheight,
+                    xmin=0, xmax=28, xtick={1,9,18,27},
+                    ymin=0, ymax=100,
+                    xlabel={Removed block}, ylabel={Test accuracy (\%)},
+                    tick label style={font=\scriptsize},
+                    label style={font=\small},
+                    axis lines=left, axis line style={drawgray},
+                    legend pos=outer north east, legend cell align=left,
+                    legend style={font=\scriptsize, draw=none, fill=none},
+                    unbounded coords=jump,
+                    every axis plot/.append style={thick, mark=*, mark size=1.4pt},
+                ]
+                \addplot[drawgray!60, dashed, thin, mark=none, forget plot] coordinates {(0,10) (28,10)};
+                \addplot[drawblue] table[x=block, y=plainbn, col sep=comma] {assets/images/deeper/lesion.csv};
+                \addplot[drawred] table[x=block, y=resbn, col sep=comma] {assets/images/deeper/lesion.csv};
+                \legend{Plain + BN, Residual + BN}
+            \end{axis}
+        \end{tikzpicture}
+    \end{center}
+
+    \begin{tcolorbox}[nndsgreen]
+        Without one block, the residual network loses under 1 point (median);
+        the plain network falls to 7--32\%.
+    \end{tcolorbox}
+
+    \SlideSource{Measurement after Veit et al. (2016), NeurIPS, Fig.~3.}
+
+\end{frame}
+
+% 2024 "Neural ODEs": same content; the limit is now written in h, not x.
+\begin{frame}{Neural ODEs}
+    \setlength{\parskip}{6pt}
+
+    With $T$ residual blocks, the hidden state evolves as
+    \[
+        \vc{h}_t = \vc{h}_{t-1} + f(\vc{h}_{t-1}) \,, \qquad t = 1, \ldots, T \,,
+    \]
+    with $\vc{h}_0 = \vc{x}$. In the limit $T \rightarrow \infty$, each block
+    only makes an infinitesimal step. We cannot have infinitely many layers,
+    but we can condition a single block on $t$:
+    \[
+        \frac{\mathrm d\vc{h}(t)}{\mathrm dt} = f(\vc{h}(t), t) \,.
+    \]
+    An ODE solver computes the output, and we call these models
+    \myalert{neural ODEs}.
+
+    \SlideSource{Chen et al. (2018), \textit{Neural ordinary differential equations}, NeurIPS.}
+
+\end{frame}
+
+% 2024 "Other families of neural networks": same figure (Liu et al., 2022,
+% Fig. 4), reframed as the state of the art for CNNs and moved after the
+% "why" subsection, so NFNets can refer back to residuals without
+% normalization. Numbers: Woo et al. (2023), abstract (ConvNeXt V2-H, 650M
+% parameters, 88.9% top-1 with public data only); Smith et al. (2023),
+% abstract (NFNets pretrained on JFT-4B, 90.4% after fine-tuning).
+\begin{frame}{The best CNNs today}
+
+    \begin{columns}[c,onlytextwidth]
+        \begin{column}{0.4\textwidth}
+            \centering
+            \includegraphics[width=\linewidth]{images/deeper/inverted_residual.png}
+        \end{column}
+        \begin{column}{0.56\textwidth}%
+            \small\setlength{\parskip}{5pt}%
+            \RaggedRight\setlength{\parindent}{0pt}%
+            Deep ResNets use a \myalert{bottleneck} block (left): a $1\times1$
+            convolution reduces the channels, the $3\times3$ works on fewer of
+            them, and a second $1\times1$ restores them.
+
+            \myalert{ConvNeXt} (right) updates the ResNet with design choices
+            from transformers: a depthwise $7\times7$ convolution, then an MLP
+            on each position, with LN and GELU. Its largest V2 model reaches
+            88.9\% top-1 on ImageNet.
+
+            With enough data and compute, CNNs match vision transformers:
+            \myalert{NFNets}, residual networks without normalization,
+            reach 90.4\%.
+        \end{column}
+    \end{columns}
+
+    \SlideSource{Liu et al. (2022), \textit{A ConvNet for the 2020s}, CVPR, Fig.~4;
+        Woo et al. (2023), \textit{ConvNeXt V2}, CVPR;
+        Smith et al. (2023), \textit{ConvNets match vision transformers at scale}.}
+
+\end{frame}
+
+% Closing rerun of the opening experiment. Data: opener.csv.
+\begin{frame}{Back to the opening experiment}
+
+    \begin{center}
+        \begin{tikzpicture}
+            \begin{groupplot}[
+                    group style={group size=2 by 1, horizontal sep=1.8cm},
+                    width=0.42\textwidth, height=0.44\textheight,
+                    xmin=4, xmax=60, xtick={8,20,32,44,56},
+                    tick label style={font=\scriptsize},
+                    label style={font=\small}, title style={font=\small},
+                    axis lines=left, axis line style={drawgray},
+                    xlabel={Layers},
+                    unbounded coords=jump,
+                    every axis plot/.append style={thick, mark=*, mark size=1.6pt},
+                ]
+                \nextgroupplot[title={Training loss}, ymin=0, ymax=2.5]
+                \addplot[drawgray!60, dashed, thin, mark=none, forget plot] coordinates {(4,2.3026) (60,2.3026)};
+                \addplot[draworange] table[x=depth, y=plain_he_loss, col sep=comma] {assets/images/deeper/opener.csv};
+                \addplot[drawblue] table[x=depth, y=plainbn_he_loss, col sep=comma] {assets/images/deeper/opener.csv};
+                \addplot[drawred] table[x=depth, y=resbn_he_loss, col sep=comma] {assets/images/deeper/opener.csv};
+                \nextgroupplot[title={Test accuracy (\%)}, ymin=0, ymax=100,
+                    legend pos=outer north east, legend cell align=left,
+                    legend style={font=\scriptsize, draw=none, fill=none}]
+                \addplot[drawgray!60, dashed, thin, mark=none, forget plot] coordinates {(4,10) (60,10)};
+                \addplot[draworange] table[x=depth, y=plain_he_acc, col sep=comma] {assets/images/deeper/opener.csv};
+                \addplot[drawblue] table[x=depth, y=plainbn_he_acc, col sep=comma] {assets/images/deeper/opener.csv};
+                \addplot[drawred] table[x=depth, y=resbn_he_acc, col sep=comma] {assets/images/deeper/opener.csv};
+                \legend{Plain, Plain + BN, Residual + BN}
+            \end{groupplot}
+        \end{tikzpicture}
+    \end{center}
+
+    \begin{tcolorbox}[nndsgreen]
+        With residual connections, depth helps again: from 86.2\% (8 layers)
+        to 91.4\% (56 layers).
+    \end{tcolorbox}
+
+    The networks now train. Next: making them generalize,
+    with \myalert{regularization}.
+
+\end{frame}
+
+% Regularization (Written by Claude, 2026-10-22). Refresh of the 2024
+% "Data strategies", "Optimization strategies" and "Dropout regularization"
+% subsections, plus the overfitting frames of the 2024 introduction. Basic
+% augmentation is in the CNN deck, the L2 penalty and AdamW in the MLP deck.
+\section{Regularization}
+\subsection{Overfitting}
+
+% 2024 "What about overfitting?" and "Visualization of overfitting in deep
+% networks" (Zhang et al. 2017, Fig. 1a, cropped) in one slide.
+\begin{frame}{Can deep networks overfit?}
+    \setlength{\parskip}{5pt}
+
+    \begin{tcolorbox}[nndsblue]
+        A model \textbf{overfits} when its performance keeps improving on the
+        training set while it gets worse on a separate validation set.
+    \end{tcolorbox}
+
+    \begin{columns}[c,onlytextwidth]
+        \begin{column}{0.44\textwidth}
+            \centering
+            \includegraphics[height=0.48\textheight]{images/deeper/random_labels.png}
+        \end{column}
+        \begin{column}{0.52\textwidth}%
+            \setlength{\parskip}{6pt}%
+            \RaggedRight\setlength{\parindent}{0pt}%
+            Deep networks are strangely resilient to classical overfitting,
+            yet they can \textbf{memorize} anything: trained long enough, a CNN
+            fits CIFAR-10 perfectly even with random labels (red) or random
+            pixels.
+
+            So the architecture alone does not explain why they generalize
+            with real labels.
+        \end{column}
+    \end{columns}
+
+    \SlideSource{Zhang et al. (2017), \textit{Understanding deep learning requires rethinking generalization}, ICLR, Fig.~1a.}
+
+\end{frame}
+
+% 2024 "The double descent phenomenon" (OpenAI blog figure for Nakkiran et
+% al. 2020; legend cropped, explained in the text).
+\begin{frame}{The double descent phenomenon}
+    \setlength{\parskip}{5pt}
+
+    \begin{center}
+        \includegraphics[width=0.58\textwidth]{images/deeper/double_descent.png}
+    \end{center}
+
+    As the ResNet gets wider, the test error (purple) first gets worse, then
+    better again once the network fits the training set (green):
+    \textbf{double descent}. Regularization steers \textit{which} solution we
+    find.
+
+    \SlideSource{Nakkiran et al. (2020), \textit{Deep double descent}, ICLR (figure: OpenAI blog).}
+
+\end{frame}
+
+% 2024 "Finding a stopping point" and "Early stopping" in one slide.
+\begin{frame}{Early stopping}
+    \setlength{\parskip}{5pt}
+
+    In optimization, we would stop when the loss stops changing,
+    $\lvert\mathcal{L}(\vc{w}_t)-\mathcal{L}(\vc{w}_{t-1})\rvert\le\varepsilon$.
+    This is rarely done: large networks are limited by compute, small ones by
+    overfitting. With \myalert{early stopping} we watch a validation set instead:
+    \begin{enumerate}
+        \item we keep a portion of the data as the \myalert{validation set};
+        \item after each epoch, we compute the validation loss (or accuracy);
+        \item if it has not improved for a number of epochs (the
+              \myalert{patience}), we stop and keep the best checkpoint.
+    \end{enumerate}
+
+    \begin{tcolorbox}[nndsgreen]
+        Early stopping is common with small datasets, and shows the difference
+        between pure optimization and learning.
+    \end{tcolorbox}
+
+    LLMs see most of their data once: the compute budget decides when to stop.
+
+\end{frame}
+
+\subsection{Penalties and parameterizations}
+
+% 2024 "Improving training with regularization" and "Weight decay": the L2
+% penalty and AdamW are now in the MLP deck, the effective learning rate in
+% the normalization section; this slide connects the two.
+\begin{frame}{Weight decay, again}
+    \setlength{\parskip}{5pt}
+
+    Large weights make the network less \textit{smooth}: small changes in the
+    input give sharp changes in the output. We met two views of weight decay,
+    $\vc{w} \leftarrow (1-\eta\lambda)\vc{w} - \eta\nabla\mathcal{L}(\vc{w})$:
+
+    \begin{columns}[T,onlytextwidth]
+        \begin{column}{0.48\textwidth}
+            \begin{tcolorbox}[nndsblue,courseheight={wd}{}]
+                \textbf{A penalty} (MLP lecture)
+
+                $\lambda\lVert\vc{w}\rVert^2$ prefers smaller weights: with
+                $\lambda=0$ nothing changes, with $\lambda$ too large all
+                weights go to zero.
+            \end{tcolorbox}
+        \end{column}
+        \begin{column}{0.48\textwidth}
+            \begin{tcolorbox}[nndsorange,courseheight={wd}{}]
+                \textbf{A learning rate} (normalization)
+
+                Before BN or LN, the function ignores $\lVert\vc{w}\rVert$:
+                decay only sets $\eta/\lVert\vc{w}\rVert^2$.
+            \end{tcolorbox}
+        \end{column}
+    \end{columns}
+
+    In a modern network both are at work. With Adam, we use \textbf{AdamW},
+    which applies the decay directly instead of through the gradient. Biases
+    and normalization parameters are usually not decayed.
+
+    \SlideSource{Loshchilov and Hutter (2019), \textit{Decoupled weight decay regularization}, ICLR.}
+
+\end{frame}
+
+% 2024 "Other forms of regularization" and "Graphical depiction of LASSO"
+% (figure from The Elements of Statistical Learning, Fig. 3.11).
+\begin{frame}{Other forms of regularization}
+
+    \begin{columns}[c,onlytextwidth]
+        \begin{column}{0.52\textwidth}%
+            \setlength{\parskip}{6pt}%
+            \RaggedRight\setlength{\parindent}{0pt}%
+            Many other penalties exist. Replacing the squared norm with the sum
+            of absolute values,
+            \[
+                \min_{\vc{w}} \; \mathcal{L}(\vc{w}) + {\color{darkred} C \sum_j \lvert w_j \rvert} \,,
+            \]
+            leads to \textbf{sparse} solutions, with many weights exactly zero.
+
+            Penalizing whole groups of weights (all the outgoing weights of a
+            unit) removes entire units, and so shrinks the network.
+        \end{column}
+        \begin{column}{0.44\textwidth}
+            \centering
+            \includegraphics[width=\linewidth]{images/deeper/lasso.png}
+
+            {\scriptsize The corners of the $\ell_1$ ball (left) lie on the
+                axes, where some weights are zero.\par}
+        \end{column}
+    \end{columns}
+
+    \SlideSource{Hastie et al., \textit{The Elements of Statistical Learning}, Fig.~3.11;
+        Scardapane et al. (2017), \textit{Group sparse regularization for deep neural networks}, Neurocomputing.}
+
+\end{frame}
+
+% 2024 "On weight reparameterization": same content, with the link to weight
+% decay made explicit.
+\begin{frame}{On weight reparameterization}
+    \setlength{\parskip}{6pt}
+
+    The $\ell_1$ norm $\lVert\vc{w}\rVert_1 = \sum_j \lvert w_j \rvert$ is hard
+    to optimize with SGD, because it is not differentiable at $0$. We can
+    \textit{reparameterize} $\vc{w} = \vc{a} \odot \vc{b}$ and use weight decay
+    on the new vectors:
+    \[
+        \mathcal{L}(\vc{w}) + C\lVert\vc{w}\rVert_1
+        \quad\rightarrow\quad
+        \mathcal{L}(\vc{a} \odot \vc{b}) + \frac{C}{2}\left(\lVert\vc{a}\rVert^2 + \lVert\vc{b}\rVert^2\right) .
+    \]
+    The minima are the same (since $\tfrac12(a^2+b^2) \ge \lvert ab \rvert$),
+    but the new problem is smooth and much easier for SGD.
+
+    \begin{tcolorbox}[nndsgreen]
+        How we \textbf{parameterize} the same function can change training a
+        lot, as we saw with normalization.
+    \end{tcolorbox}
+
+    \SlideSource{Ziyin and Wang (2022), \textit{Sparsity by redundancy: solving $L_1$ with a simple reparametrization}, arXiv:2210.01212.}
+
+\end{frame}
+
+\subsection{More data augmentation}
+
+% 2024 "Other types of data augmentation" (MixUp) and "CutMix" in one slide.
+% Figure: assets/images/deeper/mixing_figure.py.
+\begin{frame}{Mixing examples: MixUp and CutMix}
+    \setlength{\parskip}{4pt}
+
+    We can also augment by \textbf{combining} two examples
+    $(\vc{x}_1, \vc{y}_1)$ and $(\vc{x}_2, \vc{y}_2)$, with one-hot labels.
+    \myalert{MixUp} takes a convex combination with a random $\lambda \in [0,1]$:
+    \[
+        \vc{x} = \lambda\vc{x}_1 + (1-\lambda)\vc{x}_2 \,, \qquad
+        \vc{y} = \lambda\vc{y}_1 + (1-\lambda)\vc{y}_2 \,.
+    \]
+    MixUp images look unnatural. \myalert{CutMix} pastes a random patch of
+    $\vc{x}_2$ instead, \mbox{$\vc{x} = (1-\vc{M}) \odot \vc{x}_1 + \vc{M} \odot \vc{x}_2$},
+    with $\lambda$ the fraction of the image left to $\vc{x}_1$.
+
+    \begin{center}
+        \includegraphics[width=0.6\textwidth]{images/deeper/mixing.png}
+
+        \scriptsize
+        \begin{tabular*}{0.6\textwidth}{@{\extracolsep{\fill}}cccc@{}}
+            \makebox[0.12\textwidth]{cat} & \makebox[0.12\textwidth]{dog} &
+            \makebox[0.12\textwidth]{MixUp: 70\% cat} & \makebox[0.12\textwidth]{CutMix: 75\% cat}
+        \end{tabular*}
+    \end{center}
+
+    \SlideSource{Zhang et al. (2018), \textit{mixup: beyond empirical risk minimization}, ICLR;
+        Yun et al. (2019), \textit{CutMix}, ICCV.}
+
+\end{frame}
+
+% 2024 "Pipelines for data augmentation" (RandAugment code figure) and
+% "Sampling data augmentation strategies" (book figure, Alice's Adventures in
+% a Differentiable Wonderland) in one slide; the code becomes one sentence.
+\begin{frame}{Augmentation pipelines}
+
+    \begin{columns}[c,onlytextwidth]
+        \begin{column}{0.4\textwidth}
+            \centering
+            \includegraphics[width=\linewidth]{images/deeper/data_augmentation.pdf}
+        \end{column}
+        \begin{column}{0.56\textwidth}%
+            \setlength{\parskip}{6pt}%
+            \RaggedRight\setlength{\parindent}{0pt}%
+            In practice, we combine many transformations, and for each
+            mini-batch we \textbf{sample} which ones to apply.
+
+            \myalert{RandAugment} keeps this simple: from a fixed list
+            (rotations, shears, color changes, \ldots) it picks $N$
+            transformations at random, all with the same magnitude $M$. Only
+            $N$ and $M$ need tuning.
+
+            Designing good augmentations is still an active research field.
+        \end{column}
+    \end{columns}
+
+    \SlideSource{Cubuk et al. (2020), \textit{RandAugment: practical automated data augmentation with a reduced search space}, CVPR Workshops.}
+
+\end{frame}
+
+% 2024 "Is augmentation part of the model?" and "Training and inference",
+% rewritten for PyTorch (the 2024 code was tf.keras).
+\begin{frame}[fragile]{Augmentation in code}
+    \setlength{\parskip}{5pt}
+
+    Augmentation can be part of the data pipeline, or a layer of the model:
+
+    \begin{columns}[T,onlytextwidth]
+        \begin{column}{0.48\textwidth}
+            \scriptsize
+            \begin{verbatim}
+# In the data pipeline
+from torchvision.transforms import v2
+augment = v2.Compose([
+    v2.RandomCrop(32, padding=4),
+    v2.RandomHorizontalFlip(),
+])
+train_data = CIFAR10(..., transform=augment)
+\end{verbatim}
+        \end{column}
+        \begin{column}{0.48\textwidth}
+            \scriptsize
+            \begin{verbatim}
+# As a layer of the model
+class Augment(nn.Module):
+    def forward(self, x):
+        if self.training:
+            x = random_shift(x)
+        return x
+
+model = nn.Sequential(Augment(), cnn)
+\end{verbatim}
+        \end{column}
+    \end{columns}
+
+    \begin{tcolorbox}[nndsorange]
+        As a layer, augmentation behaves differently in training and inference,
+        like BN: \texttt{model.train()} and \texttt{model.eval()} switch it on
+        and off.
+    \end{tcolorbox}
+
+\end{frame}
+
+\subsection{Dropout}
+
+% 2024 "Data augmentation revisited" and "Visualization of dropout" (book
+% figure, Alice's Adventures in a Differentiable Wonderland) in one slide.
+\begin{frame}{From noisy inputs to noisy layers}
+    \setlength{\parskip}{6pt}
+
+    Why does augmentation help? Small \myalert{perturbations} of the input
+    make the network more robust: training with noise is provably a form of
+    regularization.
+
+    \myalert{Dropout} brings the same idea inside the network: we perturb the
+    hidden layers by randomly \textit{dropping} some of their units.
+
+    \begin{center}
+        \includegraphics[width=0.66\textwidth]{images/deeper/dropout_masks.pdf}
+    \end{center}
+
+    Each mask selects a sub-network: we train many of them, with shared weights.
+
+    \SlideSource{Bishop (1995), \textit{Training with noise is equivalent to Tikhonov regularization}, Neural Computation.}
+
+\end{frame}
+
+% 2024 "Dropout regularization": shapes in the course convention.
+\begin{frame}{Dropout regularization}
+    \setlength{\parskip}{6pt}
+
+    Take the output $\vc{H}\sim(B,D)$ of a layer with $D$ units on a
+    mini-batch of $B$ examples. During training, dropout replaces it with
+    \[
+        \widetilde{\vc{H}} = \vc{H} \odot \vc{M} \,,
+    \]
+    where every entry of $\vc{M}\sim(B,D)$ is drawn independently: $0$ with
+    probability $p$, $1$ with probability $1-p$.
+
+    \begin{tcolorbox}[nndsblue]
+        If $\idx{\vc{M}}{b,j} = 0$, unit $j$ is dropped for example $b$. Every
+        example and every step sees a different sub-network.
+    \end{tcolorbox}
+
+    Dropout can also be applied to the input of the network.
+
+    \SlideSource{Srivastava et al. (2014), \textit{Dropout: a simple way to prevent neural networks from overfitting}, JMLR.}
+
+\end{frame}
+
+% 2024 "Dropout at inference time".
+\begin{frame}{Dropout at inference time}
+    \setlength{\parskip}{6pt}
+
+    At inference, we want a deterministic output. The simplest choice is the
+    expected value of the dropout \textit{layer}, which we can compute in
+    closed form:
+    \[
+        \mathbb{E}[\widetilde{\vc{H}}] = p \cdot \vc{0} + (1-p)\,\vc{H} = (1-p)\,\vc{H} \,.
+    \]
+    It is more convenient to rescale during training instead
+    (\myalert{inverted dropout}):
+    \[
+        \widetilde{\vc{H}} = \frac{\vc{H} \odot \vc{M}}{1-p}
+        \quad\Longrightarrow\quad
+        \mathbb{E}[\widetilde{\vc{H}}] = \vc{H} \,.
+    \]
+
+    \begin{tcolorbox}[nndsgreen]
+        With inverted dropout, at inference we simply remove the layer. This is
+        what \texttt{nn.Dropout(p)} does, switched by \texttt{model.eval()}.
+    \end{tcolorbox}
+
+\end{frame}
+
+% 2024 "Montecarlo dropout".
+\begin{frame}{Monte Carlo dropout}
+    \setlength{\parskip}{6pt}
+
+    With dropout, the output $f(\vc{x}; \vc{M})$ is a random variable that
+    depends on the mask. A more principled prediction is the expected value
+    over the masks of the whole \textit{network}:
+    \[
+        \hat{\vc{y}} = \mathbb{E}_{p(\vc{M})}\left[f(\vc{x}; \vc{M})\right]
+        \approx \frac{1}{N} \sum_{i=1}^N f(\vc{x}; \vc{M}_i) \,, \qquad \vc{M}_i \sim p(\vc{M}) \,.
+    \]
+    We keep dropout active at inference and average $N$ forward passes:
+    \myalert{Monte Carlo dropout}.
+
+    \begin{tcolorbox}[nndsgreen]
+        The spread of the $N$ predictions gives an estimate of the model's
+        \textbf{uncertainty}, at the cost of $N$ forward passes.
+    \end{tcolorbox}
+
+    \SlideSource{Gal and Ghahramani (2016), \textit{Dropout as a Bayesian approximation: representing model uncertainty in deep learning}, ICML.}
+
+\end{frame}
+
+% 2024 "Variants of dropout", plus stochastic depth (new).
+\begin{frame}{Variants of dropout}
+    \setlength{\parskip}{5pt}
+
+    \begin{itemize}
+        \item In a convolutional layer, dropout removes single values of single
+              channels, which neighboring pixels easily replace.
+              \myalert{Spatial dropout} drops entire channels; \myalert{cutout}
+              drops a patch of the image.
+        \item \myalert{DropConnect} drops single weights instead of units:
+              $\widetilde{\vc{h}} = \phi\left((\vc{W} \odot \vc{M})\,\vc{x}\right)$.
+        \item \myalert{Stochastic depth} drops entire residual branches,
+              $r(\vc{x}) = \vc{x} + m\,f(\vc{x})$ with a random $m \in \{0,1\}$.
+              A residual network barely notices a missing block, as we saw.
+    \end{itemize}
+
+    \begin{tcolorbox}[nndsorange]
+        Plain dropout is less common in CNNs, and more common in
+        transformers and recurrent networks.
+    \end{tcolorbox}
+
+    \SlideSource{Tompson et al. (2015), CVPR; DeVries and Taylor (2017); Wan et al. (2013), ICML; Huang et al. (2016), \textit{Deep networks with stochastic depth}, ECCV.}
+
+\end{frame}
+
+% 2024 "Early and late dropout" (Liu et al. 2023, Fig. 1), plus current
+% practice (new): PaLM, Sec. 5 ("trained without dropout", 0.1 for
+% fine-tuning); DeiT, Table 9 (dropout 0, stochastic depth 0.1).
+\begin{frame}{Dropout today}
+
+    \begin{columns}[c,onlytextwidth]
+        \begin{column}{0.46\textwidth}
+            \centering
+            \includegraphics[width=\linewidth]{images/deeper/early_late_dropout.png}
+        \end{column}
+        \begin{column}{0.5\textwidth}%
+            \small\setlength{\parskip}{6pt}%
+            \RaggedRight\setlength{\parindent}{0pt}%
+            Dropout can be switched on or off during training.
+            \myalert{Early dropout} reduces the variance of SGD in the first
+            epochs and helps models that \textit{underfit}. \myalert{Late
+                dropout} fights overfitting.
+
+            Large LLMs see each example about once, so they rarely overfit:
+            PaLM is pretrained without dropout, and uses 0.1 only for
+            fine-tuning. Vision transformers usually prefer stochastic depth.
+        \end{column}
+    \end{columns}
+
+    \SlideSource{Liu et al. (2023), \textit{Dropout reduces underfitting}, ICML;
+        Chowdhery et al. (2023), \textit{PaLM}, JMLR, Sec.~5; Touvron et al. (2021), DeiT, ICML.}
+
+\end{frame}
+
+% Closing rerun (Written by Claude, 2026-10-22). Data: regularization.csv
+% from assets/images/deeper/regularization_table.py over depth_sweep.py runs
+% in results/regularization/ (20 layers, residual + BN, eta = 0.05).
+\begin{frame}{Regularization at work}
+
+    Our 20-layer ResNet, with and without augmentation and weight decay:
+
+    \begin{columns}[c,onlytextwidth]
+        \begin{column}{0.56\textwidth}
+            \centering
+            \begin{tikzpicture}
+                \begin{axis}[
+                        width=\linewidth, height=0.44\textheight,
+                        xmin=0, xmax=30, xtick={0,10,20,30},
+                        ymin=0, ymax=1.5, ytick={0,0.5,1,1.5},
+                        xlabel={Epoch}, title={Loss},
+                        tick label style={font=\scriptsize},
+                        label style={font=\small}, title style={font=\small},
+                        axis lines=left, axis line style={drawgray},
+                        legend pos=north east, legend columns=2, legend cell align=left,
+                        legend style={font=\scriptsize, draw=none, fill=none,
+                                /tikz/every even column/.append style={column sep=6pt}},
+                        every axis plot/.append style={thick, mark=none},
+                        restrict y to domain=0:3,
+                    ]
+                    \addplot[draworange] table[x=epoch, y=none_train, col sep=comma] {assets/images/deeper/regularization_curves.csv};
+                    \addplot[draworange, dashed, forget plot] table[x=epoch, y=none_test, col sep=comma] {assets/images/deeper/regularization_curves.csv};
+                    \addplot[drawgreen] table[x=epoch, y=both_train, col sep=comma] {assets/images/deeper/regularization_curves.csv};
+                    \addplot[drawgreen, dashed, forget plot] table[x=epoch, y=both_test, col sep=comma] {assets/images/deeper/regularization_curves.csv};
+                    \legend{Neither, Both}
+                \end{axis}
+            \end{tikzpicture}
+
+            {\scriptsize Solid: training loss; dashed: test loss.\par}
+        \end{column}
+        \begin{column}{0.4\textwidth}
+            \centering
+            \small
+            \renewcommand{\arraystretch}{1.3}
+            \begin{tabular}{@{}lr@{}}
+                                      & \textbf{Test acc.} \\
+                \hline
+                Neither               & 82.6\%             \\
+                Weight decay          & 84.4\%             \\
+                Augmentation          & 88.2\%             \\
+                Both                  & 89.5\%             \\
+            \end{tabular}
+        \end{column}
+    \end{columns}
+
+    \begin{tcolorbox}[nndsgreen]
+        Without regularization, the training loss goes to zero while the test
+        loss grows. Augmentation matters most; the two together gain 7 points.
+    \end{tcolorbox}
+
+\end{frame}
+
+% 2024 "Reading material", with a summary of the lecture in the roadmap cards.
+\begin{frame}{Summary and reading material}
+    \setlength{\parskip}{8pt}
+
+    \vspace{1em}
+
+    \begin{columns}[T,onlytextwidth]
+        \begin{column}{0.32\textwidth}
+            \begin{tcolorbox}[nndsblue,courseheight={summary}{}]
+                \textbf{Normalization}
+
+                BN and LN keep the activations in scale, and allow larger
+                learning rates.
+            \end{tcolorbox}
+        \end{column}
+        \begin{column}{0.32\textwidth}
+            \begin{tcolorbox}[nndsred,courseheight={summary}{}]
+                \textbf{Residuals}
+
+                The identity is the default: the gradient reaches every block.
+            \end{tcolorbox}
+        \end{column}
+        \begin{column}{0.32\textwidth}
+            \begin{tcolorbox}[nndsgreen,courseheight={summary}{}]
+                \textbf{Regularization}
+
+                Augmentation, weight decay and dropout make the network
+                generalize.
+            \end{tcolorbox}
+        \end{column}
+    \end{columns}
+
+    \medskip
+    Together, they train our 56-layer network to 91.4\% test accuracy on
+    CIFAR-10. The same three ingredients are in every
+    transformer.
+
+    \textbf{Reading material}: Chapter 9 in the book.
 
 \end{frame}
 
