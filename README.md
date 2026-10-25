@@ -82,7 +82,8 @@ python3 scripts/build_site.py
 ```
 
 The result is `html/dist/`, built for the `/teaching-materials/` URL prefix.
-The script builds all five interactive decks (including `NNDS_demos`, the optimization and CNN demo deck) and includes the PDF and notebook
+The script builds every interactive deck in `html/slides/` (including `NNDS_demos`, the optimization and CNN demo deck, and the
+self-evaluation quizzes such as `Quiz_2a_tensors`) and includes the PDF and notebook
 downloads. Node 20+ is required. The tensor PDF is the preserved original HTML
 export; its editable source is `html/slides/Lecture_2_tensors.md`.
 

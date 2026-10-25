@@ -182,3 +182,29 @@ instead of reducing line spacing for the entire deck.
 For one-off positioning, the UnoCSS utilities already enabled by Slidev are
 also available (`mt-4`, `grid`, `grid-cols-2`, `gap-6`, `text-center`, and so
 on). Prefer the semantic classes above for recurring NNDS patterns.
+
+## Self-evaluation quizzes
+
+Quiz decks (`html/slides/Quiz_<lecture>.md`, for example `Quiz_2a_tensors.md`)
+use one `BeamerFrame` per question and the auto-imported components in
+`html/slides/components/`:
+
+| Component | Answer | Checked by |
+|---|---|---|
+| `QuizChoice` | one option, or several with `multiple` | exact set of correct options |
+| `QuizInput kind="shape"` | a shape such as `(32, 64)` | the list of integers |
+| `QuizInput kind="number"` | a number | `tolerance` (relative) |
+| `QuizInput kind="einsum"` | an einsum specification | equality up to renaming indices |
+| `QuizCode` | a Python function (NumPy, via Pyodide) | the hidden `tests` code |
+
+Every question has a unique `id` (`<lecture>-q<n>`) and an `explanation`
+slot, shown after a correct answer or "Show solution". Option texts may use
+`$...$`; write them with `String.raw` so backslashes survive. `QuizChoice`
+also takes an `aside` slot for a figure (see `LinearMapFigure`). The last
+slide is a `QuizSummary` listing every question with its slide number.
+
+Progress is kept only in the student's browser (`localStorage`), so the
+answers are visible in the page source: quizzes are for self-evaluation,
+never for grading. Order the questions by difficulty (★ apply a rule,
+★★ combine ideas or spot a bug, ★★★ go beyond the slides), and verify
+every answer numerically before publishing.

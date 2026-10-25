@@ -18,6 +18,7 @@
 
 <script setup>
 import { ref, computed } from 'vue'
+import { loadPython } from './pyodide.js'
 
 const props = defineProps({
   initialCode: { type: String, default: 'print("hello from real Python")' },
@@ -45,19 +46,7 @@ const statusText = computed(() => {
 async function ensurePyodide() {
   if (pyodide) return pyodide
   status.value = 'loading'
-  if (!window.loadPyodide) {
-    await new Promise((resolve, reject) => {
-      const script = document.createElement('script')
-      script.src = 'https://cdn.jsdelivr.net/pyodide/v0.26.4/full/pyodide.js'
-      script.onload = resolve
-      script.onerror = reject
-      document.head.appendChild(script)
-    })
-  }
-  pyodide = await window.loadPyodide({
-    indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.26.4/full/',
-  })
-  await pyodide.loadPackage('numpy')
+  pyodide = await loadPython()
   return pyodide
 }
 
