@@ -30,11 +30,7 @@ import BeamerFrame from '../components/BeamerFrame.vue'
 
 Eleven questions on [Lecture 2a](https://sscardapane.github.io/teaching-materials/nnds/Lecture_2_tensors/), in increasing order of difficulty:
 
-<div class="stack-sm" style="margin-bottom: 18px;">
-  <div><span class="quiz-stars">★</span> &nbsp;applying a rule from the slides;</div>
-  <div><span class="quiz-stars">★★</span> &nbsp;combining two ideas, or spotting a common bug;</div>
-  <div><span class="quiz-stars">★★★</span> &nbsp;reasoning beyond the slides: a figure, a cost, some code.</div>
-</div>
+Exercises are rated from 1 to 3 stars based on expected difficulty.
 
 <p>You can retry a question as many times as you like, or ask for the solution. Every solution comes with an explanation.</p>
 
