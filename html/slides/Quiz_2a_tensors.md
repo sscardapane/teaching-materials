@@ -28,9 +28,7 @@ import BeamerFrame from '../components/BeamerFrame.vue'
 
 <BeamerFrame title="How this quiz works">
 
-Eleven questions on [Lecture 2a](https://sscardapane.github.io/teaching-materials/nnds/Lecture_2_tensors/), in increasing order of difficulty:
-
-Exercises are rated from 1 to 3 stars based on expected difficulty.
+There are 11 questions in total, each graded 1 to 3 stars based on expected difficulty.
 
 <p>You can retry a question as many times as you like, or ask for the solution. Every solution comes with an explanation.</p>
 
