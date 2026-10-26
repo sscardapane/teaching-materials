@@ -7816,6 +7816,7 @@ all operations in the right order.</p>
 <th>Activity</th>
 <th>What you write</th>
 <th>Section</th>
+<th></th>
 </tr>
 </thead>
 <tbody>
@@ -7823,22 +7824,25 @@ all operations in the right order.</p>
 <td>1</td>
 <td>The VJPs of addition, multiplication, matrix product, <code>tanh</code> and <code>relu</code>, and the reduction that undoes broadcasting</td>
 <td>4</td>
+<td>★ to ★★</td>
 </tr>
 <tr>
 <td>2</td>
 <td>The backward pass over a whole graph</td>
 <td>5</td>
+<td>★★</td>
 </tr>
 <tr>
 <td>3</td>
 <td>One gradient-descent step of the classifier</td>
 <td>6</td>
+<td>★</td>
 </tr>
 </tbody>
 </table>
 <p>The <code>Tensor</code> class, graph plots, data and loss are given. Optional sections at
 the end train an MLP with your engine and build gradients and Jacobians as
-functions.</p>
+functions. Exercises are rated from 1 to 3 stars based on expected difficulty.</p>
 <p><strong>How to work.</strong> Run the cells in order. Each activity is followed by a check
 cell: if your code is wrong, the check stops with a message telling you what to
 look at. A function that still raises <code>NotImplementedError</code> stops the notebook
@@ -8219,7 +8223,7 @@ and each edge as an arrow, with its shape under the name.</p>
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="4.-Activity-1:-local-VJPs">4. Activity 1: local VJPs<a class="anchor-link" href="#4.-Activity-1:-local-VJPs">¶</a></h2><h3 id="1a.-Addition,-multiplication-and-matrix-products">1a. Addition, multiplication and matrix products<a class="anchor-link" href="#1a.-Addition,-multiplication-and-matrix-products">¶</a></h3><p>Write the VJP of each operation. Each function receives the two forward inputs
+<h2 id="4.-Activity-1:-local-VJPs">4. Activity 1: local VJPs<a class="anchor-link" href="#4.-Activity-1:-local-VJPs">¶</a></h2><h3 id="1a.-Addition,-multiplication-and-matrix-products-%E2%98%85%E2%98%85">1a. Addition, multiplication and matrix products ★★<a class="anchor-link" href="#1a.-Addition,-multiplication-and-matrix-products-%E2%98%85%E2%98%85">¶</a></h3><p>Write the VJP of each operation. Each function receives the two forward inputs
 <code>a</code>, <code>b</code> and the output adjoint <code>v</code>. It returns a tuple <code>(a_bar, b_bar)</code>.</p>
 <ul>
 <li><strong>Addition</strong>, $z = a + b$. A change in $a$ passes unchanged to $z$, so
@@ -8322,7 +8326,7 @@ the corresponding input.</p>
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h3 id="1b.-Undoing-broadcasting">1b. Undoing broadcasting<a class="anchor-link" href="#1b.-Undoing-broadcasting">¶</a></h3><p>In PT02, a bias $b \sim (C)$ is added to the logits $XW^\top \sim (B, C)$. NumPy
+<h3 id="1b.-Undoing-broadcasting-%E2%98%85%E2%98%85">1b. Undoing broadcasting ★★<a class="anchor-link" href="#1b.-Undoing-broadcasting-%E2%98%85%E2%98%85">¶</a></h3><p>In PT02, a bias $b \sim (C)$ is added to the logits $XW^\top \sim (B, C)$. NumPy
 broadcasts $b$: each entry $b_c$ is reused in all $B$ rows. In backward, each
 reuse sends back its own contribution, and these contributions must be <strong>added</strong>.
 So $\bar b$ is $v$ summed over the batch axis, which gives the shape $(C)$ of $b$.</p>
@@ -8403,7 +8407,7 @@ only with the wrong values. The checks use non-symmetric arrays to catch this.</
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h3 id="1c.-Nonlinear-operations">1c. Nonlinear operations<a class="anchor-link" href="#1c.-Nonlinear-operations">¶</a></h3><p>Nonlinear operations show why reverse mode has to save values from the forward pass. The VJP
+<h3 id="1c.-Nonlinear-operations-%E2%98%85">1c. Nonlinear operations ★<a class="anchor-link" href="#1c.-Nonlinear-operations-%E2%98%85">¶</a></h3><p>Nonlinear operations show why reverse mode has to save values from the forward pass. The VJP
 of $y = \tanh(x)$ is</p>
 <p>$$\bar x = (1 - y^2) \odot v,$$</p>
 <p>which needs $y$ from the forward pass. <code>Tensor.tanh</code> keeps <code>y</code> in its <code>vjp</code>
@@ -8473,7 +8477,7 @@ derivative; use 0 there, as PyTorch does.</li>
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="5.-Activity-2:-the-backward-pass">5. Activity 2: the backward pass<a class="anchor-link" href="#5.-Activity-2:-the-backward-pass">¶</a></h2><p>Now we combine the local VJPs over a whole graph, and the order matters. Take a
+<h2 id="5.-Activity-2:-the-backward-pass-%E2%98%85%E2%98%85">5. Activity 2: the backward pass ★★<a class="anchor-link" href="#5.-Activity-2:-the-backward-pass-%E2%98%85%E2%98%85">¶</a></h2><p>Now we combine the local VJPs over a whole graph, and the order matters. Take a
 scalar $x = 2$ and</p>
 <p>$$u = x^2,\qquad a = 3u,\qquad b = u^2,\qquad L = a + b.$$</p>
 <p>By hand: $u$ feeds two branches, so its adjoint collects two contributions,
@@ -8687,7 +8691,7 @@ derivatives; they store them differently.</p>
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="6.-Activity-3:-training-the-PT02-classifier">6. Activity 3: training the PT02 classifier<a class="anchor-link" href="#6.-Activity-3:-training-the-PT02-classifier">¶</a></h2><p>Back to PT02's model: logits $Z = XW^\top + b$, with $X \sim (B, D)$,
+<h2 id="6.-Activity-3:-training-the-PT02-classifier-%E2%98%85">6. Activity 3: training the PT02 classifier ★<a class="anchor-link" href="#6.-Activity-3:-training-the-PT02-classifier-%E2%98%85">¶</a></h2><p>Back to PT02's model: logits $Z = XW^\top + b$, with $X \sim (B, D)$,
 $W \sim (C, D)$ and $b \sim (C)$. The next cell repeats PT02's data setup: four
 penguin measurements, the same train/validation/test split, and scaling
 computed on the training set only. It reads the bundled CSV, or downloads it if
@@ -8984,7 +8988,7 @@ still return a wrong gradient?</li>
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="Optional-A:-an-MLP-with-your-engine">Optional A: an MLP with your engine<a class="anchor-link" href="#Optional-A:-an-MLP-with-your-engine">¶</a></h2><p>Do this after PT02's Section 9. Replace the linear model with PT02's MLP, which
+<h2 id="Optional-A:-an-MLP-with-your-engine-%E2%98%85%E2%98%85">Optional A: an MLP with your engine ★★<a class="anchor-link" href="#Optional-A:-an-MLP-with-your-engine-%E2%98%85%E2%98%85">¶</a></h2><p>Do this after PT02's Section 9. Replace the linear model with PT02's MLP, which
 has one hidden layer of 16 ReLU units:</p>
 <p>$$H = \operatorname{relu}(XW_1^\top + b_1),\qquad Z = HW_2^\top + b_2.$$</p>
 <p>Write <code>mlp_step(X, targets, params, lr)</code>. <code>params</code> is a dictionary of arrays
@@ -9064,7 +9068,7 @@ already written.</p>
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="Optional-B:-gradients-as-functions">Optional B: gradients as functions<a class="anchor-link" href="#Optional-B:-gradients-as-functions">¶</a></h2><p>JAX and <code>torch.func</code> provide <code>grad(f)</code>, which returns a new function that computes
+<h2 id="Optional-B:-gradients-as-functions-%E2%98%85">Optional B: gradients as functions ★<a class="anchor-link" href="#Optional-B:-gradients-as-functions-%E2%98%85">¶</a></h2><p>JAX and <code>torch.func</code> provide <code>grad(f)</code>, which returns a new function that computes
 the gradient of <code>f</code>. Write it with your engine. <code>grad(function)</code> returns a
 function that takes a NumPy array <code>x</code>, wraps it in a new <code>Tensor</code>, runs
 <code>function</code>, calls <code>backward</code> and returns the adjoint of the input. Raise
@@ -9115,7 +9119,7 @@ depend on the input, return zeros.</p>
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="Optional-C:-a-Jacobian-from-VJPs">Optional C: a Jacobian from VJPs<a class="anchor-link" href="#Optional-C:-a-Jacobian-from-VJPs">¶</a></h2><p>One VJP with seed $v$ gives $\partial f(x)^*[v]$. With $v = e_j$, the $j$-th basis
+<h2 id="Optional-C:-a-Jacobian-from-VJPs-%E2%98%85%E2%98%85">Optional C: a Jacobian from VJPs ★★<a class="anchor-link" href="#Optional-C:-a-Jacobian-from-VJPs-%E2%98%85%E2%98%85">¶</a></h2><p>One VJP with seed $v$ gives $\partial f(x)^*[v]$. With $v = e_j$, the $j$-th basis
 vector of the output space, it gives row $j$ of the Jacobian, as in the lecture's
 reverse-mode slides. Write <code>jacobian(function, value)</code>: run the forward pass once,
 then call <code>backward</code> once per output entry with a one-hot seed, and arrange the

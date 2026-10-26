@@ -7803,7 +7803,7 @@ a.anchor-link {
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
 <h1 id="PT02:-Logistic-regression-in-PyTorch">PT02: Logistic regression in PyTorch<a class="anchor-link" href="#PT02:-Logistic-regression-in-PyTorch">¶</a></h1><p>Given a few measurements of a penguin, can we predict its species? In this lab we build a linear classifier, train it with gradient descent and evaluate it.</p>
-<p>You should be comfortable with PT01 up to its short check: tensor operations, <code>backward()</code> and parameter updates. Data loading and plotting are provided. There are six activities. In the first three you write the forward pass, the loss and the training step. Then you investigate why the largest learning rate wins on this data, diagnose a faulty training step, and check when a mini-batch update equals a full-batch one. Along the way we switch to PyTorch's standard components and train on mini-batches. After the MLP lecture, Section 9 replaces the linear model with an MLP, keeping the rest of the code.</p>
+<p>You should be comfortable with PT01 up to its short check: tensor operations, <code>backward()</code> and parameter updates. Data loading and plotting are provided. There are six activities. In the first three you write the forward pass, the loss and the training step. Then you investigate why the largest learning rate wins on this data, diagnose a faulty training step, and check when a mini-batch update equals a full-batch one. Along the way we switch to PyTorch's standard components and train on mini-batches. After the MLP lecture, Section 9 replaces the linear model with an MLP, keeping the rest of the code. Exercises are rated from 1 to 3 stars based on expected difficulty.</p>
 <p>Two optional sections close the notebook. The first uses per-example gradients to look inside the trained classifier. The second is an exercise for after the MLP lecture, where we reuse the same training loop with an MLP to fit an image.</p>
 <p>Complete each activity before moving on: if you run a later cell first, you get an error that names the missing activity. Solutions are not included in this version.</p>
 <blockquote>
@@ -7978,7 +7978,7 @@ a.anchor-link {
 <h2 id="2.-The-model">2. The model<a class="anchor-link" href="#2.-The-model">¶</a></h2><p>Recall the batched linear model from PT01,</p>
 <p>$$Z=XW^\top+b,$$</p>
 <p>with $X\sim(B,D)$, $W\sim(C,D)$, $b\sim(C,)$ and $Z\sim(B,C)$. Here $D=4$ features and $C=3$ classes. The outputs are logits; we apply a softmax only when we need probabilities.</p>
-<h3 id="Activity-1:-a-batched-forward-pass">Activity 1: a batched forward pass<a class="anchor-link" href="#Activity-1:-a-batched-forward-pass">¶</a></h3><p>Implement <code>linear_logits</code> with tensor operations and run the check on the small example. How is the bias added to each example? The model class that uses your function is provided after the check.</p>
+<h3 id="Activity-1:-a-batched-forward-pass-%E2%98%85">Activity 1: a batched forward pass ★<a class="anchor-link" href="#Activity-1:-a-batched-forward-pass-%E2%98%85">¶</a></h3><p>Implement <code>linear_logits</code> with tensor operations and run the check on the small example. How is the bias added to each example? The model class that uses your function is provided after the check.</p>
 </div>
 </div>
 </div>
@@ -8069,7 +8069,7 @@ a.anchor-link {
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
 <h2 id="3.-Loss-and-accuracy">3. Loss and accuracy<a class="anchor-link" href="#3.-Loss-and-accuracy">¶</a></h2><p>For a vector of logits $z$ and correct class $y$, the cross-entropy is</p>
 <p>$$\ell(z,y)=\log\sum_c\exp(z_c)-z_y.$$</p>
-<h3 id="Activity-2:-the-loss">Activity 2: the loss<a class="anchor-link" href="#Activity-2:-the-loss">¶</a></h3><p>Implement <code>student_cross_entropy</code> from this formula, averaged over the examples in the batch. Use <code>torch.logsumexp</code> for the first term, and select the logit of the correct class from each row. Do not call <code>F.cross_entropy</code>: we use it below to check your result.</p>
+<h3 id="Activity-2:-the-loss-%E2%98%85%E2%98%85">Activity 2: the loss ★★<a class="anchor-link" href="#Activity-2:-the-loss-%E2%98%85%E2%98%85">¶</a></h3><p>Implement <code>student_cross_entropy</code> from this formula, averaged over the examples in the batch. Use <code>torch.logsumexp</code> for the first term, and select the logit of the correct class from each row. Do not call <code>F.cross_entropy</code>: we use it below to check your result.</p>
 <p>Before writing code, work out the shapes of the first term, of the selected logits and of the final loss. The accuracy function is provided.</p>
 <p>Hint: see NumPy's <a href="https://numpy.org/doc/stable/user/basics.indexing.html">Indexing on ndarrays</a>, especially <a href="https://numpy.org/doc/stable/user/basics.indexing.html#integer-array-indexing">integer array indexing</a>, for selecting one element from each row. The same indexing pattern works with PyTorch tensors.</p>
 </div>
@@ -8182,7 +8182,7 @@ a.anchor-link {
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h3 id="Activity-3:-train-the-classifier">Activity 3: train the classifier<a class="anchor-link" href="#Activity-3:-train-the-classifier">¶</a></h3><p>Write <code>training_step</code>. It makes one step on the data it receives, changes the model in place and returns the loss computed <strong>before</strong> the update, as a Python number. Loop over <code>model.parameters()</code>, so that the same code updates the weight and the bias. The data are arguments rather than global variables, so later we can call the same function on mini-batches.</p>
+<h3 id="Activity-3:-train-the-classifier-%E2%98%85">Activity 3: train the classifier ★<a class="anchor-link" href="#Activity-3:-train-the-classifier-%E2%98%85">¶</a></h3><p>Write <code>training_step</code>. It makes one step on the data it receives, changes the model in place and returns the loss computed <strong>before</strong> the update, as a Python number. Loop over <code>model.parameters()</code>, so that the same code updates the weight and the bias. The data are arguments rather than global variables, so later we can call the same function on mini-batches.</p>
 <p>The next cell checks your function over two consecutive steps; the second step catches gradients that were not cleared. Then run the training loop and look at the training and validation curves together. Leave the test set alone until the end.</p>
 </div>
 </div>
@@ -8345,7 +8345,7 @@ a.anchor-link {
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
 <p>On this dataset the largest rate wins clearly. Do not read this as a general rule: the next activity asks why it happens here.</p>
-<h3 id="Activity-4:-why-does-the-largest-rate-win?">Activity 4: why does the largest rate win?<a class="anchor-link" href="#Activity-4:-why-does-the-largest-rate-win?">¶</a></h3><p>Write down a prediction before each step, then check it.</p>
+<h3 id="Activity-4:-why-does-the-largest-rate-win?-%E2%98%85%E2%98%85%E2%98%85">Activity 4: why does the largest rate win? ★★★<a class="anchor-link" href="#Activity-4:-why-does-the-largest-rate-win?-%E2%98%85%E2%98%85%E2%98%85">¶</a></h3><p>Write down a prediction before each step, then check it.</p>
 <ol>
 <li>Which of the three runs has the largest weight norm? Print <code>lr_models[rate].weight.norm()</code> and the training accuracy of each run.</li>
 <li>Copy the <code>lr=10</code> model with <code>copy.deepcopy</code> and keep training it with <code>fit</code> for 2000 more updates, recording the weight norm every 200 updates. Does the training loss reach zero? Does the norm level off?</li>
@@ -8392,7 +8392,7 @@ a.anchor-link {
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="5.-Investigating-a-training-run">5. Investigating a training run<a class="anchor-link" href="#5.-Investigating-a-training-run">¶</a></h2><h3 id="Activity-5:-a-different-training-step">Activity 5: a different training step<a class="anchor-link" href="#Activity-5:-a-different-training-step">¶</a></h3><p>A colleague gives you the function below. It runs, and at first its loss may even fall faster than yours. Is it the same gradient descent?</p>
+<h2 id="5.-Investigating-a-training-run">5. Investigating a training run<a class="anchor-link" href="#5.-Investigating-a-training-run">¶</a></h2><h3 id="Activity-5:-a-different-training-step-%E2%98%85%E2%98%85">Activity 5: a different training step ★★<a class="anchor-link" href="#Activity-5:-a-different-training-step-%E2%98%85%E2%98%85">¶</a></h3><p>A colleague gives you the function below. It runs, and at first its loss may even fall faster than yours. Is it the same gradient descent?</p>
 <p>Compare it with your <code>training_step</code>, starting from the same parameters and data. Design a small experiment that tells the two apart: write down what you expect, run it, then fix the function. A decreasing loss alone does not settle the question. The cell below only defines the function; the experiment is up to you.</p>
 </div>
 </div>
@@ -8550,7 +8550,7 @@ a.anchor-link {
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h3 id="Activity-6:-a-batch-as-large-as-the-training-set">Activity 6: a batch as large as the training set<a class="anchor-link" href="#Activity-6:-a-batch-as-large-as-the-training-set">¶</a></h3><p>Why do two batches give different gradients for the same parameters? Write down your answer, then test a consequence of it. Build a <code>DataLoader</code> with <code>batch_size=len(ytrain)</code> and <code>shuffle=True</code>, and show that one epoch with it, starting from <code>initial_model</code>, gives the same parameters as one full-batch <code>run_step</code> from the same start. Does the shuffling matter here? What would change with <code>batch_size=len(ytrain) - 1</code>?</p>
+<h3 id="Activity-6:-a-batch-as-large-as-the-training-set-%E2%98%85">Activity 6: a batch as large as the training set ★<a class="anchor-link" href="#Activity-6:-a-batch-as-large-as-the-training-set-%E2%98%85">¶</a></h3><p>Why do two batches give different gradients for the same parameters? Write down your answer, then test a consequence of it. Build a <code>DataLoader</code> with <code>batch_size=len(ytrain)</code> and <code>shuffle=True</code>, and show that one epoch with it, starting from <code>initial_model</code>, gives the same parameters as one full-batch <code>run_step</code> from the same start. Does the shuffling matter here? What would change with <code>batch_size=len(ytrain) - 1</code>?</p>
 </div>
 </div>
 </div>
@@ -8901,7 +8901,7 @@ a.anchor-link {
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="Optional-exercise-(after-the-MLP-lecture):-store-an-image-in-an-MLP">Optional exercise (after the MLP lecture): store an image in an MLP<a class="anchor-link" href="#Optional-exercise-(after-the-MLP-lecture):-store-an-image-in-an-MLP">¶</a></h2><p>Section 9 swapped the linear model for an MLP on the penguins. Here we take the same tools to a different problem: a regression with a different loss and input. We fit a function that maps a pixel position <code>(x, y)</code> to its color <code>(r, g, b)</code>, so that the network itself stores the image. The next cell generates a small target image, so no download is needed.</p>
+<h2 id="Optional-exercise-(after-the-MLP-lecture):-store-an-image-in-an-MLP-%E2%98%85%E2%98%85%E2%98%85">Optional exercise (after the MLP lecture): store an image in an MLP ★★★<a class="anchor-link" href="#Optional-exercise-(after-the-MLP-lecture):-store-an-image-in-an-MLP-%E2%98%85%E2%98%85%E2%98%85">¶</a></h2><p>Section 9 swapped the linear model for an MLP on the penguins. Here we take the same tools to a different problem: a regression with a different loss and input. We fit a function that maps a pixel position <code>(x, y)</code> to its color <code>(r, g, b)</code>, so that the network itself stores the image. The next cell generates a small target image, so no download is needed.</p>
 <ol>
 <li>Build an MLP with two ReLU hidden layers and three sigmoid outputs. Train it with the mean squared error, using only the pixels in <code>image_train_mask</code> (one pixel in four). Coordinates are in <code>[-1, 1]</code> and colors in <code>[0, 1]</code>.</li>
 <li>Compare two inputs: the raw coordinates, and <em>Fourier features</em>, the concatenation of <code>sin(2*pi*coordinates @ frequencies.T)</code> and <code>cos(...)</code>. Here <code>frequencies</code> is a fixed matrix of 16 two-dimensional vectors, drawn once from a normal distribution with standard deviation 1.5 and never trained.</li>

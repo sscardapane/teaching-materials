@@ -6,3 +6,4 @@ node_modules/
 html/dist/
 html/.slidev/
 notebooks/.ipynb_checkpoints/
+notebooks/kmnist/

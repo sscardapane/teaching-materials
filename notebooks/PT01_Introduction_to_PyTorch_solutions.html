@@ -7803,7 +7803,7 @@ a.anchor-link {
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
 <h1 id="PT01:-Introduction-to-PyTorch-(instructor-version)">PT01: Introduction to PyTorch (instructor version)<a class="anchor-link" href="#PT01:-Introduction-to-PyTorch-(instructor-version)">¶</a></h1><p>This notebook covers the PyTorch we need for the first labs: tensors, batched linear models, gradients and parameter updates. If you have used PyTorch before, skim Sections 1 to 5 and try the short check at the end of Section 5. If you have not, read and run everything up to that check before PT02 (the <a href="https://docs.pytorch.org/docs/2.14/index.html">PyTorch documentation</a> is a good companion). Knowing NumPy helps, since most of the array syntax is the same.</p>
-<p>Everything after the check is optional: a few short tensor exercises, a closer look at autograd with some debugging cases, and how tensors are stored in memory. You can come back to these later.</p>
+<p>Everything after the check is optional: a few short tensor exercises, a closer look at autograd with some debugging cases, and how tensors are stored in memory. You can come back to these later. Exercises are rated from 1 to 3 stars based on expected difficulty.</p>
 <p>A good habit: before running a cell, predict its output, or at least its shape. If something surprises you, change the example and run it again.</p>
 </div>
 </div>
@@ -8369,9 +8369,9 @@ Gradient shape: torch.Size([2, 3])
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
 <h2 id="Before-PT02:-a-short-check">Before PT02: a short check<a class="anchor-link" href="#Before-PT02:-a-short-check">¶</a></h2><p>Answer these without running code first, then use the next cell to test your answers. The examples above contain the ideas, but not the answers.</p>
 <ol>
-<li><code>A</code> has shape <code>(3, 2)</code> and we want to center each <strong>row</strong>. <code>A - A.mean(dim=1)</code> raises an error: why, and what is the fix? Now take <code>S = torch.tensor([[1., 3.], [5., 7.]])</code>. Does <code>S - S.mean(dim=1)</code> raise an error? If not, what does it compute, and how does it differ from the correctly centered rows?</li>
-<li><code>a = torch.tensor([1., 2.], requires_grad=True)</code>. We call <code>a.square().sum().backward()</code>, then <code>(3 * a).sum().backward()</code>, without clearing. What is <code>a.grad</code>, and of which function is it the gradient? We then update <code>a -= 0.1 * a.grad</code> inside <code>no_grad</code> and call <code>a.square().sum().backward()</code> once more, still without clearing. What are <code>a</code> and <code>a.grad</code> now, and what should <code>a.grad</code> have been?</li>
-<li>For <code>X @ W.T + b</code> with shapes <code>(5, 4)</code>, <code>(3, 4)</code> and <code>(3,)</code>, what are the shapes of the logits, of the mean cross-entropy loss, and of the two parameter gradients? What happens if we call <code>backward()</code> on <code>F.cross_entropy(logits, y, reduction="none")</code> instead, and how can we get the same gradients as the mean loss from it?</li>
+<li>★ <code>A</code> has shape <code>(3, 2)</code> and we want to center each <strong>row</strong>. <code>A - A.mean(dim=1)</code> raises an error: why, and what is the fix? Now take <code>S = torch.tensor([[1., 3.], [5., 7.]])</code>. Does <code>S - S.mean(dim=1)</code> raise an error? If not, what does it compute, and how does it differ from the correctly centered rows?</li>
+<li>★★ <code>a = torch.tensor([1., 2.], requires_grad=True)</code>. We call <code>a.square().sum().backward()</code>, then <code>(3 * a).sum().backward()</code>, without clearing. What is <code>a.grad</code>, and of which function is it the gradient? We then update <code>a -= 0.1 * a.grad</code> inside <code>no_grad</code> and call <code>a.square().sum().backward()</code> once more, still without clearing. What are <code>a</code> and <code>a.grad</code> now, and what should <code>a.grad</code> have been?</li>
+<li>★★ For <code>X @ W.T + b</code> with shapes <code>(5, 4)</code>, <code>(3, 4)</code> and <code>(3,)</code>, what are the shapes of the logits, of the mean cross-entropy loss, and of the two parameter gradients? What happens if we call <code>backward()</code> on <code>F.cross_entropy(logits, y, reduction="none")</code> instead, and how can we get the same gradients as the mean loss from it?</li>
 </ol>
 <p>If one of these is unclear, go back to the corresponding example before PT02.</p>
 </div>
@@ -8483,7 +8483,7 @@ Gradient shape: torch.Size([2, 3])
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h3 id="1.-One-error-per-example">1. One error per example<a class="anchor-link" href="#1.-One-error-per-example">¶</a></h3><p>We have three predictions stored as a column, with shape <code>(3, 1)</code>, and three targets with shape <code>(3,)</code>. We want the three prediction errors and their mean squared value.</p>
+<h3 id="1.-One-error-per-example-%E2%98%85">1. One error per example ★<a class="anchor-link" href="#1.-One-error-per-example-%E2%98%85">¶</a></h3><p>We have three predictions stored as a column, with shape <code>(3, 1)</code>, and three targets with shape <code>(3,)</code>. We want the three prediction errors and their mean squared value.</p>
 <p>What does each entry of <code>suspect_errors</code> compare? Fix the subtraction so that there is one error per example, in a tensor of shape <code>(3,)</code>. Would checking that the loss is a scalar catch this bug?</p>
 </div>
 </div>
@@ -8532,7 +8532,7 @@ MSE: tensor(5.778)
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h3 id="2.-Which-axis-contains-the-examples?">2. Which axis contains the examples?<a class="anchor-link" href="#2.-Which-axis-contains-the-examples?">¶</a></h3><p>Each row of <code>batch</code> is an example with two features. The model predicts the first feature plus ten times the second, giving one prediction per row.</p>
+<h3 id="2.-Which-axis-contains-the-examples?-%E2%98%85%E2%98%85">2. Which axis contains the examples? ★★<a class="anchor-link" href="#2.-Which-axis-contains-the-examples?-%E2%98%85%E2%98%85">¶</a></h3><p>Each row of <code>batch</code> is an example with two features. The model predicts the first feature plus ten times the second, giving one prediction per row.</p>
 <p>The batch is square, so both <code>batch @ weights</code> and <code>batch.T @ weights</code> run. Predict <code>suspect_predictions</code>, then fix it and check your answer. Why can a shape assertion not catch this mistake? As a second test, add a third example <code>[5., 6.]</code> and predict what happens to each expression.</p>
 </div>
 </div>
@@ -8577,7 +8577,7 @@ MSE: tensor(5.778)
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h3 id="3.-One-distribution-per-example">3. One distribution per example<a class="anchor-link" href="#3.-One-distribution-per-example">¶</a></h3><p><code>scores</code> contains logits for three examples (rows) and three classes (columns). We want, for each example, a probability distribution over the classes.</p>
+<h3 id="3.-One-distribution-per-example-%E2%98%85%E2%98%85">3. One distribution per example ★★<a class="anchor-link" href="#3.-One-distribution-per-example-%E2%98%85%E2%98%85">¶</a></h3><p><code>scores</code> contains logits for three examples (rows) and three classes (columns). We want, for each example, a probability distribution over the classes.</p>
 <p>Predict which sums of <code>suspect_probabilities</code> equal one: the rows or the columns? Fix it and check that each example's probabilities sum to one. Why can neither a shape check nor a check that "all entries are between 0 and 1" catch this? Does the bug change any predicted class?</p>
 </div>
 </div>
@@ -8948,7 +8948,7 @@ no_grad result requires_grad: False is_leaf: True grad_fn: None
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h3 id="1.-Did-the-gradient-stop-at-the-intermediate-tensor?">1. Did the gradient stop at the intermediate tensor?<a class="anchor-link" href="#1.-Did-the-gradient-stop-at-the-intermediate-tensor?">¶</a></h3><p>We want the gradient of <code>sum(hidden**2)</code> with respect to both <code>leaf</code> and <code>hidden</code>. After <code>backward()</code>, what are <code>grad_fn</code>, <code>is_leaf</code> and <code>.grad</code> for each of them? Does <code>hidden.grad is None</code> mean that the gradient did not flow through <code>hidden</code>? Rebuild the computation so that both gradients are available. PyTorch prints a warning when we read <code>hidden.grad</code>; the warning is part of the answer.</p>
+<h3 id="1.-Did-the-gradient-stop-at-the-intermediate-tensor?-%E2%98%85%E2%98%85">1. Did the gradient stop at the intermediate tensor? ★★<a class="anchor-link" href="#1.-Did-the-gradient-stop-at-the-intermediate-tensor?-%E2%98%85%E2%98%85">¶</a></h3><p>We want the gradient of <code>sum(hidden**2)</code> with respect to both <code>leaf</code> and <code>hidden</code>. After <code>backward()</code>, what are <code>grad_fn</code>, <code>is_leaf</code> and <code>.grad</code> for each of them? Does <code>hidden.grad is None</code> mean that the gradient did not flow through <code>hidden</code>? Rebuild the computation so that both gradients are available. PyTorch prints a warning when we read <code>hidden.grad</code>; the warning is part of the answer.</p>
 </div>
 </div>
 </div>
@@ -9001,7 +9001,7 @@ hidden: False &lt;MulBackward0 object at 0x110b46260&gt; None
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h3 id="2.-Can-we-reconnect-a-detached-tensor?">2. Can we reconnect a detached tensor?<a class="anchor-link" href="#2.-Can-we-reconnect-a-detached-tensor?">¶</a></h3><p>We want the gradient with respect to <code>original</code>. Someone detached an intermediate result, then turned gradients back on. Will <code>backward()</code> fail? Which tensor receives a gradient? Fix the code so that the gradient reaches <code>original</code>.</p>
+<h3 id="2.-Can-we-reconnect-a-detached-tensor?-%E2%98%85">2. Can we reconnect a detached tensor? ★<a class="anchor-link" href="#2.-Can-we-reconnect-a-detached-tensor?-%E2%98%85">¶</a></h3><p>We want the gradient with respect to <code>original</code>. Someone detached an intermediate result, then turned gradients back on. Will <code>backward()</code> fail? Which tensor receives a gradient? Fix the code so that the gradient reaches <code>original</code>.</p>
 </div>
 </div>
 </div>
@@ -9046,7 +9046,7 @@ original.grad: None
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h3 id="3.-Is-accumulation-always-a-mistake?">3. Is accumulation always a mistake?<a class="anchor-link" href="#3.-Is-accumulation-always-a-mistake?">¶</a></h3><p>We want the gradient of the mean squared error over <strong>all three examples</strong>, but we process them in two microbatches of different sizes. The parameter does not change between the two <code>backward()</code> calls.</p>
+<h3 id="3.-Is-accumulation-always-a-mistake?-%E2%98%85%E2%98%85">3. Is accumulation always a mistake? ★★<a class="anchor-link" href="#3.-Is-accumulation-always-a-mistake?-%E2%98%85%E2%98%85">¶</a></h3><p>We want the gradient of the mean squared error over <strong>all three examples</strong>, but we process them in two microbatches of different sizes. The parameter does not change between the two <code>backward()</code> calls.</p>
 <p>Predict <code>parameter.grad</code> after each call. Should we clear it between the microbatches? Compare with a single <code>backward()</code> on the full batch. Then replace the normalization with <code>errors.square().mean() / len(microbatches)</code>: why does the result change here?</p>
 </div>
 </div>
@@ -9094,7 +9094,7 @@ Accumulated gradient: tensor(9.333)
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h3 id="4.-Is-every-in-place-change-safe-inside-no_grad?">4. Is every in-place change safe inside <code>no_grad</code>?<a class="anchor-link" href="#4.-Is-every-in-place-change-safe-inside-no_grad?">¶</a></h3><p>To differentiate a square, autograd needs the original value of <code>mutable</code>. What happens if we change that value before calling <code>backward()</code>, even inside <code>no_grad</code>? Reorder the code so that it takes one gradient step, with learning rate 0.1, from the original value.</p>
+<h3 id="4.-Is-every-in-place-change-safe-inside-no_grad?-%E2%98%85%E2%98%85%E2%98%85">4. Is every in-place change safe inside <code>no_grad</code>? ★★★<a class="anchor-link" href="#4.-Is-every-in-place-change-safe-inside-no_grad?-%E2%98%85%E2%98%85%E2%98%85">¶</a></h3><p>To differentiate a square, autograd needs the original value of <code>mutable</code>. What happens if we change that value before calling <code>backward()</code>, even inside <code>no_grad</code>? Reorder the code so that it takes one gradient step, with learning rate 0.1, from the original value.</p>
 <p>Then try modifying <code>mutable.detach()</code> in place before <code>backward()</code>. Does detaching protect the original data?</p>
 </div>
 </div>
@@ -9364,7 +9364,7 @@ Flattened transpose: tensor([0., 2., 4., 1., 3., 5.])
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
 <h2 id="Optional:-a-few-array-operations">Optional: a few array operations<a class="anchor-link" href="#Optional:-a-few-array-operations">¶</a></h2><p>Three short functions to write yourself. Each check cell tells you whether your version is still missing; write the function without loops over the elements, and pay attention to the edge cases the checks include.</p>
-<p>First, sum the main diagonal and the anti-diagonal of a square matrix. When the size is odd, the center element is on both diagonals, so it is counted twice.</p>
+<p>★ First, sum the main diagonal and the anti-diagonal of a square matrix. When the size is odd, the center element is on both diagonals, so it is counted twice.</p>
 </div>
 </div>
 </div>
@@ -9441,7 +9441,7 @@ Flattened transpose: tensor([0., 2., 4., 1., 3., 5.])
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<p>Next, normalize each row to mean zero and variance one. Variance here is the average squared deviation (<code>correction=0</code>). A constant row cannot be rescaled to unit variance, so it must become all zeros, without producing <code>nan</code>.</p>
+<p>★ Next, normalize each row to mean zero and variance one. Variance here is the average squared deviation (<code>correction=0</code>). A constant row cannot be rescaled to unit variance, so it must become all zeros, without producing <code>nan</code>.</p>
 </div>
 </div>
 </div>
@@ -9525,7 +9525,7 @@ normalize_rows passed, including the constant row and a square input.
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<p>Finally, compute the cosine similarity between every pair of rows. Hint: normalize each row to unit length first; then a single matrix product gives all the pairs. We will meet this operation again with attention layers.</p>
+<p>★★ Finally, compute the cosine similarity between every pair of rows. Hint: normalize each row to unit length first; then a single matrix product gives all the pairs. We will meet this operation again with attention layers.</p>
 <p>Cosine similarity is undefined for a zero vector. Following <code>F.normalize</code>, we leave zero vectors at zero, so their similarity with every row is zero.</p>
 </div>
 </div>
