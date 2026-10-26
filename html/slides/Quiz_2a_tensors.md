@@ -172,7 +172,7 @@ What does line 3 compute?
 
 Right-aligned, the shapes are $(B, 1)$ and $(B)$: the pairs are $(1, B)$ and $(B,\ \text{missing})$, so the result has shape $(B, B)$ with entry $(i, j)$ equal to $\hat y_i - y_j$. No error is raised. The minimizer of this loss predicts the *mean target* for every input, so training "works" but learns nothing useful.
 
-Fix it by matching the shapes explicitly: `y_pred.squeeze(1) - y`, or `y_pred - y[:, None]`. Checking shapes with an `assert` is cheap insurance.
+Fix it by matching the shapes explicitly: `y_pred.squeeze(1) - y`, or `y_pred - y[:, None]`.
 
 </template>
 </QuizChoice>
