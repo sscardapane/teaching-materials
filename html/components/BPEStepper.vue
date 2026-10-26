@@ -6,7 +6,7 @@
         <tr v-for="w in words" :key="w.word">
           <td class="mono">{{ w.word }}</td>
           <td>×{{ w.count }}</td>
-          <td><span v-for="(t, i) in w.tokens" :key="i" :class="['tok', isNew(t) ? 'fresh' : '']">{{ t }}</span></td>
+          <td><span v-for="(t, i) in w.tokens" :key="i" :class="['tok', isNew(t) ? 'fresh' : '', nextPair(w.tokens, i) ? 'next' : '']">{{ t }}</span></td>
         </tr>
       </table>
       <div class="bpe-stats">
@@ -16,7 +16,7 @@
     </div>
 
     <div class="bpe-right">
-      <div class="bpe-head">most frequent adjacent pairs</div>
+      <div class="bpe-head">most frequent adjacent pairs (counted with word frequencies)</div>
       <table class="bpe-pairs">
         <tr v-for="(p, i) in topPairs" :key="p.key" :class="{ best: i === 0 }">
           <td class="mono">({{ p.a }}, {{ p.b }})</td><td>{{ p.n }}</td>
@@ -37,7 +37,8 @@
 <script setup>
 import { computed, ref } from 'vue'
 
-const corpus = [['hug', 10], ['pug', 5], ['pun', 12], ['bun', 4], ['hugs', 5]]
+// The toy corpus of the CNN slides (hug, hugs, pug), extended with pun and bun.
+const corpus = [['hug', 5], ['hugs', 3], ['pug', 2], ['pun', 4], ['bun', 2]]
 const words = ref([])
 const rules = ref([])
 const lastMerged = ref('')
@@ -69,6 +70,13 @@ const topPairs = computed(() => {
     .slice(0, 5)
 })
 const isNew = t => t === lastMerged.value
+// Tokens that the next merge will join, so students can check the count.
+function nextPair(tokens, i) {
+  const best = topPairs.value[0]
+  if (!best) return false
+  const at = j => j >= 0 && j + 1 < tokens.length && tokens[j] === best.a && tokens[j + 1] === best.b
+  return at(i) || at(i - 1)
+}
 
 function merge() {
   const best = topPairs.value[0]
@@ -95,6 +103,7 @@ function merge() {
 .bpe-words td { padding: 0.2em 1em 0.2em 0; }
 .tok { display: inline-block; margin-right: 3px; padding: 0 0.35em; border: 1px solid #6C8EBF; background: #eef3fa; font-family: 'Fira Mono', monospace; }
 .tok.fresh { border-color: #B85450; background: #f8e9e8; }
+.tok.next { outline: 2px solid #d79b00; outline-offset: 1px; }
 .bpe-stats { margin-top: 0.7em; }
 .bpe-right { display: flex; flex-direction: column; gap: 0.5em; width: 300px; }
 .bpe-pairs td { padding: 0.1em 1.2em 0.1em 0; }

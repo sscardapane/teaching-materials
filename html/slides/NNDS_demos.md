@@ -1,7 +1,7 @@
 ---
 theme: default
 layout: full
-title: "NNDS 2026 — Interactive demos: optimization, convolutions and text"
+title: "NNDS 2026 — Interactive demos (moved)"
 css: unocss
 fonts:
   sans: 'Fira Sans'
@@ -16,26 +16,10 @@ routerMode: hash
 import BeamerTitle from '../components/BeamerTitle.vue'
 </script>
 
-<!-- Written by Claude (2026-10-14): companion demos for 2b and the CNN lecture. -->
+<!-- Written by Claude (2026-10-14); retired on 2026-10-26. The demos now live next to
+     their lectures, one interactive deck per lecture. This page keeps the old URL working. -->
 
-<BeamerTitle lecture="Interactive demos" subtitle="Optimization, convolutions and text" />
-
----
-layout: full
----
-
-<script setup>
-import BeamerFrame from '../components/BeamerFrame.vue'
-import OptimizerRace from '../components/OptimizerRace.vue'
-</script>
-
-<BeamerFrame title="GD, momentum and Adam on a valley">
-
-Raise $\kappa$: GD diverges once $\eta>2/\kappa$, momentum (step $\eta(1-\lambda)$) smooths the zig-zag, and Adam's path barely changes, because it ignores the gradient scale.
-
-<OptimizerRace />
-
-</BeamerFrame>
+<BeamerTitle lecture="Interactive demos" subtitle="These demos have moved" />
 
 ---
 layout: full
@@ -43,64 +27,21 @@ layout: full
 
 <script setup>
 import BeamerFrame from '../components/BeamerFrame.vue'
-import ConvPlayground from '../components/ConvPlayground.vue'
 </script>
 
-<BeamerFrame title="A convolution is a local pattern detector">
+<BeamerFrame title="Where the demos are now">
 
-Pick a filter or edit its nine weights. The same weights slide over every pixel; with stride 2, we keep one output in four.
+<div class="stack-lg mt-md">
+<div class="definition-box">
 
-<ConvPlayground />
+**Optimization** (gradient descent, GD vs. momentum vs. Adam, mini-batch SGD): [Lecture 2c, *Optimization in practice*](https://sscardapane.github.io/teaching-materials/nnds/Lecture_2_optimization/)
 
-</BeamerFrame>
+</div>
+<div class="definition-box">
 
----
-layout: full
----
+**Convolutions and text** (convolution filters, byte pair encoding, the GPT-2 vocabulary, receptive fields): [*Convolutional networks: interactive demos*](https://sscardapane.github.io/teaching-materials/nnds/Lecture_CNNs_demos/)
 
-<script setup>
-import BeamerFrame from '../components/BeamerFrame.vue'
-import ReceptiveFieldExplorer from '../components/ReceptiveFieldExplorer.vue'
-</script>
-
-<BeamerFrame title="How far can an output see?">
-
-Highlighted units can affect the top output. Compare plain stacking, one stride-2 layer and doubling dilations; make it causal to see what a next-token model may read.
-
-<ReceptiveFieldExplorer />
-
-</BeamerFrame>
-
----
-layout: full
----
-
-<script setup>
-import BeamerFrame from '../components/BeamerFrame.vue'
-import BPEStepper from '../components/BPEStepper.vue'
-</script>
-
-<BeamerFrame title="Byte pair encoding, one merge at a time">
-
-Each merge joins the most frequent adjacent pair. The vocabulary grows by one token and the corpus gets shorter.
-
-<BPEStepper />
-
-</BeamerFrame>
-
----
-layout: full
----
-
-<script setup>
-import BeamerFrame from '../components/BeamerFrame.vue'
-import TemperatureSampler from '../components/TemperatureSampler.vue'
-</script>
-
-<BeamerFrame title="Sampling the next token with a temperature">
-
-Small $\tau$ almost always picks the most likely token; large $\tau$ flattens the distribution and the continuations become more varied.
-
-<TemperatureSampler />
+</div>
+</div>
 
 </BeamerFrame>

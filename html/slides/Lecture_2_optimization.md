@@ -26,6 +26,26 @@ layout: full
 
 <script setup>
 import BeamerFrame from '../components/BeamerFrame.vue'
+import BlindDescent from '../components/BlindDescent.vue'
+</script>
+
+<!-- Written by Claude (2026-10-26): the batch-size and schedule labs were replaced by
+     blind descent, the optimizer race and live SGD, at Simone's request. -->
+
+<BeamerFrame title="Optimizing in the dark">
+
+An optimizer never sees the loss: only its value and slope where it stands. Reach the minimum in as few moves as you can, then reveal the curve and compare with GD.
+
+<BlindDescent />
+
+</BeamerFrame>
+
+---
+layout: full
+---
+
+<script setup>
+import BeamerFrame from '../components/BeamerFrame.vue'
 import GradientDescentDemo from '../components/GradientDescentDemo.vue'
 </script>
 
@@ -49,14 +69,14 @@ layout: full
 
 <script setup>
 import BeamerFrame from '../components/BeamerFrame.vue'
-import OptimizationLab from '../components/OptimizationLab.vue'
+import OptimizerRace from '../components/OptimizerRace.vue'
 </script>
 
-<BeamerFrame title="Choosing the batch size">
+<BeamerFrame title="GD, momentum and Adam">
 
-Keep the objective, learning rate, and number of updates fixed. Change $B$ or resample the mini-batches:
+Three optimizers, four surfaces. Momentum uses the step $\eta(1-\lambda)$, so it shares GD's long-run step size. More on momentum: Goh (2017), [*Why Momentum Really Works*](https://distill.pub/2017/momentum/).
 
-<OptimizationLab mode="batch" />
+<OptimizerRace />
 
 </BeamerFrame>
 
@@ -66,13 +86,13 @@ layout: full
 
 <script setup>
 import BeamerFrame from '../components/BeamerFrame.vue'
-import OptimizationLab from '../components/OptimizationLab.vue'
+import LiveSGD from '../components/LiveSGD.vue'
 </script>
 
-<BeamerFrame title="Learning-rate schedules">
+<BeamerFrame title="Mini-batch SGD, live">
 
-Compare <strong>time-varying learning-rate schedules</strong>. Change the peak rate or the conditioning $\kappa$ and inspect both the schedule and the resulting loss:
+Logistic regression on 200 points. Each update uses $B$ examples (outlined): compare the noise in the boundary and the loss for different $B$, per update and per example seen.
 
-<OptimizationLab mode="schedule" />
+<LiveSGD />
 
 </BeamerFrame>

@@ -23,6 +23,8 @@ def main():
                         '--base', f'{base}nnds/{name}/', '--out', str(output / 'nnds' / name)],
                        cwd=ROOT / 'html', check=True)
         items.append((f'nnds/{name}/', name.replace('_', ' ')))
+    # Shared data for the interactive decks (e.g. the GPT-2 vocabulary map).
+    shutil.copytree(ROOT / 'html' / 'data', output / 'data', dirs_exist_ok=True)
     for course in ['nn', 'nnds']:
         for pdf in sorted((ROOT / 'pdf' / course).glob('*.pdf')):
             target = output / 'pdf' / course / pdf.name
