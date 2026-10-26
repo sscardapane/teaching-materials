@@ -1,5 +1,15 @@
 # Changelog
 
+## 2026-10-26
+
+> [!note] Written by Claude (2026-10-26)
+
+- Add PT04, convolutional neural networks from scratch on KMNIST, adapted from
+  Simone's CNN Colab lab: student and instructor notebooks, HTML previews and
+  `verify_cnn.py` (run alone with `verify_notebooks.py --only-cnn`). KMNIST is
+  downloaded to the untracked `notebooks/kmnist/`, outside the published data folder.
+- Rate the exercises of PT01, PT02 and PT03 with the quiz's 1 to 3 stars.
+
 ## 2026-10-13
 
 > [!note] Written by Codex (2026-10-13)

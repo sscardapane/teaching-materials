@@ -1,4 +1,4 @@
-"""Build the shared student notebooks from their instructor sources.
+"""Build the shared student notebooks (PT01 to PT04) from their instructor sources.
 
 Use --check to verify that the committed student sources match the generators.
 """
@@ -69,7 +69,7 @@ def build_pt02():
 
 Given a few measurements of a penguin, can we predict its species? In this lab we build a linear classifier, train it with gradient descent and evaluate it.
 
-You should be comfortable with PT01 up to its short check: tensor operations, `backward()` and parameter updates. Data loading and plotting are provided. There are six activities. In the first three you write the forward pass, the loss and the training step. Then you investigate why the largest learning rate wins on this data, diagnose a faulty training step, and check when a mini-batch update equals a full-batch one. Along the way we switch to PyTorch's standard components and train on mini-batches. After the MLP lecture, Section 9 replaces the linear model with an MLP, keeping the rest of the code.
+You should be comfortable with PT01 up to its short check: tensor operations, `backward()` and parameter updates. Data loading and plotting are provided. There are six activities. In the first three you write the forward pass, the loss and the training step. Then you investigate why the largest learning rate wins on this data, diagnose a faulty training step, and check when a mini-batch update equals a full-batch one. Along the way we switch to PyTorch's standard components and train on mini-batches. After the MLP lecture, Section 9 replaces the linear model with an MLP, keeping the rest of the code. Exercises are rated from 1 to 3 stars based on expected difficulty.
 
 Two optional sections close the notebook. The first uses per-example gradients to look inside the trained classifier. The second is an exercise for after the MLP lecture, where we reuse the same training loop with an MLP to fit an image.
 
@@ -185,13 +185,42 @@ def build_autodiff():
     return clear_execution(notebook)
 
 
+PT04_REFERENCE_IDS = {
+    "cnn-conv2d-answer", "cnn-conv-reference", "cnn-pool-reference", "cnn-pool-grad-answer",
+    "cnn-depthwise-reference", "cnn-separable-answer", "cnn-model-reference",
+    "cnn-equivariance-reference", "cnn-equivariance-answer-code", "cnn-equivariance-answers",
+    "cnn-shift-accuracy-answer", "cnn-occlusion-reference", "cnn-test-answer",
+    "cnn-bn-reference", "cnn-fuse-reference", "cnn-fuse-answer", "cnn-detective-reference",
+    "cnn-detective-answers", "cnn-residual-reference", "cnn-depth-answer",
+    "cnn-dropout-reference", "cnn-dropout-answer", "cnn-summary-answers",
+    "cnn-opt-local-reference", "cnn-opt-strided-reference", "cnn-opt-strided-answer",
+    "cnn-opt-rf-reference", "cnn-opt-rf-answer", "cnn-opt-causal-reference",
+    "cnn-opt-causal-answer", "cnn-opt-mixup-reference", "cnn-opt-mixup-answer",
+}
+
+
+def build_pt04():
+    notebook = json.loads((ROOT / "PT04_Convolutional_neural_networks_solutions.ipynb").read_text())
+    reference_ids = {cell["id"] for cell in notebook["cells"]
+                     if "reference" in cell.get("metadata", {}).get("tags", [])}
+    if reference_ids != PT04_REFERENCE_IDS:
+        raise RuntimeError("The PT04 reference cells changed; review the student export.")
+    notebook["cells"] = [cell for cell in notebook["cells"] if cell["id"] not in reference_ids]
+    intro = cell_by_id(notebook, "cnn-intro")
+    source = "".join(intro["source"]).replace(" (instructor version)", "")
+    source = source[:source.index("\n\nThis instructor version includes executable solutions")]
+    intro["source"] = lines(source)
+    return clear_execution(notebook)
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--check", action="store_true")
     args = parser.parse_args()
     for path, notebook in [(ROOT / "PT01_Introduction_to_PyTorch.ipynb", build_pt01()),
                            (STUDENT, build_pt02()),
-                           (ROOT / "PT03_Automatic_differentiation.ipynb", build_autodiff())]:
+                           (ROOT / "PT03_Automatic_differentiation.ipynb", build_autodiff()),
+                           (ROOT / "PT04_Convolutional_neural_networks.ipynb", build_pt04())]:
         if args.check:
             existing = clear_execution(json.loads(path.read_text()))
             if existing != notebook:

@@ -1,6 +1,6 @@
 """Execute the shared notebooks and check solution, student, and incorrect paths.
 
-Usage: python verify_notebooks.py [--write-outputs]
+Usage: python verify_notebooks.py [--write-outputs] [--only-autodiff | --only-cnn]
 Requires nbformat, nbclient, nbconvert, ipykernel and the notebook dependencies.
 """
 import argparse
@@ -16,6 +16,7 @@ from nbclient import NotebookClient
 from nbconvert import HTMLExporter
 from make_student_notebook import build_pt01, build_pt02, clear_execution
 from verify_autodiff import verify_autodiff
+from verify_cnn import verify_cnn
 
 ROOT = Path(__file__).resolve().parent
 
@@ -30,6 +31,8 @@ def main():
     parser.add_argument("--write-outputs", action="store_true")
     parser.add_argument("--only-autodiff", action="store_true",
                         help="Verify and optionally refresh only the autodiff artifacts")
+    parser.add_argument("--only-cnn", action="store_true",
+                        help="Verify and optionally refresh only the PT04 (CNN) artifacts")
     args = parser.parse_args()
     for name, generated in [("PT01_Introduction_to_PyTorch", build_pt01()),
                             ("PT02_Logistic_regression", build_pt02())]:
@@ -47,6 +50,9 @@ def main():
         os.environ.update(JUPYTER_PATH=str(root), JUPYTER_RUNTIME_DIR=str(root / "runtime"),
                           IPYTHONDIR=str(root / "ipython"), MPLCONFIGDIR=str(root / "mpl"),
                           OMP_NUM_THREADS="1", OPENBLAS_NUM_THREADS="1")
+        if args.only_cnn:
+            verify_cnn(write_outputs=args.write_outputs)
+            return
         verify_autodiff(execute, write_outputs=args.write_outputs)
         if args.only_autodiff:
             return
@@ -326,6 +332,7 @@ print('PASS student implementations, split isolation, and incorrect-code rejecti
 '''.replace("FORWARD_CHECKS", repr(forward_checks)).replace("STEP_CHECKS", repr(step_checks))))
         execute(student)
         print("PASS student implementations, per-example gradients and diagnostic isolation", flush=True)
+        verify_cnn(write_outputs=args.write_outputs)
         if args.write_outputs:
             # Execution can update instructor kernel metadata. Regenerate the
             # unfilled sources from that final state, never from the test copy.

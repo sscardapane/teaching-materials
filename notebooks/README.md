@@ -23,6 +23,8 @@ download/upload step.
 | PT02 · instructor | [Open in Colab](https://colab.research.google.com/github/sscardapane/teaching-materials/blob/main/notebooks/PT02_Logistic_regression_solutions.ipynb) | [Download](https://raw.githubusercontent.com/sscardapane/teaching-materials/main/notebooks/PT02_Logistic_regression_solutions.ipynb) |
 | PT03 · student | [Open in Colab](https://colab.research.google.com/github/sscardapane/teaching-materials/blob/main/notebooks/PT03_Automatic_differentiation.ipynb) | [Download](https://raw.githubusercontent.com/sscardapane/teaching-materials/main/notebooks/PT03_Automatic_differentiation.ipynb) |
 | PT03 · instructor | [Open in Colab](https://colab.research.google.com/github/sscardapane/teaching-materials/blob/main/notebooks/PT03_Automatic_differentiation_solutions.ipynb) | [Download](https://raw.githubusercontent.com/sscardapane/teaching-materials/main/notebooks/PT03_Automatic_differentiation_solutions.ipynb) |
+| PT04 · student | [Open in Colab](https://colab.research.google.com/github/sscardapane/teaching-materials/blob/main/notebooks/PT04_Convolutional_neural_networks.ipynb) | [Download](https://raw.githubusercontent.com/sscardapane/teaching-materials/main/notebooks/PT04_Convolutional_neural_networks.ipynb) |
+| PT04 · instructor | [Open in Colab](https://colab.research.google.com/github/sscardapane/teaching-materials/blob/main/notebooks/PT04_Convolutional_neural_networks_solutions.ipynb) | [Download](https://raw.githubusercontent.com/sscardapane/teaching-materials/main/notebooks/PT04_Convolutional_neural_networks_solutions.ipynb) |
 
 ## Files
 
@@ -49,7 +51,12 @@ download/upload step.
   its consumers.
 - `PT03_Automatic_differentiation_solutions.ipynb`: editable instructor source with
   executable core and optional solutions, graph plots and training comparisons.
-- `make_student_notebook.py`: reproducibly rebuilds all three student notebooks from
+- `PT04_Convolutional_neural_networks.ipynb`: CNN building blocks from scratch on
+  KMNIST, in two parts (after the CNN lecture; after the deeper-models lecture),
+  with eleven rated activities and five optional sections.
+- `PT04_Convolutional_neural_networks_solutions.ipynb`: instructor source with
+  reference implementations, answers and the recorded training runs.
+- `make_student_notebook.py`: reproducibly rebuilds all four student notebooks from
   the instructor sources, removing reference cells, fallbacks and saved outputs.
   Use `--check` to verify that the generated sources are current. Edit instructor
   notebooks first; shared code and prose belong there, with instructor-only
@@ -57,6 +64,8 @@ download/upload step.
 - `data/penguins.csv`: unscaled Palmer Penguins data, supplied for offline use.
 - `verify_notebooks.py`: reproducible execution and exercise-path checks.
 - `verify_autodiff.py`: autodiff checks called by the notebook verifier.
+- `verify_cnn.py`: PT04 checks called by the notebook verifier.
+- `kmnist/` (not tracked): KMNIST, downloaded by PT04 on first use.
 
 Open the folder in Jupyter and select the notebook, so `data/penguins.csv` is
 available relative to it. The notebook and data folder travel together. When
@@ -337,3 +346,72 @@ python verify_notebooks.py --only-autodiff --write-outputs
 
 The default `python verify_notebooks.py` checks all three labs. Runtime packages
 are unchanged.
+
+## PT04: convolutional neural networks from scratch
+
+> [!note] Written by Claude (2026-10-26)
+
+PT04 replaces Simone's Colab lab "Convolutional neural networks (from scratch)"
+(`Lab-CNN.ipynb`). Simone chose, on October 26, one notebook in two parts (he can
+split it in class), KMNIST as the dataset, a plain PyTorch training loop instead of
+PyTorch Lightning, and all the proposed additions, split into required and optional
+sections and rated with the same stars as the quiz (★ apply a rule, ★★ combine
+ideas or spot a bug, ★★★ go beyond the slides). The same rating was added to PT01,
+PT02 and PT03 for uniformity.
+
+| Section | Supplied material | Student implementation |
+| --- | --- | --- |
+| 1. Setup and data | KMNIST, a 54,000/6,000 split with train-only standardization, loaders, `fit`/`evaluate` | None |
+| 2. Layers are modules | `nn.Conv2d` shape prediction, a complete `MyLinear` with He initialization | Prediction |
+| 3. Activity 1 ★★ | `unfold` on a tiny image; the lecture's $W^\top U(X)$ formula | `MyConv2d` with stride and padding, checked against `F.conv2d` values and gradients |
+| 4. Activity 2 ★ | Gradient-routing demonstration | `MyMaxPool2d`, `global_avg_pool` |
+| 5. Activity 3 ★★ | `SeparableConv2d`, parameter counts | `MyDepthwiseConv2d` (checked against `groups=C`) |
+| 6. Activity 4 ★ | MLP baseline on flattened pixels, training curves | `MyCNN` from the student's layers only |
+| 7. Activity 5 ★★ | `shift`, accuracy under shifts for CNN and MLP | `equivariance_error`; border, stacking and pooling questions |
+| 8. Activity 6 ★★ | First-layer filters and feature maps | `occlusion_map` |
+| 9. Test set | Validation/test comparison | Discussion |
+| 10. Activity 7 ★★ | Lecture notation ($\gamma$, $\beta$, $m=0.1$, unbiased running variance) | `MyBatchNorm2d`, checked against `F.batch_norm` in both modes and over three updates |
+| 11. Activity 8 ★★ | The lecture's fusion formulas | `fuse_conv_bn` |
+| 12. Activity 9 ★★ | A small BN network and two buggy snippets | Diagnoses and `safe_evaluate` |
+| 13. Activity 10 ★ | The lecture's depth experiment at small scale | `ResidualBlock` (plain, BN and residual variants) |
+| 14. Activity 11 ★ | "Dropout today" framing | `MyDropout` |
+| Optional A–E | Locally-connected layer ★★★, patches as a strided view with memory and timing comparison ★★★, receptive fields by autograd ★★, causal 1D convolutions ★★, augmentation ★ and MixUp ★★ | One function or class each |
+
+**Changes relative to the Colab.**
+
+| Source material | Treatment in PT04 |
+| --- | --- |
+| `MyLinear` warm-up TODO | Supplied as a worked example (PT01 feedback: exercises too simple) |
+| `MyConv2d` (unit stride, "same" padding) | Adds stride and arbitrary padding; checked against PyTorch values and gradients, not only shapes |
+| Locally-connected layer (optional) | Kept as Optional A, with a check that changing one kernel changes one output position |
+| `MyMaxPool2d`, shape-only checks | Kept; adds global average pooling, non-divisible sizes and gradient checks |
+| Dropout check `(dropout(xb) == 0).any()` | Replaced: on unnormalized KMNIST it passed with no dropout at all, since the images contain many zeros. Checks drop rate, scaling, gradient and fresh masks |
+| BN with $\alpha, \beta$ and momentum 0.9 on the new value | Lecture notation and PyTorch's convention ($m = 0.1$ on the new value, unbiased running variance); multi-channel checks in both modes |
+| Augmentation TODO at the start | Moved to Optional E, together with MixUp |
+| Lightning wrapper, TensorBoard, test set used for validation | Plain mini-batch loop, matplotlib curves, a validation split; the test set is used once |
+| jaxtyping `Array` annotations | `torch.Tensor`, as in PT01 and PT02 |
+| Not in the Colab | Depthwise convolutions, equivariance, occlusion maps, BN fusion and detective, residual blocks and depth experiment, receptive fields, strided views, causal convolutions |
+
+The student-facing prose follows the voice of the original Colab (its "TODO"
+prompts and hints are kept where the exercise survived) and received the
+humanizer pass in embedded mode.
+
+**Verification (October 26).** `python verify_notebooks.py --only-cnn`
+checks that the student notebook matches its generator and contains no reference
+cells or outputs, that the unfilled student notebook stops at Activity 1, that
+the instructor notebook runs end to end (about 10 minutes on a Mac Studio CPU),
+and that the completed student notebook passes every check while rejecting 29
+plausible wrong implementations (for example a convolution that mixes positions
+and channels, overlapping pooling windows, a biased running variance or flipped
+momentum, BN fusion without the convolution bias, a ReLU before the residual sum,
+dropout without rescaling). The completed path uses shorter training runs; the
+instructor outputs are the full runs. Python 3.12, PyTorch 2.14.1, torchvision
+0.29.1, CPU only; not yet run in Colab or on a GPU.
+
+Recorded results: the CNN (56,394 parameters) reaches 96.8% validation and 91.6%
+test accuracy after 4 epochs, the MLP (101,770 parameters) 94.2% and 87.1%. The
+depth experiment reproduces the lecture's pattern (plain networks at chance from
+18 layers, plain + BN degrading at 34, residual + BN lowest training loss at every
+depth). These are example results, not thresholds students must reproduce.
+The full suite (`python verify_notebooks.py`) passed for PT01–PT03 with the star
+ratings; their saved outputs were not regenerated.
