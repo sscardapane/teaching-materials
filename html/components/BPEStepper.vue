@@ -13,6 +13,10 @@
         vocabulary: <b>{{ vocab.length }}</b> tokens ·
         corpus length: <b>{{ corpusLength }}</b> tokens
       </div>
+      <div class="bpe-vocab">
+        <span v-for="t in vocab" :key="t" :class="['tok', isNew(t) ? 'fresh' : '', used.has(t) ? '' : 'unused']">{{ t }}</span>
+      </div>
+      <div class="bpe-legend">characters first, then merged tokens in order; grey: no longer used in the corpus</div>
     </div>
 
     <div class="bpe-right">
@@ -51,10 +55,11 @@ function reset() {
 reset()
 
 const vocab = computed(() => {
-  const base = new Set(corpus.flatMap(([w]) => w.split('')))
+  const base = new Set([...new Set(corpus.flatMap(([w]) => w.split('')))].sort())
   rules.value.forEach(r => base.add(r.split(' → ')[1]))
   return [...base]
 })
+const used = computed(() => new Set(words.value.flatMap(w => w.tokens)))
 const corpusLength = computed(() => words.value.reduce((a, w) => a + w.count * w.tokens.length, 0))
 const topPairs = computed(() => {
   const counts = new Map()
@@ -105,6 +110,9 @@ function merge() {
 .tok.fresh { border-color: #B85450; background: #f8e9e8; }
 .tok.next { outline: 2px solid #d79b00; outline-offset: 1px; }
 .bpe-stats { margin-top: 0.7em; }
+.bpe-vocab { display: flex; flex-wrap: wrap; gap: 4px 0; max-width: 420px; margin-top: 0.4em; }
+.tok.unused { border-color: #c4c9ca; background: #f4f5f5; color: #9aa3a4; }
+.bpe-legend { margin-top: 0.3em; color: #667678; font-size: 0.85em; }
 .bpe-right { display: flex; flex-direction: column; gap: 0.5em; width: 300px; }
 .bpe-pairs td { padding: 0.1em 1.2em 0.1em 0; }
 .bpe-pairs tr.best td { color: #8c0000; font-weight: 600; }
