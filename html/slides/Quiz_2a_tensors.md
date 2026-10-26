@@ -251,18 +251,18 @@ import BeamerFrame from '../components/BeamerFrame.vue'
 
 <BeamerFrame title="7 · Writing an einsum  ★★">
 
-For queries $Q\sim(B,T,D)$ and keys $K\sim(B,S,D)$, we want all inner products between the queries and the keys of the same batch element:
+Given batches of matrices $X\sim(B,T,D)$ and $Y\sim(B,S,D)$, compute all inner products between rows of $X$ and rows of $Y$ within each batch element:
 
 $$
-A_{b,t,s}=\langle [Q]_{b,t,:},\,[K]_{b,s,:}\rangle,\qquad A\sim(B,T,S).
+A_{b,t,s}=\langle [X]_{b,t,:},\,[Y]_{b,s,:}\rangle,\qquad A\sim(B,T,S).
 $$
 
-Write the `einsum` specification, so that `A = torch.einsum(spec, Q, K)`.
+Write the `einsum` specification, so that `A = torch.einsum(spec, X, Y)`.
 
 <QuizInput id="2a-q7" kind="einsum" expected="btd,bsd->bts" solution="<code>btd,bsd->bts</code> (any index names)">
 <template #explanation>
 
-Indices that appear in the output are kept ($b$, $t$, $s$); indices that appear only in the inputs are summed ($d$). Since $b$ appears in both inputs *and* in the output, it acts as a batch axis rather than being summed. This is the same as the batched product `Q @ K.transpose(1, 2)`, and it is the first step of the attention layers we will see later in the course.
+Indices that appear in the output are kept ($b$, $t$, $s$); indices that appear only in the inputs are summed ($d$). Since $b$ appears in both inputs *and* in the output, it acts as a batch axis rather than being summed. This is the same as the batched product `X @ Y.transpose(1, 2)`, and it is the first step of the attention layers we will see later in the course.
 
 </template>
 </QuizInput>
