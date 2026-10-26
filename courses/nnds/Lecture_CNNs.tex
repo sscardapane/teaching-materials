@@ -289,13 +289,6 @@
 
 \end{whiteframe}
 
-\LiveDemo{a convolution as a pattern detector}{https://sscardapane.github.io/teaching-materials/nnds/Lecture_CNNs_demos/}{%
-    Slide 2 of the demo deck runs a $3\times3$ filter over an image.
-
-    Pick an edge, blur or sharpen filter, or edit its nine weights, and
-    watch where the output responds. Set the stride to 2 to keep one
-    output in four.}
-
 \begin{whiteframe}{Receptive field}
     \setlength{\parskip}{3pt}
     \setlength{\abovedisplayskip}{4pt}
@@ -559,16 +552,6 @@
 % "A few landmark CNNs" moved to the deeper-models deck (LeNet/AlexNet and
 % ImageNet slides) at Simone's request, 2026-10-20.
 
-\LiveDemo{inside a trained CNN}{https://poloclub.github.io/cnn-explainer/}{%
-    \myalert{CNN Explainer} shows a small trained CNN (TinyVGG) classifying
-    an image, layer by layer.
-
-    Click a neuron to see the filter, the input window and the output it
-    produces; follow how the channels change shape from the input to the
-    final softmax.
-
-    \SlideSource{Wang et al. (2020), \href{https://arxiv.org/abs/2004.15004}{\textit{CNN Explainer: Learning Convolutional Neural Networks with Interactive Visualization}}, IEEE TVCG.}}
-
 \section{Convolutions beyond images}
 \subsection{Sequences, text and generation}
 
@@ -703,16 +686,6 @@
 
 \end{frame}
 
-\LiveDemo{byte pair encoding}{https://sscardapane.github.io/teaching-materials/nnds/Lecture_CNNs_demos/}{%
-    Slide 3 of the demo deck runs BPE on the toy corpus of the previous
-    slide, extended with \texttt{pun} and \texttt{bun}. Before each merge,
-    the most frequent pair is highlighted in every word.
-
-    Then try a real tokenizer on your own text, for example numbers,
-    code or Italian, with
-    \href{https://tiktokenizer.vercel.app/}{\myalert{Tiktokenizer}}
-    (\texttt{tiktokenizer.vercel.app}).}
-
 \begin{frame}{Dense embeddings}
     \setlength{\parskip}{4pt}
     \setlength{\abovedisplayskip}{7pt}
@@ -744,14 +717,6 @@
     \end{figure}
 
 \end{whiteframe}
-
-\LiveDemo{the vocabulary of GPT-2}{https://sscardapane.github.io/teaching-materials/nnds/Lecture_CNNs_demos/}{%
-    Slide 4 of the demo deck maps all $50{,}257$ tokens of GPT-2, placed by
-    their trained embeddings (projected to 2D with UMAP).
-
-    Search for a token, or browse the longest tokens, the last merges,
-    the numbers and the \myalert{glitch tokens}: strings the model almost
-    never saw in training. Click a token to see its nearest neighbours.}
 
 \begin{frame}{Sequence padding}
     \setlength{\parskip}{4pt}
@@ -866,13 +831,6 @@
     \SlideSource{van den Oord et al. (2016), \href{https://arxiv.org/abs/1609.03499}{\textit{WaveNet: A Generative Model for Raw Audio}}, arXiv.}
 
 \end{whiteframe}
-
-\LiveDemo{receptive fields}{https://sscardapane.github.io/teaching-materials/nnds/Lecture_CNNs_demos/}{%
-    Slide 5 of the demo deck highlights every input that can affect one
-    output.
-
-    Compare plain stacking, a stride-2 layer and doubling dilations, and
-    make the layers causal to see what a next-token model may read.}
 
 \begin{frame}{Training a next-token predictor}
     \setlength{\parskip}{3pt}

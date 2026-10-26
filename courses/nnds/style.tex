@@ -101,27 +101,6 @@
 % Style commands
 \newcommand{\myalert}[1]{{\color{darkred}\textbf{#1}}}
 
-% Link frame for an interactive demo: what to try, the URL and a QR code
-% (Written by Claude, 2026-10-26). Usage: \LiveDemo{title}{url}{text}.
-% Avoid # in the URL; name the demo slide in the text instead.
-\usepackage{qrcode}
-\newcommand{\LiveDemo}[3]{%
-	\begin{frame}{Live demo: #1}
-		\begin{columns}[c,onlytextwidth]
-			\begin{column}{0.6\textwidth}%
-				\setlength{\parskip}{5pt}%
-				\noindent\ignorespaces#3
-
-				\medskip
-				{\footnotesize\url{#2}}
-			\end{column}
-			\begin{column}{0.34\textwidth}
-				\centering
-				\href{#2}{\qrcode[height=3.3cm]{#2}}
-			\end{column}
-		\end{columns}
-	\end{frame}}
-
 % White background on every slide, so figures with a white canvas blend in
 % (Simone, 2026-10-14). whiteframe is kept as an alias for existing slides.
 \setbeamercolor{background canvas}{bg=white}
