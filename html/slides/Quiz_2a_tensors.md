@@ -205,8 +205,6 @@ Let $\mathbf{X}\sim(B,D)$ be a batch, $\mathbf{W}\sim(D,H)$ and $\mathbf{b}\sim(
 
 An operation mixes examples exactly when it reduces or scans along the batch axis (`dim=0`): the softmax over `dim=0`, the batch mean and the cumulative sum. Then the prediction for one input changes with the other inputs that happen to share its batch. The other three act on each row separately. See [Matrix multiplication](https://sscardapane.github.io/teaching-materials/nnds/Lecture_2_tensors/#/8).
 
-Batch normalization, later in the course, breaks this rule on purpose, and has to handle the consequences at test time.
-
 </template>
 </QuizChoice>
 
