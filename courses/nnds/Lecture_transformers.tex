@@ -10,6 +10,23 @@
 % vault's NNDS Slide Refresh Log, 2026-10-26). Built block by block from the
 % 2024 Lecture 9; this file starts with the first block.
 
+% Token rows for the "Three ways to weight a neighbor" figure.
+\def\tokdx{0.85}
+\def\tokyo{2.3}
+\newcommand{\panelrows}[2]{%
+    \foreach \i in {0,...,4} {
+            \node[tok] (o#1\i) at ({#2+\i*\tokdx},\tokyo) {};
+            \node[tok] (i#1\i) at ({#2+\i*\tokdx},0) {};
+        }
+    \node[outtok] at (o#12) {};
+    \node[gtok] at (i#11) {};
+    \node[btok] at (i#14) {};
+    \node[vlab, above=1pt] at (o#12.north) {$\vc{h}_t$};
+    \node[vlab, below=1pt, drawgreen!70!black] at (i#11.south) {$\vc{x}_{t-1}$};
+    \node[vlab, below=1pt, drawblue!80!black] at (i#14.south) {$\vc{x}_{t+2}$};
+}
+
+
 \begin{document}
 
 {\usebackgroundtemplate{\tikz\node[opacity=0.4,inner sep=0]{\includegraphics[width=\paperwidth,height=\paperheight]{images/header}};}%
@@ -153,20 +170,51 @@
 
 \end{frame}
 
-\begin{whiteframe}{Three ways to weight a neighbor}
-    \setlength{\abovecaptionskip}{6pt}
+\begin{frame}{Three ways to weight a neighbor}
+    % Redrawn in TikZ by Claude (2026-10-27); the 2024 draw.io version is kept in
+    % assets/images/transformers/book/convolution_types.drawio.
+    \centering
+    \vspace{0.4em}
+    \begin{tikzpicture}[
+            tok/.style={circle, draw=drawgray!50, fill=white, line width=0.6pt, minimum size=0.62cm, inner sep=0pt},
+            outtok/.style={tok, draw=drawred, fill=drawred!22},
+            gtok/.style={tok, draw=drawgreen, fill=drawgreen_l},
+            btok/.style={tok, draw=drawblue, fill=drawblue_l},
+            edge/.style={drawgray!40, line width=0.5pt},
+            gedge/.style={drawgreen!80!black, line width=1pt},
+            bedge/.style={drawblue!80!black, line width=1pt},
+            wlab/.style={font=\footnotesize, fill=white, inner sep=1.5pt},
+            vlab/.style={font=\footnotesize},
+            ptitle/.style={font=\small},
+        ]
+        % (a) Convolution with s = 3: weights only inside the window.
+        \panelrows{a}{0}
+        \draw[edge] (oa2.south) -- (ia2.north);
+        \draw[edge] (oa2.south) -- (ia3.north);
+        \draw[gedge] (oa2.south) -- node[wlab, pos=0.5, left=6pt] {$\idx{\vc{W}}{0,:,:}$} (ia1.north);
+        \draw[bedge, dashed, drawblue!60] (oa2.south) -- node[wlab, pos=0.5, right=6pt, text=drawgray] {no weight} (ia4.north);
+        \node[ptitle] at ({2*\tokdx},-1.1) {(a) Convolution, $s=3$};
 
-    \vspace{1em}
-    \begin{figure}
-        \centering
-        \includegraphics[width=\linewidth]{images/transformers/book/convolution_types.pdf}
-        \caption{(a) A convolution with kernel size $3$ has a weight for the
-            green token and none for the blue one. (b) A continuous convolution
-            weights both with $g$ of their offset. (c) A non-local model
-            weights both by their similarity with the token at the output
-            position.}
-    \end{figure}
+        % (b) Continuous convolution: weights computed from the offset.
+        \panelrows{b}{4.7}
+        \foreach \i in {0,2,3} {\draw[edge] (ob2.south) -- (ib\i.north);}
+        \draw[gedge] (ob2.south) -- node[wlab, pos=0.5, left=6pt] {$g(-1)$} (ib1.north);
+        \draw[bedge] (ob2.south) -- node[wlab, pos=0.5, right=6pt] {$g(+2)$} (ib4.north);
+        \node[ptitle] at ({4.7+2*\tokdx},-1.1) {(b) Continuous convolution};
 
-\end{whiteframe}
+        % (c) Non-local network: weights computed from the two tokens.
+        \panelrows{c}{9.35}
+        \foreach \i in {0,2,3} {\draw[edge] (oc2.south) -- (ic\i.north);}
+        \draw[gedge] (oc2.south) -- node[wlab, pos=0.5, left=6pt] {$\alpha(\vc{x}_t,\vc{x}_{t-1})$} (ic1.north);
+        \draw[bedge] (oc2.south) -- node[wlab, pos=0.5, right=6pt] {$\alpha(\vc{x}_t,\vc{x}_{t+2})$} (ic4.north);
+        \node[ptitle] at ({9.35+2*\tokdx},-1.1) {(c) Non-local network};
+    \end{tikzpicture}
+
+    \vspace{0.8em}
+    {\small Each edge weights an input token for the output $\vc{h}_t$: (a) one
+    matrix per offset, inside the kernel only; (b) computed from the offset; (c)
+    computed from the two tokens.\par}
+
+\end{frame}
 
 \end{document}
