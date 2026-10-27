@@ -38,34 +38,28 @@
 \begin{frame}{Transformers}
     \setlength{\parskip}{4pt}
 
-    The \myalert{transformer} was proposed in 2017 for machine translation;
-    every current LLM is a transformer. Like the convolutional models of the
-    last lecture, it maps $X\sim(T,D)$ to one output per token, and we use it
-    for the same two tasks:
+    The \myalert{transformer} was proposed in 2017 for machine translation. Like the convolutional models of the
+    last lecture, the backbone maps a sequence of embeddings $\vc{X} \sim(T,D)$ to another sequence followed by a task-wise head, e.g.:
 
     \vspace{0.2em}
     \begin{columns}[T,onlytextwidth]
         \begin{column}{0.48\textwidth}
             \begin{tcolorbox}[nndsblue,courseheight={families}{}]
                 \textbf{Sequence classification}\par
-                Each output can depend on the whole sequence: an
-                \myalert{encoder}.\par
-                \small BERT, Vision Transformer.
+                Each output can depend on the whole sequence: we call it an
+                \myalert{encoder} transformer (e.g. BERT, ViT).
             \end{tcolorbox}
         \end{column}
         \begin{column}{0.48\textwidth}
-            \begin{tcolorbox}[nndsblue,courseheight={families}{}]
+            \begin{tcolorbox}[nndsred,courseheight={families}{}]
                 \textbf{Next-token prediction}\par
-                The model must be causal, as with causal convolutions: a
-                \myalert{decoder}.\par
-                \small GPT, current LLMs.
+                The model must be causal, as with causal convolutions: we call it a \myalert{decoder} transformer (e.g. GPT).
             \end{tcolorbox}
         \end{column}
     \end{columns}
 
     \vspace{0.6em}
-    We build the decoder; the encoder differs by a single detail. The 2017
-    model combined the two, as we will see at the end.
+    As we will see, the original 2017 paper combined both.
 
     \SlideSource{Vaswani et al. (2017), \href{https://arxiv.org/abs/1706.03762}{\textit{Attention Is All You Need}}, NeurIPS.}
 
@@ -94,7 +88,7 @@
 \begin{frame}{Convolutions as a sum over offsets}
     \setlength{\parskip}{6pt}
 
-    Take a sequence $X\sim(T,D)$ with rows $\vc{x}_t=\idx{X}{t,:}$. Because
+    Take a sequence $\vc{X}\sim(T,D)$ with rows $\vc{x}_t=\idx{X}{t,:}$. Because
     transformers come from NLP, we call each row a \myalert{token} and $D$ the
     \myalert{embedding dimension}.
 
