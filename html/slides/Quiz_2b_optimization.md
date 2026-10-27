@@ -28,13 +28,13 @@ import BeamerFrame from '../components/BeamerFrame.vue'
 
 <BeamerFrame title="How this quiz works">
 
-There are 12 questions in total, each graded 1 to 3 stars based on expected difficulty.
+There are 11 questions in total, each graded 1 to 3 stars based on expected difficulty. Questions 8 and 10 are on momentum and Adam, the optional part of the lecture.
 
 <p>You can retry a question as many times as you like, or ask for the solution. Every solution comes with an explanation.</p>
 
 <div class="definition-box">
 
-The quiz is **not graded**. Your answers are stored only in this browser, and the last slide summarizes them. Question 12 runs Python inside the page, so its first run needs a network connection.
+The quiz is **not graded**. Your answers are stored only in this browser, and the last slide summarizes them. Question 11 runs Python inside the page, so its first run needs a network connection.
 
 </div>
 
@@ -99,19 +99,28 @@ layout: full
 
 <script setup>
 import BeamerFrame from '../components/BeamerFrame.vue'
+
+const options = [
+  { text: String.raw`Mini-batch gradients are unbiased.`, correct: true },
+  { text: String.raw`Mini-batch gradients equal the full gradient.` },
+  { text: String.raw`One update costs the same for any $N$.`, correct: true },
+  { text: String.raw`One epoch makes $500$ updates.`, correct: true },
+  { text: String.raw`An example can appear twice in one epoch.` },
+  { text: String.raw`Averaging the gradients of 4 batches of 100 gives the gradient of their union.`, correct: true },
+]
 </script>
 
-<BeamerFrame title="3 · Counting updates  ★">
+<BeamerFrame title="3 · Mini-batch SGD  ★">
 
-We train with mini-batch SGD on $N=50{,}000$ examples, with batches of $B=100$ examples, shuffling the dataset at every epoch. How many times are the parameters updated in 3 epochs?
+We train with mini-batch SGD on $N=50{,}000$ examples and batches of $B=100$, shuffling and splitting the dataset at every epoch. Which statements are true?
 
-<QuizInput id="2b-q3" kind="number" :expected="1500" :tolerance="0.001" solution="$1500$">
+<QuizChoice id="2b-q3" :options="options" multiple :columns="2">
 <template #explanation>
 
-Each epoch splits the shuffled dataset into $N/B=500$ blocks of $B$ examples, and every block gives one update: $3\cdot 500=1500$ updates. Each of them costs $O(B)$, not $O(N)$, while full-batch GD would make only 3 updates with the same amount of computation. See [Extracting batches from the data](https://sscardapane.github.io/teaching-materials/pdf/nnds/Lecture_2_preliminaries.pdf#page=27).
+The mini-batch gradient is correct on average but noisy. An update processes $B$ examples, so it costs $O(B)$ whatever $N$ is. Shuffling and splitting uses each example once per epoch, in $N/B=500$ blocks. The gradient is linear, so averaging over equal-sized batches gives the gradient of their union, as with several GPUs. See [Stochastic gradient descent](https://sscardapane.github.io/teaching-materials/pdf/nnds/Lecture_2_preliminaries.pdf#page=25).
 
 </template>
-</QuizInput>
+</QuizChoice>
 
 </BeamerFrame>
 
@@ -121,19 +130,28 @@ layout: full
 
 <script setup>
 import BeamerFrame from '../components/BeamerFrame.vue'
+
+const options = [
+  { text: String.raw`$\mathrm{D}_{\mathbf{u}}f(\mathbf{x})=3$ for $\mathbf{u}=(1,0)$.`, correct: true },
+  { text: String.raw`$\partial f(\mathbf{x})/\partial x_1=5$.` },
+  { text: String.raw`$\mathrm{D}_{\mathbf{u}}f(\mathbf{x})=5$ for $\mathbf{u}=(0.6,\,0.8)$.`, correct: true },
+  { text: String.raw`$\mathrm{D}_{\mathbf{u}}f(\mathbf{x})=-5$ for $\mathbf{u}=(-3,\,-4)$.` },
+  { text: String.raw`No unit vector $\mathbf{u}$ gives $\mathrm{D}_{\mathbf{u}}f(\mathbf{x})>5$.`, correct: true },
+  { text: String.raw`Moving from $\mathbf{x}$ along $(0.8,\,-0.6)$, $f$ does not change to first order.`, correct: true },
+]
 </script>
 
-<BeamerFrame title="4 · The steepest slope  ★★">
+<BeamerFrame title="4 · Directional derivatives  ★★">
 
-Let $f(\mathbf{x})=\lVert\mathbf{x}\rVert^2$ and $\mathbf{x}=(1,2,2)$. What is the largest value of the directional derivative $\mathrm{D}_{\mathbf{u}}f(\mathbf{x})$ over all unit vectors $\mathbf{u}$?
+At a point $\mathbf{x}$, a function $f:\mathbb{R}^2\rightarrow\mathbb{R}$ has gradient $\nabla f(\mathbf{x})=(3,\,4)$. Which statements are true?
 
-<QuizInput id="2b-q4" kind="number" :expected="6" :tolerance="0.001" solution="$6$">
+<QuizChoice id="2b-q4" :options="options" multiple :columns="2">
 <template #explanation>
 
-$\nabla f(\mathbf{x})=2\mathbf{x}=(2,4,4)$, and $\mathrm{D}_{\mathbf{u}}f(\mathbf{x})=\langle\nabla f(\mathbf{x}),\mathbf{u}\rangle=\lVert\nabla f(\mathbf{x})\rVert\cos(\alpha)$. This is largest when $\mathbf{u}$ points along the gradient, $\mathbf{u}=\mathbf{x}/3$, where it equals $\lVert\nabla f(\mathbf{x})\rVert=\sqrt{4+16+16}=6$. The norm of the gradient is the slope in the steepest direction. See [Directional derivative](https://sscardapane.github.io/teaching-materials/pdf/nnds/Lecture_2_preliminaries.pdf#page=8).
+All of them follow from $\mathrm{D}_{\mathbf{u}}f(\mathbf{x})=\langle\nabla f(\mathbf{x}),\mathbf{u}\rangle$. Along $\mathbf{e}_1=(1,0)$ we get the partial derivative, $3$. The unit vector $(0.6,0.8)$ points along the gradient and gives the largest value, $\lVert\nabla f(\mathbf{x})\rVert=5$. $(0.8,-0.6)$ is orthogonal to the gradient, along the level set. $(-3,-4)$ is not a unit vector: the definition still applies, but gives $-25$. See [Directional derivative](https://sscardapane.github.io/teaching-materials/pdf/nnds/Lecture_2_preliminaries.pdf#page=8).
 
 </template>
-</QuizInput>
+</QuizChoice>
 
 </BeamerFrame>
 
@@ -227,19 +245,26 @@ layout: full
 
 <script setup>
 import BeamerFrame from '../components/BeamerFrame.vue'
+
+const options = [
+  { text: String.raw`With $\lambda=0$, it is gradient descent.`, correct: true },
+  { text: String.raw`$\mathbf{u}_t$ depends only on the last two gradients.` },
+  { text: String.raw`With a constant gradient $\mathbf{g}$, the steps approach $10\,\eta\lVert\mathbf{g}\rVert$.`, correct: true },
+  { text: String.raw`With gradients alternating between $\mathbf{g}$ and $-\mathbf{g}$, the steps are smaller than $\eta\lVert\mathbf{g}\rVert$.`, correct: true },
+]
 </script>
 
-<BeamerFrame title="8 · Momentum on a slope  ★★">
+<BeamerFrame title="8 · Momentum (optional)  ★★">
 
-We run momentum with $\lambda=0.9$ and a constant step size $\eta$ on a region where the gradient is the same vector $\mathbf{g}$ at every step. After many steps, how many times larger is $\lVert\mathbf{u}_t\rVert$ than the gradient descent step $\eta\lVert\mathbf{g}\rVert$?
+We run momentum with $\lambda=0.9$ and a constant step size $\eta$. Which statements are true?
 
-<QuizInput id="2b-q8" kind="number" :expected="10" :tolerance="0.001" solution="$1/(1-\lambda)=10$">
+<QuizChoice id="2b-q8" :options="options" multiple :columns="2">
 <template #explanation>
 
-Unrolling $\mathbf{u}_t=\lambda\mathbf{u}_{t-1}-\eta\mathbf{g}$ from $\mathbf{u}_0=\mathbf{0}$ gives $\mathbf{u}_t=-\eta\mathbf{g}\,(1+\lambda+\dots+\lambda^{t-1})$, which tends to $-\eta\mathbf{g}/(1-\lambda)=-10\,\eta\mathbf{g}$. Along directions where the gradients agree, momentum moves ten times faster than gradient descent. See [Momentum](https://sscardapane.github.io/teaching-materials/pdf/nnds/Lecture_2_preliminaries.pdf#page=31).
+Unrolling, $\mathbf{u}_t$ sums *all* past gradients with weights $\eta,\eta\lambda,\eta\lambda^2,\dots$ When they agree, the sum tends to $\eta\mathbf{g}/(1-\lambda)$, ten times a GD step. When they alternate, consecutive terms cancel and the steps shrink to $\eta\lVert\mathbf{g}\rVert/(1+\lambda)\approx 0.53\,\eta\lVert\mathbf{g}\rVert$: this is how momentum damps oscillations. See [Momentum](https://sscardapane.github.io/teaching-materials/pdf/nnds/Lecture_2_preliminaries.pdf#page=31).
 
 </template>
-</QuizInput>
+</QuizChoice>
 
 </BeamerFrame>
 
@@ -282,41 +307,26 @@ layout: full
 
 <script setup>
 import BeamerFrame from '../components/BeamerFrame.vue'
+
+const options = [
+  { text: String.raw`Both coordinates move by about $\eta$.`, correct: true },
+  { text: String.raw`The first coordinate moves $10^6$ times more.` },
+  { text: String.raw`Without bias correction, the step is the same.` },
+  { text: String.raw`Scaling the loss by $100$ leaves the step almost unchanged.`, correct: true },
+]
 </script>
 
-<BeamerFrame title="10 · The cost of ill-conditioning  ★★★">
+<BeamerFrame title="10 · Adam's first step (optional)  ★★★">
 
-We run gradient descent on $\mathcal{L}(\boldsymbol{\theta})=\tfrac12\left(\theta_1^2+\kappa\,\theta_2^2\right)$ with $\kappa=20$ and $\eta=0.09$, just below the stability limit. How many steps does it take until $|\theta_1|$ is at most $1\%$ of its initial value?
+At the first step of Adam ($t=1$), with default $\beta_1$, $\beta_2$ and a tiny $\varepsilon$, the gradient is $\mathbf{g}_1=(1000,\ 0.001)$. Which statements are true?
 
-<QuizInput id="2b-q10" kind="number" :expected="49" :tolerance="0.001" solution="$49$ steps">
+<QuizChoice id="2b-q10" :options="options" multiple :columns="2">
 <template #explanation>
 
-Each step multiplies $\theta_1$ by $1-\eta=0.91$ and $\theta_2$ by $1-\kappa\eta=-0.8$. The steep direction oscillates but converges, and it forbids any $\eta\ge 2/\kappa=0.1$. We need $0.91^t\le 0.01$, i.e., $t\ge\ln(0.01)/\ln(0.91)\approx 48.8$. Without the steep direction, $\eta=0.9$ would reach the same accuracy in 2 steps. Since $\eta<2/\kappa$, the number of steps grows linearly with $\kappa$. See [Conditioning](https://sscardapane.github.io/teaching-materials/pdf/nnds/Lecture_2_preliminaries.pdf#page=30).
+At $t=1$, the bias correction gives $\widehat{\mathbf{m}}_1=\mathbf{g}_1$ and $\widehat{\mathbf{v}}_1=\mathbf{g}_1\odot\mathbf{g}_1$, so each coordinate moves by $\eta\,|g|/(|g|+\varepsilon)\approx\eta$. Without it, the step would be $(1-\beta_1)/\sqrt{1-\beta_2}\approx 3.16$ times larger. Adam divides the average gradient by its typical size, so scaling the loss changes neither; a GD step would grow 100 times. See [Adam](https://sscardapane.github.io/teaching-materials/pdf/nnds/Lecture_2_preliminaries.pdf#page=32).
 
 </template>
-</QuizInput>
-
-</BeamerFrame>
-
----
-layout: full
----
-
-<script setup>
-import BeamerFrame from '../components/BeamerFrame.vue'
-</script>
-
-<BeamerFrame title="11 · Adam's first step  ★★★">
-
-At the first step of Adam ($t=1$), the gradient is $\mathbf{g}_1=(1000,\ 0.001)$. With $\eta=0.01$, $\beta_1=0.9$, $\beta_2=0.999$ and $\varepsilon=10^{-8}$, what is the size of the update on the **second** coordinate?
-
-<QuizInput id="2b-q11" kind="number" :expected="0.01" :tolerance="0.01" solution="$\eta=0.01$ (up to $\varepsilon$)">
-<template #explanation>
-
-At $t=1$, $\mathbf{m}_1=(1-\beta_1)\mathbf{g}_1$ and $\mathbf{v}_1=(1-\beta_2)\,\mathbf{g}_1\odot\mathbf{g}_1$, so the bias correction gives exactly $\widehat{\mathbf{m}}_1=\mathbf{g}_1$ and $\widehat{\mathbf{v}}_1=\mathbf{g}_1\odot\mathbf{g}_1$. Each coordinate moves by $\eta\,|g|/(|g|+\varepsilon)\approx\eta$, regardless of the size of its gradient: both coordinates move by $0.01$, although their gradients differ by a factor $10^6$. Without bias correction, the step would be $0.1/\sqrt{0.001}\approx 3.16$ times larger. See [Adam](https://sscardapane.github.io/teaching-materials/pdf/nnds/Lecture_2_preliminaries.pdf#page=32).
-
-</template>
-</QuizInput>
+</QuizChoice>
 
 </BeamerFrame>
 
@@ -362,11 +372,11 @@ const solution = [
 ].join('\n')
 </script>
 
-<BeamerFrame title="12 · The gradient of a loss  ★★★">
+<BeamerFrame title="11 · The gradient of a loss  ★★★">
 
 Complete the function using NumPy, with no Python loops. It is checked against finite differences on random inputs, including $N=1$ and $D=1$.
 
-<QuizCode id="2b-q12" :initial-code="initialCode" :tests="tests" :solution="solution" :code-rows="6">
+<QuizCode id="2b-q11" :initial-code="initialCode" :tests="tests" :solution="solution" :code-rows="6">
 <template #explanation>
 
 Write $\mathcal{L}(\mathbf{w})=\frac1N\lVert\mathbf{r}\rVert^2$ with $\mathbf{r}=\mathbf{X}\mathbf{w}-\mathbf{y}$. By the chain rule, the gradient of $\lVert\mathbf{r}\rVert^2$ is $2\mathbf{r}$ and the Jacobian of $\mathbf{r}$ with respect to $\mathbf{w}$ is $\mathbf{X}$, so $\nabla\mathcal{L}(\mathbf{w})=\frac2N\mathbf{X}^\top(\mathbf{X}\mathbf{w}-\mathbf{y})$. The tests use the definition of the gradient with a small $h$ along each $\mathbf{e}_i$, a cheap check for any gradient computed by hand. See [Examples of matrix derivatives](https://sscardapane.github.io/teaching-materials/pdf/nnds/Lecture_2_preliminaries.pdf#page=10).
@@ -386,16 +396,15 @@ import BeamerFrame from '../components/BeamerFrame.vue'
 const items = [
   { id: '2b-q1', title: 'Jacobian of a composition', stars: 1, slide: 3 },
   { id: '2b-q2', title: 'Descent directions', stars: 1, slide: 4 },
-  { id: '2b-q3', title: 'Counting updates', stars: 1, slide: 5 },
-  { id: '2b-q4', title: 'The steepest slope', stars: 2, slide: 6 },
+  { id: '2b-q3', title: 'Mini-batch SGD', stars: 1, slide: 5 },
+  { id: '2b-q4', title: 'Directional derivatives', stars: 2, slide: 6 },
   { id: '2b-q5', title: 'Predicting a step', stars: 2, slide: 7 },
   { id: '2b-q6', title: 'Convex or not?', stars: 2, slide: 8 },
   { id: '2b-q7', title: 'Sum instead of mean', stars: 2, slide: 9 },
-  { id: '2b-q8', title: 'Momentum on a slope', stars: 2, slide: 10 },
+  { id: '2b-q8', title: 'Momentum (optional)', stars: 2, slide: 10 },
   { id: '2b-q9', title: 'Stationary points', stars: 3, slide: 11 },
-  { id: '2b-q10', title: 'The cost of ill-conditioning', stars: 3, slide: 12 },
-  { id: '2b-q11', title: "Adam's first step", stars: 3, slide: 13 },
-  { id: '2b-q12', title: 'The gradient of a loss', stars: 3, slide: 14 },
+  { id: '2b-q10', title: "Adam's first step (optional)", stars: 3, slide: 12 },
+  { id: '2b-q11', title: 'The gradient of a loss', stars: 3, slide: 13 },
 ]
 </script>
 
