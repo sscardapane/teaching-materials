@@ -401,6 +401,69 @@
 
 \end{frame}
 
+\begin{frame}[fragile]{Hard attention as a dictionary}
+    \centering
+    \vspace{1em}
+    \begin{tikzpicture}[x=0.46cm, y=0.46cm,
+            cell/.style={draw=drawgray!70, line width=0.4pt},
+            mlab/.style={font=\small},
+            slab/.style={font=\scriptsize, text=black!60},
+        ]
+        % Q (T x D_k)
+        \foreach \r in {0,...,3} \foreach \c in {0,...,2}
+            \draw[cell, fill=qcolor!18] (\c,-\r) rectangle ++(1,-1);
+        \node[mlab] at (1.5,-5) {$\qc{\vc{Q}}$};
+        \node[slab] at (1.5,-6) {$(T,D_k)$};
+        % K^T (D_k x T)
+        \foreach \r in {0,...,2} \foreach \c in {0,...,3}
+            \draw[cell, fill=kcolor!18] ({3.6+\c},{-0.5-\r}) rectangle ++(1,-1);
+        \node[mlab] at (5.6,-5) {$\kc{\vc{K}}^{\top}$};
+        \node[slab] at (5.6,-6) {$(D_k,T)$};
+        % argmax arrow
+        \draw[-{Stealth[length=5pt]}, drawgray, line width=0.6pt] (8.3,-2) -- (13.7,-2)
+            node[midway, above=2pt, font=\small] {$\operatorname{argmax}$}
+            node[midway, below=2pt, slab] {on each row};
+        % A (T x T), one-hot rows: token t reads the value of key t*
+        \def\hot{{0,2,2,3}}
+        \foreach \r in {0,...,3} \foreach \c in {0,...,3} {
+            \pgfmathtruncatemacro{\h}{\hot[\r]}
+            \ifnum\c=\h
+                \draw[cell, fill=black!75] ({14.2+\c},-\r) rectangle ++(1,-1);
+            \else
+                \draw[cell, fill=white] ({14.2+\c},-\r) rectangle ++(1,-1);
+            \fi
+        }
+        \node[mlab] at (16.2,-5) {$\vc{A}$};
+        \node[slab] at (16.2,-6) {one-hot rows};
+        % V (T x D_v), one shade per stored value
+        \def\vshade{{12,28,45,65}}
+        \foreach \r in {0,...,3} {
+            \pgfmathtruncatemacro{\s}{\vshade[\r]}
+            \foreach \c in {0,...,2}
+                \draw[cell, fill=vcolor!\s] ({18.8+\c},-\r) rectangle ++(1,-1);
+        }
+        \node[mlab] at (20.3,-5) {$\vcl{\vc{V}}$};
+        \node[slab] at (20.3,-6) {$(T,D_v)$};
+        \node[font=\large] at (22.7,-2) {$=$};
+        % H: each row is a copy of the selected row of V
+        \foreach \r in {0,...,3} {
+            \pgfmathtruncatemacro{\h}{\hot[\r]}
+            \pgfmathtruncatemacro{\s}{\vshade[\h]}
+            \foreach \c in {0,...,2}
+                \draw[cell, fill=vcolor!\s] ({23.6+\c},-\r) rectangle ++(1,-1);
+        }
+        \node[mlab] at (25.1,-5) {$\vc{H}$};
+        \node[slab] at (25.1,-6) {$(T,D_v)$};
+    \end{tikzpicture}
+
+    \vspace{1.5em}
+    {\small Each query retrieves the value of its best-matching key, like
+    \pythoninline{d[q]}: every row of $\vc{H}$ is a copy of one row of
+    $\vcl{\vc{V}}$. Small changes to the scores leave the argmax unchanged, so
+    the gradient is zero almost everywhere.\par}
+
+\end{frame}
+
 \begin{frame}{Attention as an associative memory}
     \setlength{\parskip}{6pt}
 
