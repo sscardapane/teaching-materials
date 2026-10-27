@@ -38,38 +38,34 @@
 \begin{frame}{Transformers}
     \setlength{\parskip}{4pt}
 
-    The \myalert{transformer} was proposed in 2017 for machine translation.
-    Today it is used for text, images, audio and biological sequences, and it
-    is the backbone of every current LLM. We use it in three ways:
+    The \myalert{transformer} was proposed in 2017 for machine translation;
+    every current LLM is a transformer. Like the convolutional models of the
+    last lecture, it maps $X\sim(T,D)$ to one output per token, and we use it
+    for the same two tasks:
 
     \vspace{0.2em}
     \begin{columns}[T,onlytextwidth]
-        \begin{column}{0.32\textwidth}
+        \begin{column}{0.48\textwidth}
             \begin{tcolorbox}[nndsblue,courseheight={families}{}]
-                \textbf{Encoder-only}\par
-                Each token sees all the others. Embeddings, classification.\par
-                \small BERT, ViT.
+                \textbf{Sequence classification}\par
+                Each output can depend on the whole sequence: an
+                \myalert{encoder}.\par
+                \small BERT, Vision Transformer.
             \end{tcolorbox}
         \end{column}
-        \begin{column}{0.32\textwidth}
+        \begin{column}{0.48\textwidth}
             \begin{tcolorbox}[nndsblue,courseheight={families}{}]
-                \textbf{Decoder-only}\par
-                Each token sees only the past. Next-token prediction.\par
+                \textbf{Next-token prediction}\par
+                The model must be causal, as with causal convolutions: a
+                \myalert{decoder}.\par
                 \small GPT, current LLMs.
-            \end{tcolorbox}
-        \end{column}
-        \begin{column}{0.32\textwidth}
-            \begin{tcolorbox}[nndsblue,courseheight={families}{}]
-                \textbf{Encoder-decoder}\par
-                The decoder also reads the encoded input. Translation.\par
-                \small The 2017 model.
             \end{tcolorbox}
         \end{column}
     \end{columns}
 
-    \vspace{0.2em}
-    We build the decoder, continuing the next-token predictor of the CNN
-    lecture. Without its mask, it becomes an encoder.
+    \vspace{0.6em}
+    We build the decoder; the encoder differs by a single detail. The 2017
+    model combined the two, as we will see at the end.
 
     \SlideSource{Vaswani et al. (2017), \href{https://arxiv.org/abs/1706.03762}{\textit{Attention Is All You Need}}, NeurIPS.}
 
