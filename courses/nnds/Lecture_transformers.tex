@@ -460,6 +460,29 @@
 
 \end{frame}
 
+\begin{frame}{Trainable keys and values}
+    \setlength{\parskip}{6pt}
+
+    Consider a variant in which we parameterize explicitly the keys and
+    values as trainable matrices $\kc{\vc{K}}\sim(M,D)$ and
+    $\vcl{\vc{V}}\sim(M,D_v)$ (ignoring $\vc{W}_q$ and the scaling):
+    \[
+        \vc{H}=\operatorname{softmax}\left(\vc{X}\kc{\vc{K}}^{\top}\right)\vcl{\vc{V}} \,.
+    \]
+    The rows of $\kc{\vc{K}}$ and $\vcl{\vc{V}}$ store patterns retrieved by
+    an attention-like operation (a \myalert{memory layer}). But this is also a
+    \myalert{two-layer MLP} with a softmax activation function: MLPs can be
+    seen as attention over trainable keys and values.
+
+    If we remove the softmax, we get a \myalert{linear associative memory}
+    $\vc{H}=\vc{X}\vc{S}$, with $\vc{S}=\sum_i\kc{\vc{k}_i}\vcl{\vc{v}_i}^{\top}$.
+    Each read returns the matching value plus \myalert{interference} from all
+    other pairs, which degrades quickly once $M$ exceeds $D$.
+
+    \SlideSource{Geva et al. (2021), \textit{Transformer feed-forward layers are key-value memories}, EMNLP; A. Wang (2026), \href{https://alexwang.ai/posts/associative-memory/}{\textit{You could have invented transformers from memory}}, blog post.}
+
+\end{frame}
+
 \begin{frame}{Causal self-attention}
     \setlength{\parskip}{6pt}
 
