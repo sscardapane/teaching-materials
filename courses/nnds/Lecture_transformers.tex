@@ -171,9 +171,9 @@
 
     \vfill
     {\footnotesize\color{black!60} $^1$ We could also combine the two ideas, with a
-    weight $\alpha(\vc{x}_t,\vc{x}_{t'},t'-t)$ that depends on both the tokens and
-    their offset. We will return to this with \textit{relative positional
-    embeddings}.\par}
+        weight $\alpha(\vc{x}_t,\vc{x}_{t'},t'-t)$ that depends on both the tokens and
+        their offset. We will return to this with \textit{relative positional
+            embeddings}.\par}
 
     \SlideSource{Wang et al. (2018), \href{https://arxiv.org/abs/1711.07971}{\textit{Non-local Neural Networks}}, CVPR.}
 
@@ -221,8 +221,8 @@
 
     \vspace{0.8em}
     {\small Each edge weights an input token for the output $\vc{h}_t$: (a) one
-    matrix per offset, inside the kernel only; (b) computed from the offset; (c)
-    computed from the two tokens.\par}
+        matrix per offset, inside the kernel only; (b) computed from the offset; (c)
+        computed from the two tokens.\par}
 
 \end{frame}
 
@@ -257,7 +257,7 @@
     \setlength{\parskip}{6pt}
 
     The most common score is the scaled dot product, $s(\vc{x}_t,\vc{x}_{t'})
-    =\vc{x}_t^{\top}\vc{x}_{t'}/\sqrt{D}$. All pairs come from one matrix
+        =\vc{x}_t^{\top}\vc{x}_{t'}/\sqrt{D}$. All pairs come from one matrix
     product, which is fast on a GPU. Putting everything together:
     \[
         \vc{h}_t=\sum_{t'=0}^{T-1}
@@ -271,10 +271,10 @@
 
     \vfill
     {\footnotesize\color{black!60} $^1$ Why $\sqrt{D}$? If the elements of
-    $\vc{x}_t$ and $\vc{x}_{t'}$ ($t'\neq t$) are independent with mean $0$
-    and variance $\sigma^2$, then $\operatorname{Var}(\vc{x}_t^{\top}\vc{x}_{t'})=D\sigma^4$
-    (check!). Without the scaling, the scores grow with $D$ and a single large
-    score saturates the softmax.\par}
+        $\vc{x}_t$ and $\vc{x}_{t'}$ ($t'\neq t$) are independent with mean $0$
+        and variance $\sigma^2$, then $\operatorname{Var}(\vc{x}_t^{\top}\vc{x}_{t'})=D\sigma^4$
+        (check!). Without the scaling, the scores grow with $D$ and a single large
+        score saturates the softmax.\par}
 
 \end{frame}
 
@@ -289,16 +289,12 @@
         \vcl{\vc{v}_t=\vc{W}_v^{\top}\vc{x}_t},
     \]
     with $\vc{W}_q,\vc{W}_k\sim(D,D_k)$ and $\vc{W}_v\sim(D,D_v)$. The
-    \myalert{query} $\qc{\vc{q}_t}$ says what token $t$ is looking for, the
-    \myalert{key} $\kc{\vc{k}_{t'}}$ what token $t'$ offers to be matched,
-    and the \myalert{value} $\vcl{\vc{v}_{t'}}$ what it passes on. The
-    \myalert{self-attention} (SA) layer is:
+    complete \myalert{self-attention} (SA) layer is:
     \[
         \vc{h}_t=\sum_{t'=0}^{T-1}\operatorname{softmax}_{t'}
         \left(\frac{\qc{\vc{q}_t^{\top}}\kc{\vc{k}_{t'}}}{\sqrt{D_k}}\right)\vcl{\vc{v}_{t'}} \,.
     \]
-    The scores are no longer symmetric, and $\vc{W}_v$ restores the mixing
-    of features lost with scalar weights.
+    The scores are no longer necessarily symmetric. Value projection by $\vc{W}_v$ allows for feature mixing.
 
 \end{frame}
 
@@ -322,8 +318,8 @@
     \vspace{0.6em}
 
     Row $t$ of $\vc{A}$ holds the attention weights of token $t$. In a batch
-    $\vc{X}\sim(B,T,D)$, tokens attend only within their own sequence. The
-    $T^2$ entries of $\vc{A}$ are a cost we return to at the end.
+    $\vc{X}\sim(B,T,D)$, tokens attend only within their own sequence. The need to compute
+    $T^2$ entries for $\vc{A}$ is a potential bottleneck for long sequences (more on this later on).
 
 \end{frame}
 
@@ -337,18 +333,18 @@
         ]
         % Q (T x D_k)
         \foreach \r in {0,...,3} \foreach \c in {0,...,2}
-            \draw[cell, fill=qcolor!18] (\c,-\r) rectangle ++(1,-1);
+        \draw[cell, fill=qcolor!18] (\c,-\r) rectangle ++(1,-1);
         \node[mlab] at (1.5,-5) {$\qc{\vc{Q}}$};
         \node[slab] at (1.5,-6) {$(T,D_k)$};
         % K^T (D_k x T)
         \foreach \r in {0,...,2} \foreach \c in {0,...,3}
-            \draw[cell, fill=kcolor!18] ({3.6+\c},{-0.5-\r}) rectangle ++(1,-1);
+        \draw[cell, fill=kcolor!18] ({3.6+\c},{-0.5-\r}) rectangle ++(1,-1);
         \node[mlab] at (5.6,-5) {$\kc{\vc{K}}^{\top}$};
         \node[slab] at (5.6,-6) {$(D_k,T)$};
         % softmax arrow
         \draw[-{Stealth[length=5pt]}, drawgray, line width=0.6pt] (8.3,-2) -- (13.7,-2)
-            node[midway, above=2pt, font=\small] {$\operatorname{softmax}\big(\tfrac{\cdot}{\sqrt{D_k}}\big)$}
-            node[midway, below=2pt, slab] {on each row};
+        node[midway, above=2pt, font=\small] {$\operatorname{softmax}\big(\tfrac{\cdot}{\sqrt{D_k}}\big)$}
+        node[midway, below=2pt, slab] {on each row};
         % A (T x T), row-normalized weights
         \def\arow{{60,15,10,15},{10,55,25,10},{20,10,40,30},{5,35,15,45}}
         \foreach \row [count=\r from 0] in \arow {
@@ -360,21 +356,21 @@
         \node[slab] at (16.2,-6) {$(T,T)$};
         % V (T x D_v)
         \foreach \r in {0,...,3} \foreach \c in {0,...,2}
-            \draw[cell, fill=vcolor!18] ({18.8+\c},-\r) rectangle ++(1,-1);
+        \draw[cell, fill=vcolor!18] ({18.8+\c},-\r) rectangle ++(1,-1);
         \node[mlab] at (20.3,-5) {$\vcl{\vc{V}}$};
         \node[slab] at (20.3,-6) {$(T,D_v)$};
         \node[font=\large] at (22.7,-2) {$=$};
         % H (T x D_v)
         \foreach \r in {0,...,3} \foreach \c in {0,...,2}
-            \draw[cell, fill=vcolor!7] ({23.6+\c},-\r) rectangle ++(1,-1);
+        \draw[cell, fill=vcolor!7] ({23.6+\c},-\r) rectangle ++(1,-1);
         \node[mlab] at (25.1,-5) {$\vc{H}$};
         \node[slab] at (25.1,-6) {$(T,D_v)$};
     \end{tikzpicture}
 
     \vspace{1.5em}
     {\small Each row of $\vc{A}$ (darker means larger weight) mixes the rows of
-    $\vcl{\vc{V}}$ into one row of $\vc{H}$. The projections from $\vc{X}$ are
-    not shown.\par}
+        $\vcl{\vc{V}}$ into one row of $\vc{H}$. The projections from $\vc{X}$ are
+        not shown.\par}
 
 \end{frame}
 
@@ -458,27 +454,27 @@
         ]
         % Scores
         \foreach \r in {0,...,3} \foreach \c in {0,...,3}
-            \draw[cell, fill=drawgray_l] (\c,-\r) rectangle ++(1,-1);
+        \draw[cell, fill=drawgray_l] (\c,-\r) rectangle ++(1,-1);
         \node[mlab] at (2,-5) {$\qc{\vc{Q}}\kc{\vc{K}}^{\top}/\sqrt{D_k}$};
         \node[font=\large] at (4.75,-2) {$+$};
         % Mask
         \foreach \r in {0,...,3} \foreach \c in {0,...,3} {
-            \ifnum\c>\r
-                \draw[cell, fill=drawred!12] ({5.5+\c},-\r) rectangle ++(1,-1);
-                \node[inf] at ({6+\c},{-\r-0.5}) {$-\infty$};
-            \else
-                \draw[cell, fill=white] ({5.5+\c},-\r) rectangle ++(1,-1);
-                \node[font=\tiny, text=black!60] at ({6+\c},{-\r-0.5}) {$0$};
-            \fi
-        }
+                \ifnum\c>\r
+                    \draw[cell, fill=drawred!12] ({5.5+\c},-\r) rectangle ++(1,-1);
+                    \node[inf] at ({6+\c},{-\r-0.5}) {$-\infty$};
+                \else
+                    \draw[cell, fill=white] ({5.5+\c},-\r) rectangle ++(1,-1);
+                    \node[font=\tiny, text=black!60] at ({6+\c},{-\r-0.5}) {$0$};
+                \fi
+            }
         \node[mlab] at (7.5,-5) {$\vc{M}$};
         % softmax arrow
         \draw[-{Stealth[length=5pt]}, drawgray, line width=0.6pt] (10,-2) -- (13,-2)
-            node[midway, above=2pt, font=\small] {softmax};
+        node[midway, above=2pt, font=\small] {softmax};
         % Causal attention matrix
         \def\arow{{70},{40,60},{20,30,50},{10,40,15,35}}
         \foreach \r in {0,...,3} \foreach \c in {0,...,3}
-            \draw[cell, fill=white] ({13.5+\c},-\r) rectangle ++(1,-1);
+        \draw[cell, fill=white] ({13.5+\c},-\r) rectangle ++(1,-1);
         \foreach \row [count=\r from 0] in \arow {
             \foreach \v [count=\c from 0] in \row {
                 \draw[cell, fill=black!\v] ({13.5+\c},-\r) rectangle ++(1,-1);
@@ -489,9 +485,9 @@
 
     \vspace{1.5em}
     {\small Adding $-\infty$ above the diagonal gives future tokens exactly zero
-    weight. Multiplying the scores by a $0/1$ mask would not work, since
-    $\exp(0)=1$; zeroing $\vc{A}$ after the softmax would break the sum to
-    one.\par}
+        weight. Multiplying the scores by a $0/1$ mask would not work, since
+        $\exp(0)=1$; zeroing $\vc{A}$ after the softmax would break the sum to
+        one.\par}
 
 \end{frame}
 
