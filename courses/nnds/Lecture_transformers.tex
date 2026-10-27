@@ -1,0 +1,176 @@
+\documentclass[11pt,aspectratio=169]{beamer}
+
+\input{style.tex}
+\usetikzlibrary{arrows.meta,calc}
+\graphicspath{{assets/}{../../shared/assets/}}
+
+\usepackage{annotate-equations}
+
+% Written by Claude (2026-10-27): Deck A of the Transformer refresh (plan in the
+% vault's NNDS Slide Refresh Log, 2026-10-26). Built block by block from the
+% 2024 Lecture 9; this file starts with the first block.
+
+\begin{document}
+
+{\usebackgroundtemplate{\tikz\node[opacity=0.4,inner sep=0]{\includegraphics[width=\paperwidth,height=\paperheight]{images/header}};}%
+\begin{frame}[plain]
+    \vspace{0.5cm}
+    \title{\large \begin{spacing}{1.0}Neural Networks for Data Science\end{spacing}\vspace{0.25em}
+        \normalsize \begin{spacing}{1.0}\textbf{Master's Degree in Data Science}\end{spacing}\vspace{0.5em}}
+    \subtitle{\Large \textbf{Attention and the transformer}}
+    \date{
+        {\includegraphics[scale=0.8]{images/Uniroma1}}
+    }
+    \author{
+        \setlength{\tabcolsep}{2pt}
+        \begin{tabular}{rl}
+            \textbf{Lecturer}: & S. Scardapane \\
+        \end{tabular}
+    }\titlepage
+\end{frame}
+}
+
+\part{1}
+
+\section{Designing the transformer}
+\subsection{From convolutions to attention}
+
+\begin{frame}{Transformers}
+    \setlength{\parskip}{4pt}
+
+    The \myalert{transformer} was proposed in 2017 for machine translation.
+    Today it is used for text, images, audio and biological sequences, and it
+    is the backbone of every current LLM. We use it in three ways:
+
+    \vspace{0.2em}
+    \begin{columns}[T,onlytextwidth]
+        \begin{column}{0.32\textwidth}
+            \begin{tcolorbox}[nndsblue,courseheight={families}{}]
+                \textbf{Encoder-only}\par
+                Each token sees all the others. Embeddings, classification.\par
+                \small BERT, ViT.
+            \end{tcolorbox}
+        \end{column}
+        \begin{column}{0.32\textwidth}
+            \begin{tcolorbox}[nndsblue,courseheight={families}{}]
+                \textbf{Decoder-only}\par
+                Each token sees only the past. Next-token prediction.\par
+                \small GPT, current LLMs.
+            \end{tcolorbox}
+        \end{column}
+        \begin{column}{0.32\textwidth}
+            \begin{tcolorbox}[nndsblue,courseheight={families}{}]
+                \textbf{Encoder-decoder}\par
+                The decoder also reads the encoded input. Translation.\par
+                \small The 2017 model.
+            \end{tcolorbox}
+        \end{column}
+    \end{columns}
+
+    \vspace{0.2em}
+    We build the decoder, continuing the next-token predictor of the CNN
+    lecture. Without its mask, it becomes an encoder.
+
+    \SlideSource{Vaswani et al. (2017), \href{https://arxiv.org/abs/1706.03762}{\textit{Attention Is All You Need}}, NeurIPS.}
+
+\end{frame}
+
+\begin{frame}{Beyond locality}
+    \setlength{\parskip}{6pt}
+
+    A convolution assumes \myalert{locality}: each output mixes a fixed window
+    of neighbors. In text, audio or graphs, dependencies can instead be
+    \myalert{long-range}, \myalert{sparse} and \myalert{dynamic}.
+
+    Compare:
+    \begin{itemize}
+        \item \textit{the {\color{darkcerulean}\textbf{cat}} is on the {\color{darkgreen}\textbf{table}}};
+        \item \textit{the {\color{darkcerulean}\textbf{cat}}, which belonged to my mother, is on the {\color{darkgreen}\textbf{table}}}.
+    \end{itemize}
+    The relation between the two words is the same, but their distance is not.
+
+    Stacking layers (or dilating them) grows the receptive field. However, the
+    weight given to a neighbor still depends only on its \textit{offset}, never on
+    what the two tokens contain.
+
+\end{frame}
+
+\begin{frame}{Convolutions as a sum over offsets}
+    \setlength{\parskip}{6pt}
+
+    Take a sequence $X\sim(T,D)$ with rows $\vc{x}_t=\idx{X}{t,:}$. Because
+    transformers come from NLP, we call each row a \myalert{token} and $D$ the
+    \myalert{embedding dimension}.
+
+    Ignoring padding and the activation, a 1D convolution with kernel size
+    $s=2k+1$ is:
+    \[
+        \vc{h}_t=\sum_{j=-k}^{k}\eqnmarkbox[drawblue]{wconv}{\vc{W}_j}\,\vc{x}_{t+j}\,,
+        \qquad \vc{W}\sim(s,D,D).
+    \]
+    \annotate[yshift=-0.8em]{below,right}{wconv}{one matrix per offset}
+    \vspace{0.6em}
+
+    This is the layer of the CNN lecture, with the kernel reshaped into one
+    $D\times D$ matrix for each offset $j$. Its parameters grow linearly with
+    $s$. We want to remove the locality assumption while keeping the number of
+    parameters independent of the length $T$.
+
+\end{frame}
+
+\begin{frame}{Continuous convolutions}
+    \setlength{\parskip}{6pt}
+
+    Instead of storing one matrix per offset, we \textit{compute} it with a small
+    trainable network $g:\mathbb{Z}\rightarrow\mathbb{R}^{D\times D}$ that takes
+    the offset as input:
+    \[
+        \vc{h}_t=\sum_{t'=0}^{T-1}\eqnmarkbox[drawblue]{wcont}{g(t'-t)}\,\vc{x}_{t'}\,.
+    \]
+    \annotate[yshift=-0.8em]{below,right}{wcont}{weight computed from the offset}
+    \vspace{0.6em}
+
+    The kernel now covers the whole sequence with a fixed number of
+    parameters. These \myalert{continuous convolutions} also handle inputs of
+    variable size and resolution.
+
+    \SlideSource{Romero et al. (2022), \href{https://arxiv.org/abs/2206.03398}{\textit{Towards a General Purpose CNN for Long Range Dependencies in $N$D}}, arXiv.}
+
+\end{frame}
+
+\begin{frame}{Non-local networks}
+    \setlength{\parskip}{6pt}
+
+    A continuous convolution handles long-range dependencies, but they are
+    still \textit{regular}: the weight depends only on the offset $t'-t$. We
+    can let it depend on the \textit{values} of the tokens instead:
+    \[
+        \vc{h}_t=\sum_{t'=0}^{T-1}\eqnmarkbox[drawblue]{wnl}{\alpha(\vc{x}_t,\vc{x}_{t'})}\,\vc{x}_{t'}\,.
+    \]
+    \annotate[yshift=-0.8em]{below,right}{wnl}{weight computed from the two tokens}
+    \vspace{0.6em}
+
+    This is a \myalert{non-local neural network}. With a suitable choice of
+    the weighting function $\alpha$, we will obtain the attention layer.
+
+    \SlideSource{Wang et al. (2018), \href{https://arxiv.org/abs/1711.07971}{\textit{Non-local Neural Networks}}, CVPR.}
+
+\end{frame}
+
+\begin{whiteframe}{Three ways to weight a neighbor}
+    \setlength{\abovecaptionskip}{6pt}
+
+    \vspace{1em}
+    \begin{figure}
+        \centering
+        \includegraphics[width=\linewidth]{images/transformers/book/convolution_types.pdf}
+        \caption{(a) A convolution with kernel size $3$ has a weight for the
+            green token and none for the blue one. (b) A continuous convolution
+            weights both with $g$ of their offset. (c) A non-local model
+            weights both by their similarity with the token at the output
+            position.}
+    \end{figure}
+
+\end{whiteframe}
+
+\end{document}
