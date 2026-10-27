@@ -106,7 +106,7 @@ const options = [
   { text: String.raw`One update costs the same for any $N$.`, correct: true },
   { text: String.raw`One epoch makes $500$ updates.`, correct: true },
   { text: String.raw`An example can appear twice in one epoch.` },
-  { text: String.raw`Averaging the gradients of 4 batches of 100 gives the gradient of their union.`, correct: true },
+  { text: String.raw`Averaging the gradients of 4 batches of the same size gives the gradient of their union.`, correct: true },
 ]
 </script>
 
@@ -117,7 +117,7 @@ We train with mini-batch SGD on $N=50{,}000$ examples and batches of $B=100$, sh
 <QuizChoice id="2b-q3" :options="options" multiple :columns="2">
 <template #explanation>
 
-The mini-batch gradient is correct on average but noisy. An update processes $B$ examples, so it costs $O(B)$ whatever $N$ is. Shuffling and splitting uses each example once per epoch, in $N/B=500$ blocks. The gradient is linear, so averaging over equal-sized batches gives the gradient of their union, as with several GPUs. See [Stochastic gradient descent](https://sscardapane.github.io/teaching-materials/pdf/nnds/Lecture_2_preliminaries.pdf#page=25).
+Mini-batch gradients are correct on average, but noisy. An update costs $O(B)$, and each epoch uses every example once, in $N/B=500$ blocks. Averaging per-batch averages gives the average over the union only for equal-sized batches, as with several GPUs. See [Stochastic gradient descent](https://sscardapane.github.io/teaching-materials/pdf/nnds/Lecture_2_preliminaries.pdf#page=25).
 
 </template>
 </QuizChoice>
