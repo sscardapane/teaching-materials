@@ -88,21 +88,21 @@
 \begin{frame}{Convolutions as a sum over offsets}
     \setlength{\parskip}{6pt}
 
-    Take a sequence $\vc{X}\sim(T,D)$ with rows $\vc{x}_t=\idx{X}{t,:}$. Because
+    Take a sequence $\vc{X}\sim(T,D)$ with rows $\vc{x}_t=\idx{\vc{X}}{t,:}$. Because
     transformers come from NLP, we call each row a \myalert{token} and $D$ the
     \myalert{embedding dimension}.
 
     Ignoring padding and the activation, a 1D convolution with kernel size
     $s=2k+1$ is:
     \[
-        \vc{h}_t=\sum_{j=-k}^{k}\eqnmarkbox[drawblue]{wconv}{\vc{W}_j}\,\vc{x}_{t+j}\,,
+        \vc{h}_t=\sum_{j=-k}^{k}\eqnmarkbox[drawblue]{wconv}{\idx{\vc{W}}{j+k,:,:}}\,\vc{x}_{t+j}\,,
         \qquad \vc{W}\sim(s,D,D).
     \]
     \annotate[yshift=-0.8em]{below,right}{wconv}{one matrix per offset}
     \vspace{0.6em}
 
     This is the layer of the CNN lecture, with the kernel reshaped into one
-    $D\times D$ matrix for each offset $j$. Its parameters grow linearly with
+    $D\times D$ matrix for each offset $j$, stored at position $j+k$. Its parameters grow linearly with
     $s$. We want to remove the locality assumption while keeping the number of
     parameters independent of the length $T$.
 
@@ -141,7 +141,13 @@
     \vspace{0.6em}
 
     This is a \myalert{non-local neural network}. With a suitable choice of
-    the weighting function $\alpha$, we will obtain the attention layer.
+    the weighting function $\alpha$, we will obtain the attention layer.$^1$
+
+    \vfill
+    {\footnotesize\color{black!60} $^1$ We could also combine the two ideas, with a
+    weight $\alpha(\vc{x}_t,\vc{x}_{t'},t'-t)$ that depends on both the tokens and
+    their offset. We will return to this with \textit{relative positional
+    embeddings}.\par}
 
     \SlideSource{Wang et al. (2018), \href{https://arxiv.org/abs/1711.07971}{\textit{Non-local Neural Networks}}, CVPR.}
 
