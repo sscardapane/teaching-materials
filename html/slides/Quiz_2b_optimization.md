@@ -99,27 +99,19 @@ layout: full
 
 <script setup>
 import BeamerFrame from '../components/BeamerFrame.vue'
-
-const options = [
-  { text: String.raw`$\eta=0.05$`, correct: true },
-  { text: String.raw`$\eta=0.5$`, correct: true },
-  { text: String.raw`$\eta=0.9$`, correct: true },
-  { text: String.raw`$\eta=1$` },
-  { text: String.raw`$\eta=1.2$` },
-]
 </script>
 
-<BeamerFrame title="3 · Choosing the step size  ★">
+<BeamerFrame title="3 · Counting updates  ★">
 
-We run gradient descent with a constant step size $\eta$ on $f(x)=x^2$, starting from $x_0=1$. For which values of $\eta$ does $x_t$ converge to the minimum?
+We train with mini-batch SGD on $N=50{,}000$ examples, with batches of $B=100$ examples, shuffling the dataset at every epoch. How many times are the parameters updated in 3 epochs?
 
-<QuizChoice id="2b-q3" :options="options" multiple :columns="3">
+<QuizInput id="2b-q3" kind="number" :expected="1500" :tolerance="0.001" solution="$1500$">
 <template #explanation>
 
-Since $f'(x)=2x$, each step is $x_t=x_{t-1}-2\eta x_{t-1}=(1-2\eta)\,x_{t-1}$, so $x_t=(1-2\eta)^t$. It converges when $|1-2\eta|<1$, that is, $0<\eta<1$. With $\eta=0.05$ it is slow, $\eta=0.5$ lands on the minimum in one step, and $\eta=0.9$ oscillates around it while converging. With $\eta=1$ it jumps between $1$ and $-1$ forever, and with $\eta=1.2$ it diverges. Try it in the [interactive part](https://sscardapane.github.io/teaching-materials/nnds/Lecture_2_optimization/#/3).
+Each epoch splits the shuffled dataset into $N/B=500$ blocks of $B$ examples, and every block gives one update: $3\cdot 500=1500$ updates. Each of them costs $O(B)$, not $O(N)$, while full-batch GD would make only 3 updates with the same amount of computation. See [Extracting batches from the data](https://sscardapane.github.io/teaching-materials/pdf/nnds/Lecture_2_preliminaries.pdf#page=27).
 
 </template>
-</QuizChoice>
+</QuizInput>
 
 </BeamerFrame>
 
@@ -244,7 +236,7 @@ We run momentum with $\lambda=0.9$ and a constant step size $\eta$ on a region w
 <QuizInput id="2b-q8" kind="number" :expected="10" :tolerance="0.001" solution="$1/(1-\lambda)=10$">
 <template #explanation>
 
-Unrolling $\mathbf{u}_t=\lambda\mathbf{u}_{t-1}-\eta\mathbf{g}$ from $\mathbf{u}_0=\mathbf{0}$ gives $\mathbf{u}_t=-\eta\mathbf{g}\,(1+\lambda+\dots+\lambda^{t-1})$, which tends to $-\eta\mathbf{g}/(1-\lambda)=-10\,\eta\mathbf{g}$. Along directions where the gradients agree, momentum moves ten times faster than gradient descent. This is why the race in the interactive part uses the step $\eta(1-\lambda)$ for momentum. See [Momentum](https://sscardapane.github.io/teaching-materials/pdf/nnds/Lecture_2_preliminaries.pdf#page=31).
+Unrolling $\mathbf{u}_t=\lambda\mathbf{u}_{t-1}-\eta\mathbf{g}$ from $\mathbf{u}_0=\mathbf{0}$ gives $\mathbf{u}_t=-\eta\mathbf{g}\,(1+\lambda+\dots+\lambda^{t-1})$, which tends to $-\eta\mathbf{g}/(1-\lambda)=-10\,\eta\mathbf{g}$. Along directions where the gradients agree, momentum moves ten times faster than gradient descent. See [Momentum](https://sscardapane.github.io/teaching-materials/pdf/nnds/Lecture_2_preliminaries.pdf#page=31).
 
 </template>
 </QuizInput>
@@ -394,7 +386,7 @@ import BeamerFrame from '../components/BeamerFrame.vue'
 const items = [
   { id: '2b-q1', title: 'Jacobian of a composition', stars: 1, slide: 3 },
   { id: '2b-q2', title: 'Descent directions', stars: 1, slide: 4 },
-  { id: '2b-q3', title: 'Choosing the step size', stars: 1, slide: 5 },
+  { id: '2b-q3', title: 'Counting updates', stars: 1, slide: 5 },
   { id: '2b-q4', title: 'The steepest slope', stars: 2, slide: 6 },
   { id: '2b-q5', title: 'Predicting a step', stars: 2, slide: 7 },
   { id: '2b-q6', title: 'Convex or not?', stars: 2, slide: 8 },
