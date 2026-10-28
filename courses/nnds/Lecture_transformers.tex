@@ -949,8 +949,8 @@
 
     \begin{tcolorbox}[nndsgreen,boxsep=1mm,top=1mm,bottom=1mm]
         As a consequence, $\idx{\vc{E}}{t,:}\idx{\vc{E}}{t+p,:}^{\top}=\sum_j\cos(\omega_jp)$
-        depends only on the distance $p$. Rotating queries and keys directly
-        gives \myalert{rotary embeddings} (RoPE), in the next lecture.
+        depends only on the distance $p$. Rotating queries and keys in the same
+        way gives \myalert{rotary embeddings} (RoPE), shortly.
     \end{tcolorbox}
 
     \SlideSource{Vaswani et al. (2017), \textit{Attention is all you need}, NeurIPS.}
@@ -958,16 +958,121 @@
 \end{frame}
 
 \begin{frame}{Relative positional embeddings}
-    \setlength{\parskip}{4pt}
+    \setlength{\parskip}{6pt}
 
     Another possibility is \myalert{relative positional embeddings}: we
     modify the attention function to make it depend on the distance $t-t'$
     between tokens, as in the weight $\alpha(\vc{x}_t,\vc{x}_{t'},t'-t)$ of
-    non-local networks.
+    non-local networks. Nothing is added to $\vc{X}$, and position enters
+    every attention layer.
 
-    For example, \myalert{attention with linear biases} (ALiBi) adds no
-    embedding to $\vc{X}$; it subtracts from the scores a penalty proportional
-    to the distance:
+    \begin{columns}[T,onlytextwidth]
+        \begin{column}{0.49\textwidth}
+            \begin{tcolorbox}[nndsblue,courseheight={tf-relative}{0.3\textheight}]
+                \textbf{\color{darkcerulean}Rotate queries and keys}
+
+                Rotary embeddings (RoPE): Llama, Qwen, Gemma, Mistral, and most
+                current language models.
+            \end{tcolorbox}
+        \end{column}
+        \begin{column}{0.49\textwidth}
+            \begin{tcolorbox}[nndsgreen,courseheight={tf-relative}{0.3\textheight}]
+                \textbf{\color{darkgreen}Add a bias to the scores}
+
+                Linear biases (ALiBi, used in BLOOM and MPT), or the learned
+                biases of T5.
+            \end{tcolorbox}
+        \end{column}
+    \end{columns}
+
+\end{frame}
+
+\begin{frame}{Rotary positional embeddings (RoPE)}
+    \setlength{\parskip}{5pt}
+
+    RoPE rotates each pair of components of the queries and keys by an angle
+    proportional to the position, with the frequencies of the sinusoidal
+    embeddings, $\omega_j=10000^{-2j/D_k}$:
+    \[
+        \qc{\tilde{\vc{q}}_t=\vc{R}_t\vc{q}_t}, \qquad
+        \kc{\tilde{\vc{k}}_{t'}=\vc{R}_{t'}\vc{k}_{t'}}, \qquad
+        \vc{R}_t=\operatorname{diag}\big(\vc{R}(\omega_0t),\ldots,\vc{R}(\omega_{D_k/2-1}t)\big) \,.
+    \]
+    Rotations compose, $\vc{R}_t^{\top}\vc{R}_{t'}=\vc{R}_{t'-t}$, so the
+    score becomes:
+    \vspace{0.8em}
+    \[
+        s_{t,t'}=\frac{\qc{\tilde{\vc{q}}_t^{\top}}\kc{\tilde{\vc{k}}_{t'}}}{\sqrt{D_k}}
+        =\frac{\qc{\vc{q}_t^{\top}}\eqnmarkbox[drawblue]{rot}{\vc{R}_{t'-t}}\kc{\vc{k}_{t'}}}{\sqrt{D_k}} \,.
+    \]
+    \annotate[yshift=0.6em]{above,right}{rot}{position enters only through $t'-t$}
+
+    The values are not rotated, nothing is added to $\vc{X}$, and there are no
+    parameters.
+
+    \SlideSource{Su et al. (2024), \textit{RoFormer: Enhanced transformer with rotary position embedding}, Neurocomputing.}
+
+\end{frame}
+
+\begin{frame}{Visualizing RoPE}
+    \centering
+    \vspace{0.5em}
+    \begin{tikzpicture}[scale=1.15,
+            vec/.style={-{Stealth[length=5pt]}, line width=1.1pt},
+            lab/.style={font=\small},
+        ]
+        \foreach \x/\t/\tp/\qa/\ka in {0/1/3/35/115, 5/4/6/110/190} {
+                \begin{scope}[xshift=\x cm]
+                    \draw[drawgray!60] (0,0) circle (1.4);
+                    \draw[drawgray!40, ->] (-1.7,0) -- (1.8,0);
+                    \draw[drawgray!40, ->] (0,-1.7) -- (0,1.8);
+                    \draw[vec, qcolor] (0,0) -- (\qa:1.4)
+                    node[lab, anchor=\qa+180, shift={(\qa:0.12)}] {$\qc{\tilde{\vc{q}}_{\t}}$};
+                    \draw[vec, kcolor] (0,0) -- (\ka:1.4)
+                    node[lab, anchor=\ka+180, shift={(\ka:0.12)}] {$\kc{\tilde{\vc{k}}_{\tp}}$};
+                    \draw[drawblue, thick] (\qa:0.55) arc (\qa:\ka:0.55);
+                    \node[font=\scriptsize, text=drawblue] at ({(\qa+\ka)/2}:0.85) {$80^\circ$};
+                    \node[lab] at (0,-2.2) {$t=\t$, $t'=\tp$};
+                \end{scope}
+            }
+    \end{tikzpicture}
+
+    \vspace{1em}
+    {\small One pair of components, rotating by $25^\circ$ per position. Moving
+        both tokens by three positions rotates both vectors: the angle between
+        them, hence the score, does not change.\par}
+
+\end{frame}
+
+\begin{frame}[fragile]{RoPE in code}
+    \setlength{\parskip}{5pt}
+
+    \scriptsize
+    \begin{verbatim}
+def rope(x, base=10000.0):                        # x: (..., T, D_k)
+    T, D = x.shape[-2:]
+    w = base ** (-torch.arange(0, D, 2) / D)      # (D_k/2,) frequencies
+    ang = torch.arange(T)[:, None] * w            # (T, D_k/2) angles
+    cos, sin = ang.cos(), ang.sin()
+    x1, x2 = x[..., 0::2], x[..., 1::2]           # the pairs
+    return torch.stack([x1 * cos - x2 * sin,
+                        x1 * sin + x2 * cos], -1).flatten(-2)
+
+scores = rope(q) @ rope(k).transpose(-2, -1) / D_k ** 0.5
+\end{verbatim}
+
+    \small
+    RoPE is applied in every attention layer, after the projections and
+    before the scores. The base sets the slowest rotation: recent models raise
+    it (Llama 3 uses $500{,}000$) to cover longer contexts.
+
+\end{frame}
+
+\begin{frame}{Attention with linear biases (ALiBi)}
+    \setlength{\parskip}{6pt}
+
+    \myalert{ALiBi} adds no embedding to $\vc{X}$; it subtracts from the
+    scores a penalty proportional to the distance:
     \[
         s_{t,t'}=\frac{\qc{\vc{q}_t^{\top}}\kc{\vc{k}_{t'}}}{\sqrt{D_k}}
         -\eqnmarkbox[drawblue]{slope}{m_i}\,(t-t'),
@@ -1027,6 +1132,106 @@
     {\small Attention weights when all the scores $\qc{\vc{q}_t^{\top}}\kc{\vc{k}_{t'}}$
         are equal. A large slope gives a soft local window, a small one an
         almost uniform average over the past.\par}
+
+\end{frame}
+
+\begin{frame}{No positional embeddings (NoPE)}
+    \setlength{\parskip}{6pt}
+
+    In a decoder, the causal mask already breaks the equivariance: token $t$
+    attends to exactly $t+1$ tokens. For example, a head with equal scores
+    outputs $\vc{h}_t=\frac{1}{t+1}\sum_{t'\le t}\vcl{\vc{v}_{t'}}$, where the
+    contribution of the first token shrinks as $1/(t+1)$: later layers can
+    read the position from it.
+
+    Causal language models with \myalert{no positional embeddings} (NoPE)
+    train almost as well as with them, and degrade less on sequences longer
+    than those seen in training.
+
+    \begin{tcolorbox}[nndsorange,boxsep=1mm,top=1mm,bottom=1mm]
+        This only works for decoders: without the mask, an encoder with no
+        positional embeddings is still equivariant.
+    \end{tcolorbox}
+
+    \SlideSource{Haviv et al. (2022), \textit{Transformer language models without positional encodings still learn positional information}, Findings of EMNLP;
+        Kazemnejad et al. (2023), \textit{The impact of positional encoding on length generalization in transformers}, NeurIPS.}
+
+\end{frame}
+
+\begin{frame}{Interleaving RoPE and NoPE}
+
+    \begin{columns}[c,onlytextwidth]
+        \begin{column}{0.36\textwidth}
+            \centering
+            \begin{tikzpicture}[x=1cm, y=0.72cm,
+                    rl/.style={nnblock, minimum width=2.6cm, minimum height=0.36cm, inner sep=2pt, font=\scriptsize},
+                    nl/.style={nnother, minimum width=2.6cm, minimum height=0.36cm, inner sep=2pt, font=\scriptsize}]
+                \foreach \i/\kind in {0/r,1/r,2/r,3/n,4/r,5/r,6/r,7/n} {
+                        \if\kind r
+                            \node[rl] (b\i) at (0,\i) {RoPE, local window};
+                        \else
+                            \node[nl] (b\i) at (0,\i) {NoPE, full attention};
+                        \fi
+                    }
+                \foreach \i [evaluate=\i as \j using int(\i+1)] in {0,...,6}
+                \draw[nnedge] (b\i) -- (b\j);
+                \node[font=\scriptsize, text=drawgray] at (0,-0.9) {input};
+                \draw[nnedge] (0,-0.6) -- (b0);
+            \end{tikzpicture}
+        \end{column}
+        \begin{column}{0.6\textwidth}%
+            \small\setlength{\parskip}{6pt}%
+            \RaggedRight\setlength{\parindent}{0pt}%
+            Recent models combine both: three RoPE layers, then one NoPE layer,
+            repeated through the stack.
+
+            The RoPE layers handle word order among nearby tokens, often
+            restricted to a window of recent tokens (next lecture). The NoPE
+            layers retrieve from the whole context, with no rotation angle that
+            was never seen in training.
+
+            Examples: Llama 4, Command A, SmolLM3.
+        \end{column}
+    \end{columns}
+
+    \SlideSource{Yang et al. (2025), \textit{Rope to Nope and back again: A new hybrid attention strategy}.}
+
+\end{frame}
+
+\begin{frame}{Extending the context}
+    \setlength{\parskip}{6pt}
+
+    A RoPE model trained on sequences of length $L$ meets, beyond $L$, angles
+    $\omega_jt$ never seen in training for its slowest pairs. Common fixes,
+    each followed by a short fine-tuning on longer sequences:
+    \begin{itemize}
+        \item \myalert{Position interpolation}: replace $t$ with $tL/L'$, to
+              squeeze the new length $L'$ into the trained range.
+        \item \myalert{Frequency-aware scaling} (NTK-aware, YaRN): interpolate
+              only the slow pairs. The fast ones already completed many
+              rotations in training, and keep the local order sharp.
+        \item A \myalert{larger base} from the start, so that the slowest
+              rotations are slower.
+    \end{itemize}
+
+    \SlideSource{Chen et al. (2023), \textit{Extending context window of large language models via positional interpolation};
+        Peng et al. (2024), \textit{YaRN: Efficient context window extension of large language models}, ICLR.}
+
+\end{frame}
+
+\begin{frame}{Positional embeddings at a glance}
+
+    \small
+    \renewcommand{\arraystretch}{1.35}
+    \begin{tabular}{@{}p{0.17\textwidth}p{0.2\textwidth}p{0.11\textwidth}p{0.2\textwidth}p{0.24\textwidth}@{}}
+        \textbf{Method} & \textbf{Position enters} & \textbf{Trained} & \textbf{Longer sequences} & \textbf{Used in} \\
+        \hline
+        Learned       & added to $\vc{X}$            & yes & no                         & BERT, GPT-2, ViT \\
+        Sinusoidal    & added to $\vc{X}$            & no  & only in theory  & original transformer \\
+        ALiBi         & bias on the scores           & no  & yes                        & BLOOM, MPT \\
+        RoPE          & rotation of $\qc{\vc{q}}$, $\kc{\vc{k}}$ & no & with interpolation & most current LLMs \\
+        NoPE          & causal mask only             & no  & better than RoPE           & interleaved with RoPE \\
+    \end{tabular}
 
 \end{frame}
 
