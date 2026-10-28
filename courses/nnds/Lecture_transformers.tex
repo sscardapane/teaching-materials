@@ -943,10 +943,11 @@
             rotating at its own speed:
             \[
                 \idx{\vc{E}}{t,j}=\sin(\omega_j t),
-                \qquad \omega_j=\frac{1}{10000^{j/D}} \,.
+                \qquad \omega_j=\frac{1}{b^{j/D}} \,.
             \]
             The frequencies decrease geometrically, from a period of $2\pi$
-            tokens ($j=0$) to about $10000\cdot 2\pi$.
+            tokens ($j=0$) to about $b\cdot 2\pi$. The \myalert{base} $b$ is
+            a hyperparameter, larger than the longest sequence.
 
             No parameters, and no maximum length fixed \textit{a priori}.
         \end{column}
@@ -960,10 +961,11 @@
 \end{frame}
 
 \begin{frame}{Sines and cosines}
-    \setlength{\parskip}{5pt}
+    \setlength{\parskip}{3pt}
+    \setlength{\abovedisplayskip}{4pt}\setlength{\belowdisplayskip}{4pt}
 
     The original transformer alternates sines and cosines of the same
-    frequency, with $\omega_j=10000^{-2j/D}$:
+    frequency, with $\omega_j=b^{-2j/D}$ and $b=10000$:
     \[
         \idx{\vc{E}}{t,2j}=\sin(\omega_j t), \qquad
         \idx{\vc{E}}{t,2j+1}=\cos(\omega_j t) \,.
@@ -979,9 +981,9 @@
     \]
 
     \begin{tcolorbox}[nndsgreen,boxsep=1mm,top=1mm,bottom=1mm]
-        As a consequence, $\idx{\vc{E}}{t,:}\idx{\vc{E}}{t+p,:}^{\top}=\sum_j\cos(\omega_jp)$
-        depends only on the distance $p$. Rotating queries and keys in the same
-        way gives \myalert{rotary embeddings} (RoPE), shortly.
+        Hence $\idx{\vc{E}}{t,:}\idx{\vc{E}}{t+p,:}^{\top}=\sum_j\cos(\omega_jp)$
+        depends only on $p$. Rotating queries and keys gives \myalert{rotary
+            embeddings} (RoPE), shortly.
     \end{tcolorbox}
 
     \SlideSource{Vaswani et al. (2017), \textit{Attention is all you need}, NeurIPS.}
@@ -1021,25 +1023,36 @@
 \begin{frame}{Rotary positional embeddings (RoPE)}
     \setlength{\parskip}{5pt}
 
-    RoPE rotates each pair of components of the queries and keys by an angle
-    proportional to the position, with the frequencies of the sinusoidal
-    embeddings, $\omega_j=10000^{-2j/D_k}$:
+    \setlength{\abovedisplayskip}{4pt}\setlength{\belowdisplayskip}{4pt}
+    RoPE splits each query and key into $D_k/2$ pairs of components, and
+    treats every pair as a point in the plane. Pair $j$ of the query (and of
+    the key) at position $t$ is rotated by an angle proportional to $t$:
     \[
-        \qc{\tilde{\vc{q}}_t=\vc{R}_t\vc{q}_t}, \qquad
-        \kc{\tilde{\vc{k}}_{t'}=\vc{R}_{t'}\vc{k}_{t'}}, \qquad
-        \vc{R}_t=\operatorname{diag}\big(\vc{R}(\omega_0t),\ldots,\vc{R}(\omega_{D_k/2-1}t)\big) \,.
+        \qc{\begin{bmatrix}\tilde{q}_{t,2j}\\\tilde{q}_{t,2j+1}\end{bmatrix}}
+        =\vc{R}(\omega_jt)\qc{\begin{bmatrix}q_{t,2j}\\q_{t,2j+1}\end{bmatrix}},
+        \qquad
+        \vc{R}(\theta)=\begin{bmatrix}\cos\theta&-\sin\theta\\\sin\theta&\cos\theta\end{bmatrix}.
     \]
-    Rotations compose, $\vc{R}_t^{\top}\vc{R}_{t'}=\vc{R}_{t'-t}$, so the
-    score becomes:
-    \vspace{0.8em}
-    \[
-        s_{t,t'}=\frac{\qc{\tilde{\vc{q}}_t^{\top}}\kc{\tilde{\vc{k}}_{t'}}}{\sqrt{D_k}}
-        =\frac{\qc{\vc{q}_t^{\top}}\eqnmarkbox[drawblue]{rot}{\vc{R}_{t'-t}}\kc{\vc{k}_{t'}}}{\sqrt{D_k}} \,.
-    \]
-    \annotate[yshift=0.6em]{above,right}{rot}{position enters only through $t'-t$}
 
-    The values are not rotated, nothing is added to $\vc{X}$, and there are no
-    parameters.
+    \begin{columns}[T,onlytextwidth]
+        \begin{column}{0.49\textwidth}
+            \begin{tcolorbox}[nndsblue,courseheight={tf-rope}{0.24\textheight}]
+                \textbf{\color{darkcerulean}Why pairs?}
+
+                A rotation needs two dimensions. It keeps the norm, and two
+                rotations add their angles.
+            \end{tcolorbox}
+        \end{column}
+        \begin{column}{0.49\textwidth}
+            \begin{tcolorbox}[nndsgreen,courseheight={tf-rope}{0.24\textheight}]
+                \textbf{\color{darkgreen}Why many frequencies?}
+
+                One pair is a clock with one hand. With
+                $\omega_j=b^{-2j/D_k}$, fast pairs separate nearby tokens, slow
+                pairs distant ones.
+            \end{tcolorbox}
+        \end{column}
+    \end{columns}
 
     \SlideSource{Su et al. (2024), \textit{RoFormer: Enhanced transformer with rotary position embedding}, Neurocomputing.}
 
@@ -1075,6 +1088,29 @@
 
 \end{frame}
 
+\begin{frame}{RoPE for all pairs}
+    \setlength{\parskip}{5pt}
+
+    Collecting the rotations of all pairs in a block-diagonal matrix:
+    \[
+        \qc{\tilde{\vc{q}}_t=\vc{R}_t\vc{q}_t}, \qquad
+        \kc{\tilde{\vc{k}}_{t'}=\vc{R}_{t'}\vc{k}_{t'}}, \qquad
+        \vc{R}_t=\operatorname{diag}\big(\vc{R}(\omega_0t),\ldots,\vc{R}(\omega_{D_k/2-1}t)\big) \,.
+    \]
+    Rotations compose, $\vc{R}_t^{\top}\vc{R}_{t'}=\vc{R}_{t'-t}$, so the
+    score becomes:
+    \vspace{0.8em}
+    \[
+        s_{t,t'}=\frac{\qc{\tilde{\vc{q}}_t^{\top}}\kc{\tilde{\vc{k}}_{t'}}}{\sqrt{D_k}}
+        =\frac{\qc{\vc{q}_t^{\top}}\eqnmarkbox[drawblue]{rot}{\vc{R}_{t'-t}}\kc{\vc{k}_{t'}}}{\sqrt{D_k}} \,.
+    \]
+    \annotate[yshift=0.6em]{above,right}{rot}{position enters only through $t'-t$}
+
+    The values are not rotated, nothing is added to $\vc{X}$, and there are no
+    parameters.
+
+\end{frame}
+
 \begin{frame}[fragile]{RoPE in code}
     \setlength{\parskip}{5pt}
 
@@ -1094,8 +1130,8 @@ scores = rope(q) @ rope(k).transpose(-2, -1) / D_k ** 0.5
 
     \small
     RoPE is applied in every attention layer, after the projections and
-    before the scores. The base sets the slowest rotation: recent models raise
-    it (Llama 3 uses $500{,}000$) to cover longer contexts.
+    before the scores. The base $b$ sets the slowest rotation: recent models
+    raise it (Llama 3 uses $b=500{,}000$) to cover longer contexts.
 
 \end{frame}
 
@@ -1213,8 +1249,8 @@ scores = rope(q) @ rope(k).transpose(-2, -1) / D_k ** 0.5
         \begin{column}{0.6\textwidth}%
             \small\setlength{\parskip}{6pt}%
             \RaggedRight\setlength{\parindent}{0pt}%
-            Recent models combine both: three RoPE layers, then one NoPE layer,
-            repeated through the stack.
+            Recent models combine both, for example three RoPE layers, then
+            one NoPE layer, repeated through the stack.
 
             The RoPE layers handle word order among nearby tokens, often
             restricted to a window of recent tokens (next lecture). The NoPE
@@ -1229,27 +1265,6 @@ scores = rope(q) @ rope(k).transpose(-2, -1) / D_k ** 0.5
 
 \end{frame}
 
-\begin{frame}{Extending the context}
-    \setlength{\parskip}{6pt}
-
-    A RoPE model trained on sequences of length $L$ meets, beyond $L$, angles
-    $\omega_jt$ never seen in training for its slowest pairs. Common fixes,
-    each followed by a short fine-tuning on longer sequences:
-    \begin{itemize}
-        \item \myalert{Position interpolation}: replace $t$ with $tL/L'$, to
-              squeeze the new length $L'$ into the trained range.
-        \item \myalert{Frequency-aware scaling} (NTK-aware, YaRN): interpolate
-              only the slow pairs. The fast ones already completed many
-              rotations in training, and keep the local order sharp.
-        \item A \myalert{larger base} from the start, so that the slowest
-              rotations are slower.
-    \end{itemize}
-
-    \SlideSource{Chen et al. (2023), \textit{Extending context window of large language models via positional interpolation};
-        Peng et al. (2024), \textit{YaRN: Efficient context window extension of large language models}, ICLR.}
-
-\end{frame}
-
 \begin{frame}{Positional embeddings at a glance}
 
     \small
@@ -1260,7 +1275,7 @@ scores = rope(q) @ rope(k).transpose(-2, -1) / D_k ** 0.5
         Learned       & added to $\vc{X}$            & yes & no                         & BERT, GPT-2, ViT \\
         Sinusoidal    & added to $\vc{X}$            & no  & only in theory  & original transformer \\
         ALiBi         & bias on the scores           & no  & yes                        & BLOOM, MPT \\
-        RoPE          & rotation of $\qc{\vc{q}}$, $\kc{\vc{k}}$ & no & with interpolation & most current LLMs \\
+        RoPE          & rotation of $\qc{\vc{q}}$, $\kc{\vc{k}}$ & no & degrades & most current LLMs \\
         NoPE          & causal mask only             & no  & better than RoPE           & interleaved with RoPE \\
     \end{tabular}
 
