@@ -42,6 +42,11 @@ import BeamerFrame from '../components/BeamerFrame.vue'
 **Convolutions and text** (convolution filters, byte pair encoding, the GPT-2 vocabulary, receptive fields): [*Convolutional networks: interactive demos*](https://sscardapane.github.io/teaching-materials/nnds/Lecture_CNNs_demos/)
 
 </div>
+<div class="definition-box">
+
+**Attention and the transformer** (masks and ALiBi, RoPE, the heads of GPT-2, induction heads, RASP): [*Attention and the transformer: interactive demos*](https://sscardapane.github.io/teaching-materials/nnds/Lecture_transformers_demos/)
+
+</div>
 </div>
 
 </BeamerFrame>
