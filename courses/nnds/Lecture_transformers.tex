@@ -819,34 +819,60 @@
 
 \subsection{Positional embeddings}
 
-\begin{frame}{The MHA layer is equivariant to permutations}
+\begin{frame}{Permutation matrices}
     \setlength{\parskip}{6pt}
 
-    \setlength{\abovedisplayskip}{4pt}\setlength{\belowdisplayskip}{4pt}
-    In text, the $t$-th row of $\vc{X}$ represents a single token. Reordering
-    the tokens means multiplying $\vc{X}$ by a \myalert{permutation matrix}
-    $\vc{P}$, e.g.:
+    In text, the $t$-th row of $\vc{X}$ represents a single token. To reason
+    about reordering the tokens, we use permutation matrices.
+
+    \begin{tcolorbox}[nndsblue,boxsep=1mm,top=1mm,bottom=1mm]
+        A \myalert{permutation matrix} $\vc{P}\sim(T,T)$ has exactly one $1$
+        in each row and in each column, and zeros elsewhere. Multiplying
+        $\vc{P}\vc{X}$ reorders the rows of $\vc{X}$.
+    \end{tcolorbox}
+
+    For example:
     \[
         \vc{P}=\begin{bmatrix}1&0&0\\0&0&1\\0&1&0\end{bmatrix},
         \qquad
         \vc{P}\begin{bmatrix}\vc{x}_0^{\top}\\\vc{x}_1^{\top}\\\vc{x}_2^{\top}\end{bmatrix}
         =\begin{bmatrix}\vc{x}_0^{\top}\\\vc{x}_2^{\top}\\\vc{x}_1^{\top}\end{bmatrix}.
     \]
+    Multiplying on the right, $\vc{A}\vc{P}^{\top}$, reorders the columns in
+    the same way. Since $\vc{P}^{\top}$ undoes the permutation,
+    $\vc{P}^{\top}\vc{P}=\vc{I}$.
+
+\end{frame}
+
+\begin{frame}{The MHA layer is equivariant to permutations}
+    \setlength{\parskip}{5pt}
+    \setlength{\abovedisplayskip}{4pt}\setlength{\belowdisplayskip}{4pt}
+
     Without the causal mask, the MHA layer is \textit{equivariant} to the
-    ordering:$^1$
+    ordering of the tokens:
     \[
         \operatorname{MHA}(\vc{P}\vc{X})=\vc{P}\cdot\operatorname{MHA}(\vc{X}) \,.
     \]
-    The same holds trivially for the entire block. This is not a good
+    Follow one head (scaling omitted). The projections become
+    $\vc{P}\qc{\vc{Q}}$, $\vc{P}\kc{\vc{K}}$, $\vc{P}\vcl{\vc{V}}$, and the
+    scores $\vc{P}\qc{\vc{Q}}\kc{\vc{K}}^{\top}\vc{P}^{\top}$ have rows and
+    columns reordered in the same way. A row-wise softmax does not care about
+    this reordering, so:
+    \[
+        \operatorname{softmax}(\vc{P}\qc{\vc{Q}}\kc{\vc{K}}^{\top}\vc{P}^{\top})\,\vc{P}\vcl{\vc{V}}
+        =\vc{P}\operatorname{softmax}(\qc{\vc{Q}}\kc{\vc{K}}^{\top})\,\eqnmarkbox[drawblue]{ptp}{\vc{P}^{\top}\vc{P}}\,\vcl{\vc{V}}
+        =\vc{P}\vc{H} \,.
+    \]
+    \annotate[yshift=-0.6em]{below,right}{ptp}{$=\vc{I}$}
+    \vspace{0.6em}
+
+    Concatenation and $\vc{W}_o$, like the MLP and LayerNorm, act on each row,
+    so the same holds trivially for the entire block. This is not a good
     property to have for sequences.
 
-    \vfill
-    {\footnotesize\color{black!60} $^1$ $\qc{\vc{Q}},\kc{\vc{K}},\vcl{\vc{V}}$
-        become $\vc{P}\qc{\vc{Q}},\vc{P}\kc{\vc{K}},\vc{P}\vcl{\vc{V}}$, and
-        $\operatorname{softmax}(\vc{P}\qc{\vc{Q}}\kc{\vc{K}}^{\top}\vc{P}^{\top})\vc{P}\vcl{\vc{V}}
-            =\vc{P}\operatorname{softmax}(\qc{\vc{Q}}\kc{\vc{K}}^{\top})\vcl{\vc{V}}$,
-        since $\vc{P}^{\top}\vc{P}=\vc{I}$. The causal mask
-        breaks the symmetry: token $t$ sees exactly $t+1$ tokens.\par}
+    \begin{tcolorbox}[nndsorange,boxsep=1mm,top=1mm,bottom=1mm]
+        The causal mask breaks the symmetry: token $t$ sees exactly $t+1$ tokens.
+    \end{tcolorbox}
 
 \end{frame}
 
@@ -854,8 +880,13 @@
 
     \begin{figure}
         \centering
-        \includegraphics[width=0.85\columnwidth]{images/transformers/book/PermutationEquivariance}
+        \includegraphics[width=0.8\columnwidth]{images/transformers/book/PermutationEquivariance}
     \end{figure}
+
+    {\small Permuting the input rows permutes the output rows in the same way.
+        Each output depends on which tokens are present, not on their order: without
+        positions, ``dog'' gets the same vector in ``the dog bit the man'' and
+        ``the man bit the dog''.\par}
 
 \end{whiteframe}
 
