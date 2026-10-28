@@ -1,7 +1,7 @@
 \documentclass[11pt,aspectratio=169]{beamer}
 
 \input{style.tex}
-\usetikzlibrary{arrows.meta,calc}
+\usetikzlibrary{arrows.meta,calc,decorations.pathreplacing}
 \graphicspath{{assets/}{../../shared/assets/}}
 
 \usepackage{annotate-equations}
@@ -91,7 +91,7 @@
     \setlength{\parskip}{4pt}
 
     The \myalert{transformer} was proposed in 2017 for machine translation. Like the convolutional models of the
-    last lecture, the backbone maps a sequence of embeddings $\vc{X} \sim(T,D)$ to another sequence followed by a task-wise head, e.g.:
+    last lecture, the backbone maps a sequence of embeddings $\vc{X} \sim(T,D)$ to another sequence followed by a task-specific head, e.g.:
 
     \vspace{0.2em}
     \begin{columns}[T,onlytextwidth]
@@ -113,7 +113,7 @@
     \vspace{0.6em}
     As we will see, the original 2017 paper combined both.
 
-    \SlideSource{Vaswani et al. (2017), \href{https://arxiv.org/abs/1706.03762}{\textit{Attention Is All You Need}}, NeurIPS.}
+    \SlideSource{Vaswani et al. (2017), \href{https://arxiv.org/abs/1706.03762}{\textit{Attention is all you need}}, NeurIPS.}
 
 \end{frame}
 
@@ -625,21 +625,18 @@
     the number of heads $h$, and we set $D_k=D_v=D/h$ for all heads. The
     output has the same shape as the input, so MHA layers can be stacked.
 
-    \begin{tcolorbox}[nndsgreen,boxsep=1mm,top=1mm,bottom=1mm]
-        With $D_k=D_v=D/h$, the four projections hold $4D^2$ parameters for
-        any $h$: more heads split the same budget into smaller subspaces.
-    \end{tcolorbox}
+    With $D_k=D_v=D/h$, the four projections hold \myalert{$4D^2$ parameters
+        for any $h$}: more heads split the same budget into smaller subspaces.
 
 \end{frame}
 
 \begin{frame}{Visualizing multi-head attention}
     \centering
-    \vspace{0.5em}
-    \begin{tikzpicture}[x=0.36cm, y=0.3cm,
+    \begin{tikzpicture}[x=0.31cm, y=0.31cm,
             cell/.style={draw=drawgray!70, line width=0.4pt},
             mlab/.style={font=\small},
             slab/.style={font=\scriptsize, text=black!60},
-            arr/.style={-{Stealth[length=4pt]}, drawgray, line width=0.6pt},
+            arr/.style={tfarr},
         ]
         % X (T x D)
         \foreach \r in {0,...,3} \foreach \c in {0,...,5}
@@ -651,7 +648,7 @@
                 6/1/{{60,15,15,10},{25,55,10,10},{10,20,55,15},{10,10,20,60}}/12,
                 0/2/{{70,10,10,10},{60,15,15,10},{55,15,15,15},{60,10,15,15}}/30,
                 -6/3/{{25,25,25,25},{30,25,20,25},{20,30,25,25},{25,25,25,25}}/50} {
-                \begin{scope}[yshift=\hy*0.3cm]
+                \begin{scope}[yshift=\hy*0.31cm]
                     \foreach \row [count=\r from 0] in \pat {
                         \foreach \v [count=\c from 0] in \row {
                             \draw[cell, fill=black!\v] ({10+\c},-\r) rectangle ++(1,-1);
@@ -693,11 +690,11 @@
     \setlength{\parskip}{6pt}
 
     In transformers, the MHA layer is always used inside a more complex block,
-    called the \myalert{transformer block}. Originally, this was composed of a
+    called the \myalert{transformer block}. Originally, this was composed of an
     MHA layer, two layer normalization operations, two residual connections,
     and a so-called \myalert{position-wise} network as follows:
     \begin{enumerate}
-        \item Start with a MHA layer: $\vc{H}=\operatorname{MHA}(\vc{X})$.
+        \item Start with an MHA layer: $\vc{H}=\operatorname{MHA}(\vc{X})$.
         \item Add a residual connection and a layer normalization operation:
               $\vc{H}=\operatorname{LayerNorm}(\vc{H}+\vc{X})$.
         \item Apply an MLP $g$ on each row: $\vc{F}=g(\vc{H})$.
@@ -746,83 +743,61 @@
 \end{frame}
 
 \begin{frame}{Pre- and post-normalized blocks}
+    \setlength{\parskip}{5pt}
 
-    \begin{columns}[c,onlytextwidth]
-        \begin{column}{0.52\textwidth}
-            \centering
-            \begin{tikzpicture}[x=1cm, y=1.2cm, scale=0.7, transform shape,
-                    blk/.style={nnblock, minimum width=1.9cm, minimum height=0.5cm},
-                    lnb/.style={nnother, minimum width=1.9cm, minimum height=0.5cm},
-                    ttl/.style={font=\small\bfseries}]
-                % Post-normalized (original)
-                \begin{scope}
-                    \node[ttl] at (0,1.75) {Post-norm};
-                    \node (in) at (0,1.05) {$\vc{X}$};
-                    \coordinate (s1) at (0,0.55);
-                    \node[blk] (a) at (0,0) {MHA};
-                    \node[nnmerge] (m1) at (0,-0.95) {$+$};
-                    \node[lnb] (n1) at (0,-1.8) {LayerNorm};
-                    \coordinate (s2) at (0,-2.4);
-                    \node[blk] (f) at (0,-3) {MLP};
-                    \node[nnmerge] (m2) at (0,-3.95) {$+$};
-                    \node[lnb] (n2) at (0,-4.8) {LayerNorm};
-                    \draw[thick, drawgray] (in) -- (s1);
-                    \fill[drawgray] (s1) circle (1.5pt);
-                    \draw[nnedge] (s1) -- (a);
-                    \draw[nnedge] (a) -- (m1);
-                    \draw[nnedge] (m1) -- (n1);
-                    \draw[thick, drawgray] (n1) -- (s2);
-                    \fill[drawgray] (s2) circle (1.5pt);
-                    \draw[nnedge] (s2) -- (f);
-                    \draw[nnedge] (f) -- (m2);
-                    \draw[nnedge] (m2) -- (n2);
-                    \draw[nnedge] (n2) -- (0,-5.6);
-                    \draw[nnedge, draw=darkred] (s1) -- (1.3,0.55) |- (m1);
-                    \draw[nnedge, draw=darkred] (s2) -- (1.3,-2.4) |- (m2);
-                \end{scope}
-                % Pre-normalized
-                \begin{scope}[xshift=3.3cm]
-                    \node[ttl] at (0,1.75) {Pre-norm};
-                    \node (in) at (0,1.05) {$\vc{X}$};
-                    \coordinate (s1) at (0,0.55);
-                    \node[lnb] (n1) at (0,0) {LayerNorm};
-                    \node[blk] (a) at (0,-0.85) {MHA};
-                    \node[nnmerge] (m1) at (0,-1.8) {$+$};
-                    \coordinate (s2) at (0,-2.4);
-                    \node[lnb] (n2) at (0,-3) {LayerNorm};
-                    \node[blk] (f) at (0,-3.85) {MLP};
-                    \node[nnmerge] (m2) at (0,-4.8) {$+$};
-                    \draw[thick, drawgray] (in) -- (s1);
-                    \fill[drawgray] (s1) circle (1.5pt);
-                    \draw[nnedge] (s1) -- (n1);
-                    \draw[nnedge] (n1) -- (a);
-                    \draw[nnedge] (a) -- (m1);
-                    \draw[thick, drawgray] (m1) -- (s2);
-                    \fill[drawgray] (s2) circle (1.5pt);
-                    \draw[nnedge] (s2) -- (n2);
-                    \draw[nnedge] (n2) -- (f);
-                    \draw[nnedge] (f) -- (m2);
-                    \draw[nnedge] (m2) -- (0,-5.6);
-                    \draw[nnedge, draw=darkred] (s1) -- (1.3,0.55) |- (m1);
-                    \draw[nnedge, draw=darkred] (s2) -- (1.3,-2.4) |- (m2);
-                \end{scope}
-            \end{tikzpicture}
-        \end{column}
-        \begin{column}{0.44\textwidth}%
-            \small\setlength{\parskip}{6pt}%
-            \RaggedRight\setlength{\parindent}{0pt}%
-            The original block is called \myalert{post-normalized}. A
-            \myalert{pre-normalized} variant is also common due to it being
-            simpler to train in most cases:
-            \[
-                \vc{H}=\vc{X}+\operatorname{MHA}(\operatorname{LayerNorm}(\vc{X})) \,.
-            \]
-            The skip path carries $\vc{X}$, and the gradient, unchanged
-            through all blocks. In post-norm, the gradient crosses every
-            LayerNorm, and training needs a small learning rate in the first
-            steps (\myalert{warmup}).
-        \end{column}
-    \end{columns}
+    \centering
+    \begin{tikzpicture}[x=1.17cm, y=1cm,
+            pb/.style={tfblk, minimum width=1.5cm, minimum height=0.6cm},
+            pn/.style={tfnorm, minimum width=1.5cm, minimum height=0.6cm},
+            skip/.style={tfarr, drawgray!70},
+            ttl/.style={font=\small\bfseries, anchor=west, text=black!70},
+        ]
+        % Post-norm (original): X -> MHA -> + -> LN -> MLP -> + -> LN
+        \node[ttl] at (-0.2,1.05) {Post-norm (original)};
+        \node[font=\small] (x) at (0,0) {$\vc{X}$};
+        \node[pb] (a) at (1.6,0) {MHA};
+        \node[tfsum] (m1) at (3.1,0) {$+$};
+        \node[pn] (n1) at (4.6,0) {LayerNorm};
+        \node[pb] (f) at (6.6,0) {MLP};
+        \node[tfsum] (m2) at (8.1,0) {$+$};
+        \node[pn] (n2) at (9.6,0) {LayerNorm};
+        \node[font=\small] (y) at (11.1,0) {$\vc{H}$};
+        \draw[tfarr] (x) -- (a); \draw[tfarr] (a) -- (m1); \draw[tfarr] (m1) -- (n1);
+        \draw[tfarr] (n1) -- (f); \draw[tfarr] (f) -- (m2); \draw[tfarr] (m2) -- (n2);
+        \draw[tfarr] (n2) -- (y);
+        \draw[skip] (0.6,0) -- (0.6,0.65) -| (m1);
+        \draw[skip] (5.6,0) -- (5.6,0.65) -| (m2);
+        \fill[drawgray] (0.6,0) circle (1.3pt); \fill[drawgray] (5.6,0) circle (1.3pt);
+
+        % Pre-norm: X -> LN -> MHA -> + -> LN -> MLP -> +
+        \begin{scope}[yshift=-1.95cm]
+            \node[ttl] at (-0.2,1.05) {Pre-norm};
+            \node[font=\small] (x) at (0,0) {$\vc{X}$};
+            \node[pn] (n1) at (1.6,0) {LayerNorm};
+            \node[pb] (a) at (3.6,0) {MHA};
+            \node[tfsum] (m1) at (5.1,0) {$+$};
+            \node[pn] (n2) at (6.6,0) {LayerNorm};
+            \node[pb] (f) at (8.6,0) {MLP};
+            \node[tfsum] (m2) at (10.1,0) {$+$};
+            \node[font=\small] (y) at (11.1,0) {$\vc{H}$};
+            \draw[tfarr] (x) -- (n1); \draw[tfarr] (n1) -- (a); \draw[tfarr] (a) -- (m1);
+            \draw[tfarr] (m1) -- (n2); \draw[tfarr] (n2) -- (f); \draw[tfarr] (f) -- (m2);
+            \draw[tfarr] (m2) -- (y);
+            \draw[skip] (0.6,0) -- (0.6,0.65) -| (m1);
+            \draw[skip] (5.6,0) -- (5.6,0.65) -| (m2);
+            \fill[drawgray] (0.6,0) circle (1.3pt); \fill[drawgray] (5.6,0) circle (1.3pt);
+        \end{scope}
+    \end{tikzpicture}
+    \par\vspace{0.6em}
+    \justifying
+
+    The original block is called \myalert{post-normalized}. A
+    \myalert{pre-normalized} variant is also common due to it being simpler to
+    train in most cases: $\vc{H}=\vc{X}+\operatorname{MHA}(\operatorname{LayerNorm}(\vc{X}))$.
+
+    The skip path carries $\vc{X}$, and the gradient, unchanged through all
+    blocks. In post-norm, the gradient crosses every LayerNorm, and training
+    needs a small learning rate in the first steps (\myalert{warmup}).
 
     \SlideSource{Xiong et al. (2020), \textit{On layer normalization in the transformer architecture}, ICML.}
 
@@ -836,11 +811,9 @@
     In text, the $t$-th row of $\vc{X}$ represents a single token. To reason
     about reordering the tokens, we use permutation matrices.
 
-    \begin{tcolorbox}[nndsblue,boxsep=1mm,top=1mm,bottom=1mm]
-        A \myalert{permutation matrix} $\vc{P}\sim(T,T)$ has exactly one $1$
-        in each row and in each column, and zeros elsewhere. Multiplying
-        $\vc{P}\vc{X}$ reorders the rows of $\vc{X}$.
-    \end{tcolorbox}
+    A \myalert{permutation matrix} $\vc{P}\sim(T,T)$ has exactly one $1$ in
+    each row and in each column, and zeros elsewhere. Multiplying
+    $\vc{P}\vc{X}$ reorders the rows of $\vc{X}$.
 
     For example:
     \[
@@ -881,9 +854,7 @@
     so the same holds trivially for the entire block. This is not a good
     property to have for sequences.
 
-    \begin{tcolorbox}[nndsorange,boxsep=1mm,top=1mm,bottom=1mm]
-        The causal mask breaks the symmetry: token $t$ sees exactly $t+1$ tokens.
-    \end{tcolorbox}
+    The causal mask breaks the symmetry: token $t$ sees exactly $t+1$ tokens.
 
 \end{frame}
 
@@ -933,11 +904,9 @@
     \end{itemize}
     This is the strategy of BERT, GPT-2 and the Vision Transformer.
 
-    \begin{tcolorbox}[nndsorange,boxsep=1mm,top=1mm,bottom=1mm]
-        We need to fix the maximum length $T_{\max}$, and positions never seen
-        in training have no embedding. To change the image resolution, ViT
-        interpolates the trained embeddings.
-    \end{tcolorbox}
+    However, we need to fix the maximum length $T_{\max}$, and positions never
+    seen in training have no embedding. To change the image resolution, ViT
+    interpolates the trained embeddings.
 
 \end{frame}
 
@@ -991,11 +960,9 @@
         \vc{R}(\theta)=\begin{bmatrix}\cos\theta&-\sin\theta\\\sin\theta&\cos\theta\end{bmatrix}.
     \]
 
-    \begin{tcolorbox}[nndsgreen,boxsep=1mm,top=1mm,bottom=1mm]
-        Hence $\idx{\vc{E}}{t,:}\idx{\vc{E}}{t+p,:}^{\top}=\sum_j\cos(\omega_jp)$
-        depends only on $p$. Rotating queries and keys gives \myalert{rotary
-            embeddings} (RoPE), shortly.
-    \end{tcolorbox}
+    Hence $\idx{\vc{E}}{t,:}\idx{\vc{E}}{t+p,:}^{\top}=\sum_j\cos(\omega_jp)$
+    depends only on $p$. Rotating queries and keys gives \myalert{rotary
+        embeddings} (RoPE), shortly.
 
     \SlideSource{Vaswani et al. (2017), \textit{Attention is all you need}, NeurIPS.}
 
@@ -1168,10 +1135,10 @@
 \begin{frame}{Visualizing ALiBi}
     \centering
     \vspace{0.5em}
-    \begin{tikzpicture}[x=0.5cm, y=0.5cm,
+    \begin{tikzpicture}[x=0.58cm, y=0.58cm,
             cell/.style={draw=drawgray!70, line width=0.4pt},
             mlab/.style={font=\small},
-            num/.style={font=\tiny, text=black!70},
+            num/.style={font=\scriptsize, text=black!70},
             inf/.style={font=\tiny, text=drawred},
         ]
         % Bias matrix: -(t - t') below the diagonal, -inf above
@@ -1224,10 +1191,8 @@
     train almost as well as with them, and degrade less on sequences longer
     than those seen in training.
 
-    \begin{tcolorbox}[nndsorange,boxsep=1mm,top=1mm,bottom=1mm]
-        This only works for decoders: without the mask, an encoder with no
-        positional embeddings is still equivariant.
-    \end{tcolorbox}
+    This only works for decoders: without the mask, an encoder with no
+    positional embeddings is still equivariant.
 
     \SlideSource{Haviv et al. (2022), \textit{Transformer language models without positional encodings still learn positional information}, Findings of EMNLP;
         Kazemnejad et al. (2023), \textit{The impact of positional encoding on length generalization in transformers}, NeurIPS.}
@@ -1235,40 +1200,39 @@
 \end{frame}
 
 \begin{frame}{Interleaving RoPE and NoPE}
+    \setlength{\parskip}{6pt}
 
-    \begin{columns}[c,onlytextwidth]
-        \begin{column}{0.36\textwidth}
-            \centering
-            \begin{tikzpicture}[x=1cm, y=0.72cm,
-                    rl/.style={nnblock, minimum width=2.6cm, minimum height=0.36cm, inner sep=2pt, font=\scriptsize},
-                    nl/.style={nnother, minimum width=2.6cm, minimum height=0.36cm, inner sep=2pt, font=\scriptsize}]
-                \foreach \i/\kind in {0/r,1/r,2/r,3/n,4/r,5/r,6/r,7/n} {
-                        \if\kind r
-                            \node[rl] (b\i) at (0,\i) {RoPE, local window};
-                        \else
-                            \node[nl] (b\i) at (0,\i) {NoPE, full attention};
-                        \fi
-                    }
-                \foreach \i [evaluate=\i as \j using int(\i+1)] in {0,...,6}
-                \draw[nnedge] (b\i) -- (b\j);
-                \node[font=\scriptsize, text=drawgray] at (0,-0.9) {input};
-                \draw[nnedge] (0,-0.6) -- (b0);
-            \end{tikzpicture}
-        \end{column}
-        \begin{column}{0.6\textwidth}%
-            \small\setlength{\parskip}{6pt}%
-            \RaggedRight\setlength{\parindent}{0pt}%
-            Recent models combine both, for example three RoPE layers, then
-            one NoPE layer, repeated through the stack.
+    \centering
+    \vspace{0.3em}
+    \begin{tikzpicture}[x=1cm, y=1cm,
+            rl/.style={tfblk, minimum width=1.2cm, minimum height=1.05cm, align=center, font=\footnotesize},
+            nl/.style={rl, tfnorm, minimum width=1.2cm, minimum height=1.05cm}]
+        \node[font=\small] (in) at (-0.3,0) {$\vc{X}$};
+        \foreach \i/\kind in {0/r,1/r,2/r,3/n,4/r,5/r,6/r,7/n} {
+                \if\kind r
+                    \node[rl] (b\i) at ({1.1+\i*1.5},0) {RoPE\\local};
+                \else
+                    \node[nl] (b\i) at ({1.1+\i*1.5},0) {NoPE\\global};
+                \fi
+            }
+        \draw[tfarr] (in) -- (b0);
+        \foreach \i [evaluate=\i as \j using int(\i+1)] in {0,...,6}
+        \draw[tfarr] (b\i) -- (b\j);
+        \draw[tfarr] (b7) -- ++(1,0) node[right, font=\small] {$\cdots$};
+        \draw[decorate, decoration={brace, amplitude=5pt, mirror}, drawgray]
+        ([yshift=-4pt]b0.south west) -- ([yshift=-4pt]b3.south east)
+        node[midway, below=6pt, tflab] {repeated through the stack};
+    \end{tikzpicture}
+    \par\vspace{0.6em}
+    \justifying
 
-            The RoPE layers handle word order among nearby tokens, often
-            restricted to a window of recent tokens (next lecture). The NoPE
-            layers retrieve from the whole context, with no rotation angle that
-            was never seen in training.
+    Recent models combine both, for example three RoPE layers, then one NoPE
+    layer, repeated through the stack.
 
-            Examples: Llama 4, Command A, SmolLM3.
-        \end{column}
-    \end{columns}
+    The RoPE layers handle word order among nearby tokens, often restricted to
+    a window of recent tokens (next lecture). The NoPE layers retrieve from the
+    whole context, with no rotation angle that was never seen in training.
+    Examples: Llama 4, Command A, SmolLM3.
 
     \SlideSource{Yang et al. (2025), \textit{Rope to Nope and back again: A new hybrid attention strategy}.}
 
@@ -1549,6 +1513,418 @@
     output with cross-attention. Today: T5, Whisper, image generators.
 
     \SlideSource{Vaswani et al. (2017), \textit{Attention is all you need}, NeurIPS.}
+
+\end{frame}
+
+\subsection{Computational considerations}
+
+\begin{frame}{Convolutions and attention}
+    \centering
+    \vspace{0.6em}
+    \begin{tikzpicture}[x=0.8cm, y=1cm,
+            tok/.style={circle, draw=drawgray!50, fill=white, line width=0.6pt, minimum size=0.48cm, inner sep=0pt},
+            seen/.style={tok, draw=drawblue, fill=drawblue_l},
+            outt/.style={tok, draw=drawred, fill=drawred!22},
+            edge/.style={drawgray!60, line width=0.6pt},
+            ptitle/.style={font=\small},
+        ]
+        % (a) Two convolutional layers with s = 3
+        \foreach \i in {0,...,6} {
+                \pgfmathtruncatemacro{\inrf}{(\i>=1)&&(\i<=5)}
+                \ifnum\inrf=1 \node[seen] (a0\i) at (\i,0) {}; \else \node[tok] (a0\i) at (\i,0) {}; \fi
+                \node[tok] (a1\i) at (\i,1.2) {};
+            }
+        \node[outt] (a2) at (3,2.4) {};
+        \foreach \j in {2,3,4} {
+                \draw[edge] (a2) -- (a1\j);
+                \pgfmathtruncatemacro{\lo}{\j-1}\pgfmathtruncatemacro{\hi}{\j+1}
+                \foreach \k in {\lo,...,\hi} \draw[edge] (a1\j) -- (a0\k);
+            }
+        \node[ptitle] at (3,-0.75) {(a) Two convolutions, $s=3$: 5 tokens};
+
+        % (b) One self-attention layer
+        \begin{scope}[xshift=7.6cm]
+            \foreach \i in {0,...,6} \node[seen] (b0\i) at (\i,0) {};
+            \node[outt] (b1) at (3,2.4) {};
+            \foreach \i in {0,...,6} \draw[edge] (b1) -- (b0\i);
+            \node[ptitle] at (3,-0.75) {(b) One attention layer: all $T$ tokens};
+        \end{scope}
+    \end{tikzpicture}
+
+    \vspace{1em}
+    \justifying
+    {\small After $L$ convolutions with kernel size $s$, an output sees
+        $L(s-1)+1$ tokens, and two distant tokens interact only after
+        $\mathcal{O}(T/s)$ layers. A single attention layer connects every
+        pair of tokens directly, at the price of computing all $T^2$ weights.\par}
+
+\end{frame}
+
+\begin{frame}{Computational cost}
+    \setlength{\parskip}{6pt}
+
+    Consider a single layer on $\vc{X}\sim(T,D)$, counting multiply-adds:
+
+    \vspace{0.2em}
+    \centering
+    \renewcommand{\arraystretch}{1.35}
+    \begin{tabular}{@{}p{0.26\textwidth}p{0.3\textwidth}p{0.34\textwidth}@{}}
+        & \textbf{Convolution} (kernel $s$) & \textbf{Multi-head attention} \\
+        \hline
+        Parameters & $sD^2$ & $4D^2$ \\
+        Time & $\mathcal{O}(TsD^2)$ & $\mathcal{O}(TD^2)+\mathcal{O}(T^2D)$ \\
+        Receptive field & $s$ tokens & $T$ tokens \\
+        Extra memory & none & $\vc{A}\sim(T,T)$ per head \\
+    \end{tabular}
+    \par\vspace{0.6em}
+    \justifying
+
+    The $\mathcal{O}(TD^2)$ term comes from the projections, the
+    $\mathcal{O}(T^2D)$ term from $\qc{\vc{Q}}\kc{\vc{K}}^{\top}$ and
+    $\vc{A}\vcl{\vc{V}}$. The quadratic term takes over once $T$ is larger
+    than (a small multiple of) $D$, which limited early transformers to a few
+    hundred tokens.
+
+\end{frame}
+
+\begin{frame}{Where do the parameters go?}
+    \setlength{\parskip}{6pt}
+
+    Ignoring biases and normalization, a block with hidden MLP size $4D$ has:
+    \[
+        \underbrace{4D^2}_{\text{MHA}}+\underbrace{8D^2}_{\text{MLP}}=12D^2
+        \text{ parameters.}
+    \]
+    GPT-2 (small) has $N=12$ blocks, $D=768$ and $V=50{,}257$ tokens:
+    \begin{itemize}
+        \item blocks: $12\cdot12\cdot768^2\approx 85$M parameters;
+        \item token embeddings (tied with the classifier): $V D\approx 39$M;
+        \item positional embeddings: $1024\cdot768\approx0.8$M.
+    \end{itemize}
+    The total is about $124$M. A forward pass costs about $2$ FLOPs per
+    parameter and token (one multiply-add), training about three times more.
+
+    \SlideSource{Radford et al. (2019), \textit{Language models are unsupervised multitask learners}; Kaplan et al. (2020), \textit{Scaling laws for neural language models}, arXiv.}
+
+\end{frame}
+
+\begin{frame}{Memory considerations}
+    \setlength{\parskip}{6pt}
+
+    Materializing the attention matrices also requires $\mathcal{O}(T^2)$
+    memory, for every head and every layer. For example, with $32$ heads,
+    $T=32{,}768$ tokens and $16$-bit numbers:
+    \[
+        32\cdot 32{,}768^2\cdot 2\text{ bytes}\approx 69\text{ GB},
+    \]
+    for a single layer and a single sequence.
+
+    In practice, $\vc{A}$ is never stored as a whole. Modern implementations
+    (e.g., \myalert{FlashAttention}) process the keys in chunks, keeping a
+    running maximum and a running denominator of the softmax, and normalize
+    only at the end. During generation, the keys and values of past tokens
+    are stored in a \myalert{KV cache} instead of being recomputed.
+
+    Both are the starting point of the next lecture.
+
+\end{frame}
+
+\section{Practical transformer models}
+\subsection{Pre-trained transformers}
+
+\begin{frame}{Transformers for contextual embeddings}
+    \setlength{\parskip}{6pt}
+
+    The majority of pre-trained text models are standard transformers trained
+    on large collections of text tokens:
+    \begin{itemize}
+        \item \myalert{BERT-like} models (encoders) are pre-trained by masking a
+              fraction of the tokens in a sentence ($15\%$ in BERT), and
+              predicting them from the rest.
+        \item \myalert{GPT-like} models (decoders) are pre-trained to generate
+              the sequence autoregressively, as in this lecture.
+    \end{itemize}
+
+    These models give \myalert{contextual} embeddings: the same word in
+    different sentences (``river \textit{bank}'', ``\textit{bank} account'')
+    is encoded into different vectors, unlike the static embeddings of the
+    CNN lecture.
+
+    \SlideSource{Devlin et al. (2019), \textit{BERT: Pre-training of deep bidirectional transformers for language understanding}, NAACL;
+        Qiu et al. (2020), \textit{Pre-trained models for natural language processing: A survey}, Science China Technological Sciences.}
+
+\end{frame}
+
+\begin{frame}{Self-supervised learning}
+    \setlength{\parskip}{6pt}
+
+    Because these models are trained from the raw text alone (no specific
+    targets), they are called \myalert{self-supervised} models: the targets are
+    built from the input itself, by hiding part of it.
+
+    Their strength is that transformers keep improving as data, parameters and
+    compute grow by orders of magnitude, with fewer inductive biases to get in
+    the way.
+
+    In natural language processing, this is also shown by the emergence of
+    paradigms like \myalert{text prompting} and \myalert{zero-shot learning}: a
+    single pre-trained model solves new tasks described in its input, without
+    any additional training.
+
+\end{frame}
+
+\begin{whiteframe}{Foundation models}
+
+    \begin{figure}
+        \centering
+        \includegraphics[width=0.5\columnwidth]{images/transformers/2024/FoundationModels}
+    \end{figure}
+
+    {\small An emerging name for these huge, pre-trained models is
+        \myalert{foundation models}: trained once on broad data, then adapted
+        to many downstream tasks.\par}
+
+    \SlideSource{Bommasani et al. (2021), \textit{On the opportunities and risks of foundation models}, arXiv.}
+
+\end{whiteframe}
+
+\subsection{Vision transformers}
+
+\begin{frame}{Applying transformers to images}
+    \setlength{\parskip}{6pt}
+
+    Transformers can also be applied in computer vision, especially when
+    trained on huge datasets. However, this requires to convert the image (a
+    2D grid) into a sequence of tokens.
+
+    Using every pixel as a token is too expensive: a $224\times224$ image has
+    about $50{,}000$ pixels, and $50{,}000^2$ attention weights per head. The
+    common solution is to work on non-overlapping \myalert{patches}: with
+    patches of size $P\times P$, an image $H\times W$ becomes
+    \[
+        T=\frac{HW}{P^2}\text{ tokens,}
+    \]
+    each obtained by flattening a patch and projecting it to $D$ features.
+    With $P=16$, a $224\times224$ image becomes $14\times14=196$ tokens.
+
+\end{frame}
+
+\begin{whiteframe}{Vision transformer (ViT)}
+
+    \begin{figure}
+        \centering
+        \includegraphics[width=0.7\columnwidth]{images/transformers/2024/VisionTransformer}
+    \end{figure}
+
+    {\small The Vision Transformer (ViT) is a standard transformer encoder
+        applied on top of image patches, with a class token and trainable
+        positional embeddings.\par}
+
+    \SlideSource{Dosovitskiy et al. (2021), \textit{An image is worth 16x16 words: Transformers for image recognition at scale}, ICLR.}
+
+\end{whiteframe}
+
+\begin{frame}[fragile]{Patches as a strided convolution}
+    \setlength{\parskip}{6pt}
+
+    Flattening each patch and projecting it with a shared matrix is exactly a
+    convolution with kernel size equal to the stride, as in the CNN lecture:
+
+    \begin{python}[gobble=8,aboveskip=4pt,belowskip=4pt]
+        patchify = nn.Conv2d(3, D, kernel_size=P, stride=P)
+        x = patchify(img)                   # (B, D, H/P, W/P)
+        x = x.flatten(2).transpose(1, 2)    # (B, T, D), T = HW/P^2
+    \end{python}
+
+    The patch size trades accuracy for cost. Halving $P$ gives $4\times$ more
+    tokens and $16\times$ more attention weights: ViT-B/16 and ViT-B/8 have
+    the same parameters, but very different costs.
+
+    \SlideSource{Dosovitskiy et al. (2021), \textit{An image is worth 16x16 words: Transformers for image recognition at scale}, ICLR.}
+
+\end{frame}
+
+\begin{frame}{What does a ViT attend to?}
+    \centering
+    \vspace{0.2em}
+    \begin{tikzpicture}[x=0.8cm, y=0.028cm,
+            vitdot/.style={fill=drawblue, fill opacity=0.75},
+        ]
+        \draw[drawgray, line width=0.5pt] (0.4,0) -- (12.6,0);
+        \draw[drawgray, line width=0.5pt] (0.4,0) -- (0.4,130);
+        \foreach \l in {1,...,12} \node[font=\scriptsize, below=2pt] at (\l,0) {\l};
+        \foreach \v in {0,40,80,120} {
+                \draw[drawgray] (0.4,\v) -- (0.3,\v);
+                \node[font=\scriptsize, left=2pt] at (0.4,\v) {\v};
+            }
+        \node[font=\small] at (6.5,-22) {layer};
+        \node[font=\small, rotate=90] at (-0.75,65) {mean distance (pixels)};
+        \draw[draworange, dashed, line width=0.6pt] (0.4,116.5) -- (12.6,116.5)
+        node[right, font=\scriptsize, text=draworange!80!black] {uniform};
+        \draw[drawgreen, dashed, line width=0.6pt] (0.4,17.2) -- (12.6,17.2)
+        node[right, font=\scriptsize, text=drawgreen!70!black] {$3\times3$};
+        \input{assets/images/transformers/attention_distance_swag.tex}
+    \end{tikzpicture}
+
+    \vspace{0.4em}
+    \justifying
+    {\small Mean distance between a patch and the patches it attends to, one
+        dot per head (ViT-B/16 pre-trained on 3.6B images, 260 ImageNet
+        images). Middle layers mix local heads with global ones; later layers
+        are close to a uniform average. Attention learns part of the locality
+        that a convolution hard-codes.\par}
+
+    \SlideSource{As in Dosovitskiy et al. (2021); weights from Singh et al. (2022), CVPR.}
+
+\end{frame}
+
+\begin{frame}{Inductive biases versus data}
+    \setlength{\parskip}{6pt}
+
+    Trained only on ImageNet-1k ($1.3$M images), the original ViT is worse than
+    a ResNet of similar size. Pre-trained on ImageNet-21k ($14$M) it matches
+    it, and on JFT-300M ($300$M) it is better.
+
+    \begin{columns}[T,onlytextwidth]
+        \begin{column}{0.49\textwidth}
+            \begin{tcolorbox}[nndsblue,courseheight={tf-bias}{0.3\textheight}]
+                \textbf{\color{darkcerulean}Better training (DeiT)}
+
+                Strong data augmentation, regularization and distillation from
+                a CNN teacher make ViTs competitive on ImageNet-1k alone.
+            \end{tcolorbox}
+        \end{column}
+        \begin{column}{0.49\textwidth}
+            \begin{tcolorbox}[nndsgreen,courseheight={tf-bias}{0.3\textheight}]
+                \textbf{\color{darkgreen}Better CNNs (ConvNeXt)}
+
+                A ResNet updated with the transformer's design choices and
+                training recipe matches vision transformers of similar cost.
+            \end{tcolorbox}
+        \end{column}
+    \end{columns}
+
+    Locality and translation equivariance are useful priors when data is
+    scarce; with enough data, attention can learn what it needs.
+
+    \SlideSource{Dosovitskiy et al. (2021), ICLR; Touvron et al. (2021), \textit{Training data-efficient image transformers \& distillation through attention}, ICML; Liu et al. (2022), \textit{A ConvNet for the 2020s}, CVPR.}
+
+\end{frame}
+
+\begin{frame}{Class tokens and registers}
+    \setlength{\parskip}{6pt}
+
+    ViT uses a class token, as in BERT: its output is the input to the
+    classifier, while the patch outputs can be used for dense tasks
+    (segmentation, depth estimation).
+
+    In large, well-trained ViTs, a few patch tokens in uninformative regions
+    (e.g., the background) end up with a very large norm. The model uses them as
+    \textit{scratch space} to store global information, which creates artifacts
+    in the attention maps and hurts dense predictions.
+
+    The fix is to add a few more trainable tokens, called \myalert{registers},
+    exactly like the class token, and discard them at the output. The model now
+    has dedicated tokens for global computation, and the patch tokens stay
+    clean.
+
+    We will meet the same phenomenon in language models (\myalert{attention
+        sinks}) in the next lecture.
+
+    \SlideSource{Darcet et al. (2024), \textit{Vision transformers need registers}, ICLR.}
+
+\end{frame}
+
+\begin{frame}{Pre-trained vision backbones}
+    \setlength{\parskip}{6pt}
+
+    Pre-trained ViTs are today the default image encoders. A name like
+    \textit{ViT-B/16} may refer to the architecture or to one of many trained
+    versions, shared through hubs (Hugging Face, \texttt{timm},
+    \texttt{torchvision}). They differ mostly in how they were trained:
+
+    \begin{itemize}
+        \item \textbf{Self-supervised on images}: masked autoencoders (MAE)
+              hide $75\%$ of the patches and reconstruct them; DINOv2 and
+              DINOv3 train a model to match the features of a slowly updated
+              copy of itself. Their patch features work well for dense tasks.
+        \item \textbf{Image and text}: CLIP and SigLIP train an image encoder
+              and a text encoder so that matching image-caption pairs have
+              similar embeddings, enabling zero-shot classification and
+              retrieval.
+    \end{itemize}
+
+    \SlideSource{He et al. (2022), \textit{Masked autoencoders are scalable vision learners}, CVPR; Oquab et al. (2024), \textit{DINOv2}, TMLR; Radford et al. (2021), \textit{CLIP}, ICML; Zhai et al. (2023), \textit{SigLIP}, ICCV.}
+
+\end{frame}
+
+\begin{whiteframe}{Multimodal models}
+
+    \begin{figure}
+        \centering
+        \includegraphics[width=0.75\columnwidth]{images/transformers/book/multimodal_transformer}
+    \end{figure}
+
+    {\small Transformers also simplify \myalert{multimodal} models by projecting
+        tokens of different modalities in a single embedding space. In most
+        vision-language models, the image tokens come from a pre-trained ViT
+        (e.g., SigLIP), followed by a small projection.\par}
+
+\end{whiteframe}
+
+\subsection{Transformers everywhere}
+
+\begin{frame}{Transformers everywhere}
+    \setlength{\parskip}{6pt}
+
+    Once data is turned into a sequence (or a set) of tokens, the same
+    architecture applies almost unchanged:
+
+    \begin{columns}[T,onlytextwidth]
+        \begin{column}{0.32\textwidth}
+            \begin{tcolorbox}[nndsblue,courseheight={tf-everywhere}{0.36\textheight}]\small
+                \textbf{\color{darkcerulean}Audio}\par
+                \RaggedRight
+                wav2vec 2.0 tokenizes raw audio with a 1D CNN and is
+                pre-trained self-supervised; Whisper is an encoder-decoder on
+                spectrograms.
+            \end{tcolorbox}
+        \end{column}
+        \begin{column}{0.32\textwidth}
+            \begin{tcolorbox}[nndsgreen,courseheight={tf-everywhere}{0.36\textheight}]\small
+                \textbf{\color{darkgreen}Graphs}\par
+                \RaggedRight
+                Nodes become tokens, and the connectivity enters through
+                positional embeddings or biases on the scores, as in ALiBi.
+            \end{tcolorbox}
+        \end{column}
+        \begin{column}{0.32\textwidth}
+            \begin{tcolorbox}[nndsorange,courseheight={tf-everywhere}{0.36\textheight}]\small
+                \textbf{\color{draworange!70!black}Mixer models}\par
+                \RaggedRight
+                Replacing MHA with an MLP across tokens still works well on
+                images: the block structure matters as much as attention.
+            \end{tcolorbox}
+        \end{column}
+    \end{columns}
+
+    \SlideSource{Baevski et al. (2020), \textit{wav2vec 2.0}, NeurIPS; Radford et al. (2023), \textit{Whisper}, ICML; Ying et al. (2021), \textit{Do transformers really perform badly for graph representation?}, NeurIPS; Tolstikhin et al. (2021), \textit{MLP-Mixer}, NeurIPS.}
+
+\end{frame}
+
+\begin{frame}{Further readings}
+    \setlength{\parskip}{6pt}
+
+    \begin{itemize}
+        \item \textbf{Chapters 10 and 11} from the book.
+        \item \href{https://jalammar.github.io/illustrated-transformer/}{The Illustrated Transformer}.
+        \item \href{https://srush.github.io/raspy/}{Thinking Like Transformers}, for intuitions about how transformers can implement algorithms.
+        \item \href{https://transformer-circuits.pub/2021/framework/index.html}{A Mathematical Framework for Transformer Circuits}, for the residual stream view.
+    \end{itemize}
+
+    In the next lecture, we go from the 2017 block to a modern language model:
+    normalization and MLP variants, the KV cache and how to make it smaller,
+    restricted attention, mixtures of experts, and efficient inference.
 
 \end{frame}
 
