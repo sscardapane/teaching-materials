@@ -34,6 +34,17 @@
     nnedge/.style={->, thick, draw=drawgray}
 }
 
+% Full-size diagram styles for the transformer figures: arrows as in the
+% attention figures (Stealth tips, gray), boxes at normal size.
+\tikzset{
+    tfarr/.style={-{Stealth[length=5pt]}, drawgray, line width=0.6pt},
+    tfblk/.style={draw=drawblue, fill=drawblue_l!60, rounded corners=2pt,
+            minimum height=0.75cm, minimum width=1.9cm, inner sep=4pt, font=\small},
+    tfnorm/.style={tfblk, draw=drawgreen, fill=drawgreen_l!70},
+    tfsum/.style={circle, draw=drawgray, fill=white, minimum size=0.45cm, inner sep=0pt, font=\small},
+    tflab/.style={font=\scriptsize, text=black!60},
+}
+
 % Token rows for the "Three ways to weight a neighbor" figure.
 \def\tokdx{0.85}
 \def\tokyo{2.3}
@@ -1282,45 +1293,39 @@
 \subsection{The complete transformer model}
 
 \begin{frame}{Putting everything together}
+    \setlength{\parskip}{5pt}
 
-    \begin{columns}[c,onlytextwidth]
-        \begin{column}{0.4\textwidth}
-            \centering
-            \begin{tikzpicture}[x=1cm, y=0.95cm, scale=0.85, transform shape,
-                    blk/.style={nnblock, minimum width=3cm, minimum height=0.5cm},
-                    lnb/.style={nnother, minimum width=3cm, minimum height=0.5cm},
-                    lbl/.style={font=\scriptsize, text=drawgray}]
-                \node[font=\small] (ids) at (0,0) {token IDs $z_0,\ldots,z_{T-1}$};
-                \node[blk] (emb) at (0,1) {Embedding};
-                \node[blk, minimum height=1.1cm] (stack) at (0,2.45) {Transformer block};
-                \node[lbl, anchor=west] at (1.6,2.45) {$\times N$};
-                \node[lnb] (ln) at (0,3.85) {LayerNorm};
-                \node[blk] (head) at (0,4.85) {Linear $(D,V)$};
-                \node[font=\small] (out) at (0,5.85) {$\vc{p}_t=\operatorname{softmax}(\cdot)\sim(V)$};
-                \draw[nnedge] (ids) -- (emb);
-                \draw[nnedge] (emb) -- (stack) node[lbl, midway, right] {$(T,D)$};
-                \draw[nnedge] (stack) -- (ln);
-                \draw[nnedge] (ln) -- (head);
-                \draw[nnedge] (head) -- (out) node[lbl, midway, right] {$(T,V)$};
-            \end{tikzpicture}
-        \end{column}
-        \begin{column}{0.56\textwidth}%
-            \small\setlength{\parskip}{6pt}%
-            \RaggedRight\setlength{\parindent}{0pt}%
-            A \myalert{decoder-only} transformer, as in GPT:
-            \begin{enumerate}
-                \item Embed the tokens, adding positional embeddings if any
-                      (RoPE acts inside each attention layer instead).
-                \item Apply a stack of $N$ causal transformer blocks.
-                \item A final LayerNorm: with pre-norm blocks, the residual
-                      path is never normalized otherwise.
-                \item The same vocabulary classifier at every position, as in
-                      the CNN lecture.
-            \end{enumerate}
-            The classifier weights are sometimes shared with the embedding
-            matrix (\myalert{weight tying}).
-        \end{column}
-    \end{columns}
+    \vspace{0.5em}
+    \centering
+    \begin{tikzpicture}[x=1cm, y=1cm]
+        \tikzset{pb/.style={tfblk, minimum width=1.55cm}}
+        \node[font=\small] (ids) at (0,0) {$z_0,\ldots,z_{T-1}$};
+        \node[pb] (emb) at (2.3,0) {Embedding};
+        \node[pb] (stack) at (4.55,0) {Block $\times N$};
+        \node[pb, tfnorm, minimum width=1.55cm] (ln) at (6.8,0) {LayerNorm};
+        \node[pb] (head) at (9.05,0) {Linear};
+        \node[font=\small] (out) at (11.3,0) {$\vc{p}_0,\ldots,\vc{p}_{T-1}$};
+        \draw[tfarr] (ids) -- (emb);
+        \draw[tfarr] (emb) -- (stack);
+        \draw[tfarr] (stack) -- (ln);
+        \draw[tfarr] (ln) -- (head);
+        \draw[tfarr] (head) -- (out);
+        \node[tflab, below=3pt] at (emb.south) {output $(T,D)$};
+        \node[tflab, below=3pt] at (head.south) {$(D,V)$, then softmax};
+    \end{tikzpicture}
+    \par\vspace{0.8em}
+    \raggedright
+
+    A \myalert{decoder-only} transformer, as in GPT:
+    \begin{enumerate}
+        \item Embed the tokens (plus positional embeddings, if any).
+        \item Apply a stack of $N$ causal transformer blocks.
+        \item Apply a final LayerNorm: with pre-norm blocks, the residual path
+              is never normalized otherwise.
+        \item Apply the same vocabulary classifier at every position.
+    \end{enumerate}
+    The classifier weights are sometimes shared with the embedding matrix
+    (\myalert{weight tying}).
 
 \end{frame}
 
@@ -1334,76 +1339,80 @@
 
     \begin{columns}[T,onlytextwidth]
         \begin{column}{0.49\textwidth}
-            \begin{tcolorbox}[nndsgreen,boxsep=1mm,top=1mm,bottom=1mm,courseheight={tf-traingen}{0.22\textheight}]
-                \small
-                \textbf{\color{darkgreen}Training is parallel}\par
+            \begin{tcolorbox}[nndsgreen,courseheight={tf-traingen}{0.2\textheight}]
+                \textbf{\color{darkgreen}Training is parallel}
 
                 One forward pass on $T$ tokens gives all $T$ predictions. The
                 causal mask guarantees that $\vc{p}_t$ never sees $z_{t+1}$.
             \end{tcolorbox}
         \end{column}
         \begin{column}{0.49\textwidth}
-            \begin{tcolorbox}[nndsorange,boxsep=1mm,top=1mm,bottom=1mm,courseheight={tf-traingen}{0.22\textheight}]
-                \small
-                \textbf{\color{draworange!70!black}Generation is sequential}\par
+            \begin{tcolorbox}[nndsorange,courseheight={tf-traingen}{0.2\textheight}]
+                \textbf{\color{draworange!70!black}Generation is sequential}
 
-                Each new token needs a forward pass, and attention reads all
-                previous tokens. Caching their keys and values avoids
-                recomputing them (next lecture).
+                Each new token needs a forward pass over all the previous
+                ones. Caching their keys and values helps (next lecture).
             \end{tcolorbox}
         \end{column}
     \end{columns}
 
-    Cheap training and expensive generation drive much of the design of
-    modern models.
+    Cheap training and expensive generation drive much of the design of modern
+    models.
 
 \end{frame}
 
 \begin{frame}{The residual stream}
+    \setlength{\parskip}{6pt}
 
-    \begin{columns}[c,onlytextwidth]
-        \begin{column}{0.44\textwidth}
-            \centering
-            \begin{tikzpicture}[x=1cm, y=0.9cm, scale=0.85, transform shape,
-                    att/.style={nnblock, minimum width=3.6cm, minimum height=0.5cm},
-                    mlp/.style={nnother, minimum width=0.8cm, minimum height=0.45cm, font=\scriptsize},
-                    lbl/.style={font=\scriptsize, text=drawgray}]
-                \foreach \x/\t in {0/0,1.4/1,2.8/2} {
-                        \draw[line width=2.2pt, darkred!35] (\x,0) -- (\x,5.2);
-                        \draw[-{Stealth[length=5pt]}, line width=1pt, darkred!60] (\x,4.9) -- (\x,5.4);
-                        \node[font=\small] at (\x,-0.35) {$\vc{x}_{\t}$};
-                        \node[mlp] (m1\t) at ({\x+0.55},2.2) {MLP};
-                        \node[mlp] (m2\t) at ({\x+0.55},4.4) {MLP};
-                        \draw[->, drawgray] (\x,1.85) -| (m1\t.south);
-                        \draw[->, drawgray] (m1\t.north) |- (\x,2.55);
-                        \draw[->, drawgray] (\x,4.05) -| (m2\t.south);
-                        \draw[->, drawgray] (m2\t.north) |- (\x,4.75);
-                    }
-                \node[att] (a1) at (1.4,1.0) {MHA};
-                \node[att] (a2) at (1.4,3.2) {MHA};
-                \node[lbl, anchor=east] at (-0.3,1.0) {layer 1};
-                \node[lbl, anchor=east] at (-0.3,3.2) {layer 2};
-            \end{tikzpicture}
-        \end{column}
-        \begin{column}{0.52\textwidth}%
-            \small\setlength{\parskip}{6pt}%
-            \RaggedRight\setlength{\parindent}{0pt}%
-            In a pre-norm model, each token's vector is only ever added to:
-            \[
-                \vc{h}_t=\vc{x}_t+\sum_{\ell}\Big(\operatorname{MHA}_{\ell}(\cdot)+\operatorname{MLP}_{\ell}(\cdot)\Big)_t \,.
-            \]
-            We can read the model as one \myalert{residual stream} per token
-            (red). Every layer reads the stream through a LayerNorm and
-            writes an update back.
+    In a pre-norm model, the vector of each token is only ever added to.
+    Writing $\vc{x}_t$ for its embedding, the final vector is:
+    \[
+        \vc{h}_t=\vc{x}_t+\sum_{\ell=1}^{N}\Big(
+        \eqnmarkbox[drawblue]{mha}{\operatorname{MHA}_{\ell}}+
+        \eqnmarkbox[drawgreen]{mlp}{\operatorname{MLP}_{\ell}}\Big)_t \,,
+    \]
+    \annotate[yshift=-0.8em]{below,left}{mha}{reads all tokens}
+    \annotate[yshift=-0.8em]{below,right}{mlp}{reads token $t$ only}
+    \vspace{1.2em}
 
-            The MHA layers are the only ones that move information between
-            streams; the MLPs work on each stream separately. As for ResNets,
-            this view explains why removing a single layer often does
-            little damage.
-        \end{column}
-    \end{columns}
+    We can read the model as one \myalert{residual stream} per token: every
+    layer reads the stream through a LayerNorm and writes an update back. The
+    MHA layers are the only ones that move information between streams.
+
+    As for ResNets, this view explains why removing a single layer often does
+    little damage.
 
     \SlideSource{Elhage et al. (2021), \textit{A mathematical framework for transformer circuits}, Transformer Circuits Thread.}
+
+\end{frame}
+
+\begin{frame}{Visualizing the residual stream}
+    \centering
+    \vspace{0.5em}
+    \begin{tikzpicture}[x=1cm, y=1cm,
+            stream/.style={line width=3pt, drawgray!30},
+            att/.style={tfblk, minimum width=1.1cm, minimum height=3.9cm},
+            mlp/.style={tfnorm, minimum width=1.1cm, minimum height=0.6cm, font=\scriptsize},
+        ]
+        \foreach \y/\t in {0/0,-1.4/1,-2.8/2} {
+                \draw[stream] (0.4,\y) -- (11.6,\y);
+                \draw[tfarr] (11.6,\y) -- (12.1,\y);
+                \node[font=\small, anchor=east] at (0.3,\y) {$\vc{x}_{\t}$};
+                \node[font=\small, anchor=west] at (12.2,\y) {$\vc{h}_{\t}$};
+                \node[mlp] at (4.5,\y) {MLP};
+                \node[mlp] at (9.5,\y) {MLP};
+            }
+        \node[att] at (2,-1.4) {MHA};
+        \node[att] at (7,-1.4) {MHA};
+        \node[tflab] at (3.25,0.85) {layer 1};
+        \node[tflab] at (8.25,0.85) {layer 2};
+        \draw[drawgray!50, dashed] (5.75,0.6) -- (5.75,-3.4);
+    \end{tikzpicture}
+
+    \vspace{1.2em}
+    {\small Each token has its own stream (gray), from its embedding to the
+        output. An MHA layer reads from all the streams and writes to each of
+        them; an MLP reads and writes a single stream.\par}
 
 \end{frame}
 
@@ -1425,12 +1434,8 @@
         \vc{y}=\operatorname{softmax}\big(\vc{W}^{\top}\idx{\vc{H}}{0,:}\big) \,.
     \]
     The class token attends to all the others, and its output summarizes the
-    sequence for the classifier.
-
-    \begin{tcolorbox}[nndsgreen,boxsep=1mm,top=1mm,bottom=1mm]
-        In a decoder, the last token is the only one that has seen the whole
-        sequence, and plays the same role.
-    \end{tcolorbox}
+    sequence for the classifier. In a decoder, the last token is the only one
+    that has seen the whole sequence, and plays the same role.
 
 \end{frame}
 
@@ -1444,39 +1449,107 @@
         \shape{\operatorname{CA}(\vc{X},\vc{Z})}{(T,D_v)}
         =\operatorname{softmax}\left(\frac{\qc{(\vc{X}\vc{W}_q)}\kc{(\vc{Z}\vc{W}_k)}^{\top}}{\sqrt{D_k}}\right)\vcl{\vc{Z}\vc{W}_v} \,.
     \]
-    The attention matrix has shape $(T,T')$: each token of $\vc{X}$ collects
-    information from all the tokens of $\vc{Z}$. The two sequences can have
-    different lengths, and no mask is needed on $\vc{Z}$.
+    The two sequences can have different lengths, and no mask is needed on
+    $\vc{Z}$.
 
     This is a useful operation that can combine information coming from
-    different streams of information, e.g., a text and an image, or a text
-    and its translation.
+    different streams of information, e.g., a text and an image, or a text and
+    its translation.
 
 \end{frame}
 
-\begin{whiteframe}{Encoder-decoder models}
+\begin{frame}{Visualizing cross-attention}
+    \centering
+    \vspace{1em}
+    \begin{tikzpicture}[x=0.46cm, y=0.46cm,
+            cell/.style={draw=drawgray!70, line width=0.4pt},
+            mlab/.style={font=\small},
+            slab/.style={font=\scriptsize, text=black!60},
+        ]
+        % Q from X (T=3 x D_k)
+        \foreach \r in {0,...,2} \foreach \c in {0,...,2}
+        \draw[cell, fill=qcolor!18] (\c,{-0.5-\r}) rectangle ++(1,-1);
+        \node[mlab] at (1.5,-5) {$\qc{\vc{Q}}=\vc{X}\vc{W}_q$};
+        \node[slab] at (1.5,-6) {$(T,D_k)$};
+        % K^T from Z (D_k x T'=5)
+        \foreach \r in {0,...,2} \foreach \c in {0,...,4}
+        \draw[cell, fill=kcolor!18] ({4+\c},{-0.5-\r}) rectangle ++(1,-1);
+        \node[mlab] at (6.5,-5) {$\kc{\vc{K}}^{\top}=(\vc{Z}\vc{W}_k)^{\top}$};
+        \node[slab] at (6.5,-6) {$(D_k,T')$};
+        % softmax arrow
+        \draw[tfarr] (9.7,-2) -- (13.3,-2)
+        node[midway, above=2pt, font=\small] {softmax};
+        % A (T x T')
+        \def\arow{{40,10,25,15,10},{5,55,10,20,10},{15,15,15,15,40}}
+        \foreach \row [count=\r from 0] in \arow {
+            \foreach \v [count=\c from 0] in \row {
+                \draw[cell, fill=black!\v] ({13.8+\c},{-0.5-\r}) rectangle ++(1,-1);
+            }
+        }
+        \node[mlab] at (16.3,-5) {$\vc{A}$};
+        \node[slab] at (16.3,-6) {$(T,T')$};
+        % V from Z (T' x D_v)
+        \foreach \r in {0,...,4} \foreach \c in {0,...,2}
+        \draw[cell, fill=vcolor!18] ({20+\c},{0.5-\r}) rectangle ++(1,-1);
+        \node[mlab] at (21.5,-5) {$\vcl{\vc{V}}=\vc{Z}\vc{W}_v$};
+        \node[slab] at (21.5,-6) {$(T',D_v)$};
+    \end{tikzpicture}
 
-    \begin{columns}[c,onlytextwidth]
-        \begin{column}{0.55\textwidth}
-            \centering
-            \includegraphics[width=\linewidth]{images/transformers/book/transformer_architecture}
-        \end{column}
-        \begin{column}{0.42\textwidth}%
-            \small\setlength{\parskip}{6pt}%
-            \RaggedRight\setlength{\parindent}{0pt}%
-            The original transformer was defined for \myalert{sequence to
-                sequence} tasks, such as machine translation. An encoder
-            processes the input sequence; a causal decoder generates the
-            output, with a cross-attention layer in every block reading the
-            encoder output.
+    \vspace{1.5em}
+    {\small Each of the $T$ tokens of $\vc{X}$ gets a row of weights over the
+        $T'$ tokens of $\vc{Z}$, and collects their values. The attention
+        matrix is no longer square.\par}
 
-            Today: T5, speech recognition (Whisper: audio encoder, text
-            decoder), and text conditioning in many image generators.
-        \end{column}
-    \end{columns}
+\end{frame}
+
+\begin{frame}{Encoder-decoder models}
+    \centering
+    \begin{tikzpicture}[x=1cm, y=0.9cm,
+            tok/.style={draw=drawgray!70, minimum size=0.3cm, inner sep=0pt},
+            grp/.style={draw=drawgray!60, rounded corners=3pt, fill=drawgray_l},
+            sub/.style={tfblk, minimum width=2.3cm, minimum height=0.6cm},
+        ]
+        % Encoder
+        \draw[grp] (-1.5,0.55) rectangle (1.5,2.55);
+        \node[sub] (emha) at (0,1.05) {MHA};
+        \node[sub] (emlp) at (0,2.05) {MLP};
+        \draw[tfarr] (emha) -- (emlp);
+        \node[tflab, anchor=east] at (-1.6,1.55) {$\times N$};
+        \foreach \i in {0,...,4} {
+                \node[tok, fill=drawblue_l] at ({-0.8+\i*0.4},0) {};
+                \node[tok, fill=drawblue!45] (eo\i) at ({-0.8+\i*0.4},3.1) {};
+            }
+        \node[tflab] at (0,-0.45) {input sequence};
+        \draw[tfarr] (0,0.2) -- (emha);
+        \draw[tfarr] (emlp) -- (0,2.95);
+        \node[tflab] at (0,3.5) {encoder output};
+        % Decoder
+        \draw[grp] (4.5,0.55) rectangle (7.5,3.55);
+        \node[sub] (dc) at (6,1.05) {Causal MHA};
+        \node[sub] (dx) at (6,2.05) {Cross-attention};
+        \node[sub] (dm) at (6,3.05) {MLP};
+        \draw[tfarr] (dc) -- (dx);
+        \draw[tfarr] (dx) -- (dm);
+        \node[tflab, anchor=west] at (7.6,2.05) {$\times N$};
+        \foreach \i in {0,...,4}
+        \node[tok, fill=\ifnum\i<3 drawgreen_l\else white\fi] at ({5.2+\i*0.4},0) {};
+        \node[tflab] at (6,-0.45) {output so far};
+        \draw[tfarr] (6,0.2) -- (dc);
+        \node[tok, fill=drawgreen!60] (next) at (6,4.1) {};
+        \draw[tfarr] (dm) -- (next);
+        \node[tflab, anchor=west] at (6.25,4.1) {next token};
+        % Encoder output to cross-attention
+        \draw[tfarr] (eo4.east) -- ++(1.4,0) |- (dx.west);
+    \end{tikzpicture}
+    \par\vspace{0.6em}
+    \raggedright\setlength{\parskip}{5pt}
+
+    The original transformer was defined for \myalert{sequence to sequence}
+    tasks, such as machine translation: every decoder block reads the encoder
+    output with cross-attention. Today: T5, Whisper, image generators.
 
     \SlideSource{Vaswani et al. (2017), \textit{Attention is all you need}, NeurIPS.}
 
-\end{whiteframe}
+\end{frame}
 
 \end{document}
