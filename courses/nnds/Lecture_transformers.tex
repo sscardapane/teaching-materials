@@ -684,6 +684,28 @@
 
 \end{frame}
 
+\begin{frame}[fragile]{Attention in code}
+    \setlength{\parskip}{5pt}
+
+    \begin{python}[gobble=8,aboveskip=2pt,belowskip=4pt]
+        def mha(x, Wq, Wk, Wv, Wo, h):                    # x: (B, T, D)
+            B, T, D = x.shape
+            q, k, v = ((x @ W).view(B, T, h, D // h).transpose(1, 2)
+                       for W in (Wq, Wk, Wv))             # (B, h, T, D/h)
+            s = q @ k.transpose(-2, -1) / (D // h) ** 0.5 # (B, h, T, T)
+            mask = torch.ones(T, T, dtype=torch.bool).triu(1)
+            a = s.masked_fill(mask, float('-inf')).softmax(-1)
+            out = (a @ v).transpose(1, 2).reshape(B, T, D) # concat heads
+            return out @ Wo
+    \end{python}
+
+    This \myalert{naive} implementation stores all the attention matrices,
+    $(B,h,T,T)$ numbers. PyTorch's
+    \pythoninline{F.scaled_dot_product_attention} gives the same result
+    computing $\vc{A}$ block by block, without storing it (next lecture).
+
+\end{frame}
+
 \subsection{The transformer block}
 
 \begin{frame}{The transformer block}
@@ -1377,6 +1399,41 @@
     {\small Each token has its own stream (gray), from its embedding to the
         output. An MHA layer reads from all the streams and writes to each of
         them; an MLP reads and writes a single stream.\par}
+
+\end{frame}
+
+\begin{frame}{Attention in a trained model}
+    \centering
+    \input{assets/images/transformers/gpt2_heads.tex}
+    \vspace{0.2em}
+    \begin{tikzpicture}[x=0.25cm, y=0.25cm,
+            lab/.style={font=\tiny, text=black!70},
+            ttl/.style={font=\small},
+        ]
+        \foreach \name/\x/\title in {previous/0/{(a) previous token}, first/16/{(b) first token}, it/32/{(c) ``it'' $\rightarrow$ ``cat''}} {
+                \begin{scope}[xshift=\x*0.25cm]
+                    \foreach \r in {0,...,11} \foreach \c in {0,...,11}
+                    \draw[drawgray!25, line width=0.2pt] (\c,-\r) rectangle ++(1,-1);
+                    \csname gptcells\name\endcsname
+                    \draw[drawgray!70, line width=0.4pt] (0,0) rectangle (12,-12);
+                    \node[ttl] at (6,1.6) {\title};
+                    \node[lab] at (6,0.6) {head \csname gpthead\name\endcsname};
+                    \foreach \t [count=\i from 0] in \gpttokens
+                    \node[lab, anchor=east, rotate=60] at ({\i+0.5},-12.2) {\t};
+                \end{scope}
+            }
+        \foreach \t [count=\i from 0] in \gpttokens
+        \node[lab, anchor=east] at (-0.15,{-\i-0.5}) {\t};
+    \end{tikzpicture}
+
+    \vspace{0.2em}
+    \justifying
+    {\small Three of the 144 heads of GPT-2 (small) on the same sentence (rows
+        are queries, darker is larger). Some heads have simple, readable roles:
+        (a) attends to the previous token, (b) puts almost all its weight on
+        the first token, a way to ``do nothing'' (\myalert{attention sinks},
+        next lecture); in (c), ``it'' attends mostly to ``cat''. Many heads
+        have no clear pattern.\par}
 
 \end{frame}
 
