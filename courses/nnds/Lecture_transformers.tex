@@ -1431,8 +1431,7 @@
     {\small Three of the 144 heads of GPT-2 (small) on the same sentence (rows
         are queries, darker is larger). Some heads have simple, readable roles:
         (a) attends to the previous token, (b) puts almost all its weight on
-        the first token, a way to ``do nothing'' (\myalert{attention sinks},
-        next lecture); in (c), ``it'' attends mostly to ``cat''. Many heads
+        the first token, a way to ``do nothing'' (more on this shortly); in (c), ``it'' attends mostly to ``cat''. Many heads
         have no clear pattern.\par}
 
 \end{frame}
@@ -1457,6 +1456,27 @@
     The class token attends to all the others, and its output summarizes the
     sequence for the classifier. In a decoder, the last token is the only one
     that has seen the whole sequence, and plays the same role.
+
+\end{frame}
+
+\begin{frame}{Attention sinks and registers}
+    \setlength{\parskip}{6pt}
+
+    The attention weights sum to one, so a head with nothing to retrieve still
+    has to look somewhere. In trained transformers, such heads put almost all
+    their weight on one uninformative token, typically the first one (as in
+    GPT-2 above): an \myalert{attention sink}, often with very large
+    activations.
+
+    In vision transformers, a few background patches become sinks and scratch
+    space for global information, creating artifacts in the attention maps.
+
+    A simple fix is to give the model dedicated tokens for this job:
+    \myalert{registers}, extra trainable tokens added like the class token and
+    discarded at the output. Some language models instead add a trainable sink
+    to the softmax of each head. Sinks matter for long contexts (next lecture).
+
+    \SlideSource{Xiao et al. (2024), \textit{Efficient streaming language models with attention sinks}, ICLR; Darcet et al. (2024), \textit{Vision transformers need registers}, ICLR.}
 
 \end{frame}
 
@@ -1687,65 +1707,86 @@
 \end{frame}
 
 \section{Practical transformer models}
-\subsection{Pre-trained transformers}
+\subsection{Text, images and beyond}
 
-\begin{frame}{Transformers for contextual embeddings}
+\begin{frame}{Transformers everywhere}
     \setlength{\parskip}{6pt}
 
-    The majority of pre-trained text models are standard transformers trained
-    on large collections of text tokens:
-    \begin{itemize}
-        \item \myalert{BERT-like} models (encoders) are pre-trained by masking a
-              fraction of the tokens in a sentence ($15\%$ in BERT), and
-              predicting them from the rest.
-        \item \myalert{GPT-like} models (decoders) are pre-trained to generate
-              the sequence autoregressively, as in this lecture.
-    \end{itemize}
+    Once data is turned into a sequence (or a set) of tokens, the same
+    architecture applies almost unchanged:
 
-    These models give \myalert{contextual} embeddings: the same word in
-    different sentences (``river \textit{bank}'', ``\textit{bank} account'')
-    is encoded into different vectors, unlike the static embeddings of the
-    CNN lecture.
+    \begin{columns}[T,onlytextwidth]
+        \begin{column}{0.32\textwidth}
+            \begin{tcolorbox}[nndsblue,courseheight={tf-everywhere}{0.36\textheight}]\small
+                \textbf{\color{darkcerulean}Audio}\par
+                \RaggedRight
+                wav2vec 2.0 tokenizes raw audio with a 1D CNN and is
+                pre-trained self-supervised; Whisper is an encoder-decoder on
+                spectrograms.
+            \end{tcolorbox}
+        \end{column}
+        \begin{column}{0.32\textwidth}
+            \begin{tcolorbox}[nndsgreen,courseheight={tf-everywhere}{0.36\textheight}]\small
+                \textbf{\color{darkgreen}Graphs}\par
+                \RaggedRight
+                Nodes become tokens, and the connectivity enters through
+                positional embeddings or biases on the scores, as in ALiBi.
+            \end{tcolorbox}
+        \end{column}
+        \begin{column}{0.32\textwidth}
+            \begin{tcolorbox}[nndsorange,courseheight={tf-everywhere}{0.36\textheight}]\small
+                \textbf{\color{draworange!70!black}Mixer models}\par
+                \RaggedRight
+                Replacing MHA with an MLP across tokens still works well on
+                images: the block structure matters as much as attention.
+            \end{tcolorbox}
+        \end{column}
+    \end{columns}
 
-    \SlideSource{Devlin et al. (2019), \textit{BERT: Pre-training of deep bidirectional transformers for language understanding}, NAACL;
-        Qiu et al. (2020), \textit{Pre-trained models for natural language processing: A survey}, Science China Technological Sciences.}
+    \SlideSource{Baevski et al. (2020), \textit{wav2vec 2.0}, NeurIPS; Radford et al. (2023), \textit{Whisper}, ICML; Ying et al. (2021), \textit{Do transformers really perform badly for graph representation?}, NeurIPS; Tolstikhin et al. (2021), \textit{MLP-Mixer}, NeurIPS.}
 
 \end{frame}
 
-\begin{frame}{Self-supervised learning}
+\begin{frame}{Transformers for text}
     \setlength{\parskip}{6pt}
 
-    Because these models are trained from the raw text alone (no specific
-    targets), they are called \myalert{self-supervised} models: the targets are
-    built from the input itself, by hiding part of it.
+    Pre-trained text models differ mostly in the mask and in the objective:
 
-    Their strength is that transformers keep improving as data, parameters and
-    compute grow by orders of magnitude, with fewer inductive biases to get in
-    the way.
+    \begin{columns}[T,onlytextwidth]
+        \begin{column}{0.32\textwidth}
+            \begin{tcolorbox}[nndsblue,courseheight={tf-text}{0.3\textheight}]\small
+                \textbf{\color{darkcerulean}GPT-like (decoders)}\par
+                \RaggedRight
+                Causal mask, next-token prediction: the model of this lecture.
+                Generates one token at a time.
+            \end{tcolorbox}
+        \end{column}
+        \begin{column}{0.32\textwidth}
+            \begin{tcolorbox}[nndsgreen,courseheight={tf-text}{0.3\textheight}]\small
+                \textbf{\color{darkgreen}BERT-like (encoders)}\par
+                \RaggedRight
+                No mask; $15\%$ of the tokens are hidden and predicted from
+                both sides. For classification and embeddings.
+            \end{tcolorbox}
+        \end{column}
+        \begin{column}{0.32\textwidth}
+            \begin{tcolorbox}[nndsorange,courseheight={tf-text}{0.3\textheight}]\small
+                \textbf{\color{draworange!70!black}Diffusion LMs}\par
+                \RaggedRight
+                An encoder starts from a fully hidden sequence and fills it in
+                over a few steps, many tokens at once.
+            \end{tcolorbox}
+        \end{column}
+    \end{columns}
 
-    In natural language processing, this is also shown by the emergence of
-    paradigms like \myalert{text prompting} and \myalert{zero-shot learning}: a
-    single pre-trained model solves new tasks described in its input, without
-    any additional training.
+    All are \myalert{self-supervised} (the targets come from the text itself)
+    and give \myalert{contextual} embeddings: ``bank'' differs in ``river
+    bank'' and ``bank account''. Turning them into assistants
+    (\textit{post-training}) is the topic of a later lecture.
+
+    \SlideSource{Devlin et al. (2019), \textit{BERT}, NAACL; Qiu et al. (2020), \textit{Pre-trained models for natural language processing: A survey}; Nie et al. (2025), \textit{Large language diffusion models}, arXiv.}
 
 \end{frame}
-
-\begin{whiteframe}{Foundation models}
-
-    \begin{figure}
-        \centering
-        \includegraphics[width=0.5\columnwidth]{images/transformers/2024/FoundationModels}
-    \end{figure}
-
-    {\small An emerging name for these huge, pre-trained models is
-        \myalert{foundation models}: trained once on broad data, then adapted
-        to many downstream tasks.\par}
-
-    \SlideSource{Bommasani et al. (2021), \textit{On the opportunities and risks of foundation models}, arXiv.}
-
-\end{whiteframe}
-
-\subsection{Vision transformers}
 
 \begin{frame}{Applying transformers to images}
     \setlength{\parskip}{6pt}
@@ -1868,30 +1909,6 @@
 
 \end{frame}
 
-\begin{frame}{Class tokens and registers}
-    \setlength{\parskip}{6pt}
-
-    ViT uses a class token, as in BERT: its output is the input to the
-    classifier, while the patch outputs can be used for dense tasks
-    (segmentation, depth estimation).
-
-    In large, well-trained ViTs, a few patch tokens in uninformative regions
-    (e.g., the background) end up with a very large norm. The model uses them as
-    \textit{scratch space} to store global information, which creates artifacts
-    in the attention maps and hurts dense predictions.
-
-    The fix is to add a few more trainable tokens, called \myalert{registers},
-    exactly like the class token, and discard them at the output. The model now
-    has dedicated tokens for global computation, and the patch tokens stay
-    clean.
-
-    We will meet the same phenomenon in language models (\myalert{attention
-        sinks}) in the next lecture.
-
-    \SlideSource{Darcet et al. (2024), \textit{Vision transformers need registers}, ICLR.}
-
-\end{frame}
-
 \begin{frame}{Pre-trained vision backbones}
     \setlength{\parskip}{6pt}
 
@@ -1928,46 +1945,6 @@
         (e.g., SigLIP), followed by a small projection.\par}
 
 \end{whiteframe}
-
-\subsection{Transformers everywhere}
-
-\begin{frame}{Transformers everywhere}
-    \setlength{\parskip}{6pt}
-
-    Once data is turned into a sequence (or a set) of tokens, the same
-    architecture applies almost unchanged:
-
-    \begin{columns}[T,onlytextwidth]
-        \begin{column}{0.32\textwidth}
-            \begin{tcolorbox}[nndsblue,courseheight={tf-everywhere}{0.36\textheight}]\small
-                \textbf{\color{darkcerulean}Audio}\par
-                \RaggedRight
-                wav2vec 2.0 tokenizes raw audio with a 1D CNN and is
-                pre-trained self-supervised; Whisper is an encoder-decoder on
-                spectrograms.
-            \end{tcolorbox}
-        \end{column}
-        \begin{column}{0.32\textwidth}
-            \begin{tcolorbox}[nndsgreen,courseheight={tf-everywhere}{0.36\textheight}]\small
-                \textbf{\color{darkgreen}Graphs}\par
-                \RaggedRight
-                Nodes become tokens, and the connectivity enters through
-                positional embeddings or biases on the scores, as in ALiBi.
-            \end{tcolorbox}
-        \end{column}
-        \begin{column}{0.32\textwidth}
-            \begin{tcolorbox}[nndsorange,courseheight={tf-everywhere}{0.36\textheight}]\small
-                \textbf{\color{draworange!70!black}Mixer models}\par
-                \RaggedRight
-                Replacing MHA with an MLP across tokens still works well on
-                images: the block structure matters as much as attention.
-            \end{tcolorbox}
-        \end{column}
-    \end{columns}
-
-    \SlideSource{Baevski et al. (2020), \textit{wav2vec 2.0}, NeurIPS; Radford et al. (2023), \textit{Whisper}, ICML; Ying et al. (2021), \textit{Do transformers really perform badly for graph representation?}, NeurIPS; Tolstikhin et al. (2021), \textit{MLP-Mixer}, NeurIPS.}
-
-\end{frame}
 
 \begin{frame}{Further readings}
     \setlength{\parskip}{6pt}
