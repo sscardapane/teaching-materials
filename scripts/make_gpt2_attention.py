@@ -151,7 +151,7 @@ def main():
     for name, (l, h) in picks:
         flat, T, k = s['attn'][l][h], len(s['tokens']), 0
         lines.append(f'% {name}: layer {l}, head {h}')
-        lines.append(f'\\def\\gpthead{name}{{{l}.{h}}}')
+        lines.append(f'\\def\\gpthead{name}{{layer {l}, head {h}}}')
         lines.append(f'\\def\\gptcells{name}{{%')
         for t in range(T):
             for j in range(t + 1):

@@ -83,7 +83,7 @@ import InductionHeads from '../components/InductionHeads.vue'
 
 <BeamerFrame title="Induction heads">
 
-Fifteen random tokens, repeated twice. In the second copy, an <b>induction head</b> at token $t$ attends to the token after its previous occurrence, and the model copies it ([Olsson et al., 2022](https://transformer-circuits.pub/2022/in-context-learning-and-induction-heads/index.html)).
+GPT-2 (small, 12 layers of 12 heads) reads fifteen random tokens, repeated twice. In the second copy, an <b>induction head</b> at token $t$ attends to the token after its previous occurrence, and the model copies it ([Olsson et al., 2022](https://transformer-circuits.pub/2022/in-context-learning-and-induction-heads/index.html)).
 
 <InductionHeads />
 
@@ -100,7 +100,7 @@ import RaspPlayground from '../components/RaspPlayground.vue'
 
 <BeamerFrame title="Thinking like a transformer (RASP)">
 
-In RASP, a small language that maps to transformers, <span class="mono">select</span> builds an attention pattern, <span class="mono">aggregate</span> reads values through it, and elementwise operations are MLPs.
+In RASP, a small language that maps to transformers, <code>select</code> builds an attention pattern, <code>aggregate</code> reads values through it, and elementwise operations are MLPs.
 
 <RaspPlayground />
 

@@ -8,7 +8,7 @@
     <div class="ih-left">
       <div class="ih-heads">
         <button v-for="p in presets" :key="p.l + '.' + p.h" :class="{ on: sel[0] === p.l && sel[1] === p.h }"
-          @click="sel = [p.l, p.h]">{{ p.l }}.{{ p.h }} <span class="muted">{{ p.name }}</span></button>
+          @click="sel = [p.l, p.h]">layer {{ p.l }}, head {{ p.h }} <span class="muted">{{ p.name }}</span></button>
       </div>
       <svg :width="x0 + T * c + 4" :height="y0 + T * c + 4" role="img" aria-label="Attention on the repeated sequence">
         <text :x="x0 + (L / 2 + 1) * c" :y="y0 - 6" text-anchor="middle" class="ax">first copy</text>
@@ -39,7 +39,7 @@
         <text :x="bx(L / 2)" :y="BH - 6" text-anchor="middle" class="ax">first copy: loss {{ mean(0, L).toFixed(1) }}</text>
         <text :x="bx(1.5 * L)" :y="BH - 6" text-anchor="middle" class="ax">second copy: loss {{ mean(L, 2 * L).toFixed(1) }}</text>
       </svg>
-      <div class="muted">Next-token loss (nats): the second copy is predicted almost perfectly. It takes two layers: a previous-token head (4.11) writes "the token before me" in each stream, and the induction head matches the current token against it, as in the RASP induction program.</div>
+      <div class="muted">Next-token loss (nats): the second copy is predicted almost perfectly. It takes two layers: a previous-token head (layer 4, head 11) writes "the token before me" in each stream, and the induction head matches the current token against it, as in the RASP induction program.</div>
     </div>
   </div>
   <div v-else class="muted">{{ status }}</div>
@@ -53,13 +53,13 @@ const presets = [
   { l: 5, h: 5, name: 'induction' },
   { l: 6, h: 9, name: 'induction' },
   { l: 5, h: 1, name: 'induction' },
-  { l: 0, h: 1, name: 'early layer' },
+  { l: 0, h: 1, name: 'early' },
 ]
 const rep = ref(null)
 const status = ref('Loading GPT-2 attention…')
 const sel = ref([5, 5])
 const hover = ref(-1)
-const c = 8, x0 = 46, y0 = 18
+const c = 7, x0 = 46, y0 = 18
 const BW = 430, BH = 95
 const L = computed(() => (rep.value ? rep.value.length : 0))
 const T = computed(() => (rep.value ? rep.value.tokens.length : 0))
@@ -84,13 +84,13 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.ih { display: flex; gap: 1.8em; justify-content: center; align-items: flex-start; margin-top: 2px; font-size: 0.6em; }
+.ih { display: flex; gap: 1.2em; justify-content: center; align-items: flex-start; margin-top: 2px; font-size: 0.6em; }
 .ih-left { display: flex; flex-direction: column; gap: 0.4em; }
-.ih-heads { display: flex; flex-wrap: wrap; gap: 0.3em; max-width: 300px; }
+.ih-heads { display: flex; flex-wrap: wrap; gap: 0.3em; width: 400px; }
 .ih-heads button { padding: 0.1em 0.45em; border: 1px solid #8c0000; background: #fff; color: #8c0000; cursor: pointer; }
 .ih-heads button.on { background: #8c0000; color: #fff; }
 .ih-heads button.on .muted { color: #f3d6d6; }
-.ih-right { display: flex; flex-direction: column; gap: 0.4em; width: 430px; }
+.ih-right { display: flex; flex-direction: column; gap: 0.4em; width: 420px; }
 .ih-seq { line-height: 1.6; display: flex; flex-wrap: wrap; row-gap: 2px; }
 .wt { font-family: 'Fira Mono', monospace; padding: 1px 2px; margin-right: 1px; }
 .wt.q { outline: 2px solid #8c0000; }

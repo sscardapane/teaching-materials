@@ -120,7 +120,7 @@ const programs = [
   {
     id: 'induction', label: 'induction', text: 'abcdabcab', steps: [
       S('prev = select(indices, indices, k == q - 1)', 'prev', 'indices', 'indices', (k, q) => k === q - 1,
-        'Layer 1: a previous-token head, like head 4.11 of GPT-2.'),
+        'Layer 1: a previous-token head, like head 11 of layer 4 in GPT-2.'),
       A('prev_token = aggregate(prev, tokens)', 'prev_token', 'prev', 'tokens',
         'Each position now also stores the token before it, in its residual stream.'),
       S('match = select(prev_token, tokens, ==)', 'match', 'prev_token', 'tokens', (k, q, j, i) => k === q && j <= i,
