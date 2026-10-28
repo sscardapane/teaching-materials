@@ -19,6 +19,21 @@
 \newcommand{\kc}[1]{{\color{kcolor}#1}}
 \newcommand{\vcl}[1]{{\color{vcolor}#1}}
 
+% Block-diagram styles, as in shared/slides/mlps.tex and the deeper-models deck.
+\tikzset{
+    nnblock/.style={
+            draw=drawblue, fill=drawblue_l!25!white, rounded corners=2pt,
+            minimum width=1.25cm, minimum height=0.65cm,
+            inner sep=5pt, font=\small
+        },
+    nnother/.style={nnblock, draw=drawgreen, fill=drawgreen_l!25!white},
+    nnmerge/.style={
+            circle, draw=drawgray, fill=white,
+            minimum size=0.55cm, inner sep=1pt, font=\small
+        },
+    nnedge/.style={->, thick, draw=drawgray}
+}
+
 % Token rows for the "Three ways to weight a neighbor" figure.
 \def\tokdx{0.85}
 \def\tokyo{2.3}
@@ -551,6 +566,254 @@
         weight. Multiplying the scores by a $0/1$ mask would not work, since
         $\exp(0)=1$; zeroing $\vc{A}$ after the softmax would break the sum to
         one.\par}
+
+\end{frame}
+
+\subsection{Multi-head attention}
+
+\begin{frame}{Multi-head attention}
+    \setlength{\parskip}{6pt}
+
+    The SA layer can handle quasi-sparse dependencies (because of the
+    softmax), and also dynamic ones (because of the attention function).
+    However, what happens when a token depends on multiple subsets of tokens?
+
+    A common generalization in this case is \myalert{multi-head attention}
+    (MHA). It works by computing $i=1,\ldots,h$ separate sets of queries,
+    keys, and values:
+    \[
+        \qc{\vc{Q}_i=\vc{X}\vc{W}_{q,i}}, \qquad
+        \kc{\vc{K}_i=\vc{X}\vc{W}_{k,i}}, \qquad
+        \vcl{\vc{V}_i=\vc{X}\vc{W}_{v,i}},
+    \]
+    \[
+        \vc{H}_i=\operatorname{softmax}\left(\frac{\qc{\vc{Q}_i}\kc{\vc{K}_i}^{\top}}{\sqrt{D_k}}\right)\vcl{\vc{V}_i} \,.
+    \]
+    Each set is a \myalert{head}, with its own attention matrix $\vc{A}_i$,
+    so different heads can attend to different tokens. We now have $3h$
+    trainable matrices.
+
+\end{frame}
+
+\begin{frame}{Combining the heads}
+    \setlength{\parskip}{6pt}
+
+    The previous operation has $h$ separate outputs; we combine them by
+    concatenation over the embedding dimension, and a final reprojection with
+    a trainable output matrix $\vc{W}_o$:
+    \[
+        \shape{\vc{H}}{(T,D)}
+        =\eqnmarkbox[drawblue]{cat}{\begin{bmatrix}\vc{H}_1 & \cdots & \vc{H}_h\end{bmatrix}}
+        \vc{W}_o \,,
+        \qquad \vc{W}_o\sim(hD_v,D) \,.
+    \]
+    \annotate[yshift=-0.8em]{below,right}{cat}{$(T,hD_v)$}
+    \vspace{0.8em}
+
+    As hyperparameters, we typically choose the embedding dimension $D$ and
+    the number of heads $h$, and we set $D_k=D_v=D/h$ for all heads. The
+    output has the same shape as the input, so MHA layers can be stacked.
+
+    \begin{tcolorbox}[nndsgreen,boxsep=1mm,top=1mm,bottom=1mm]
+        With $D_k=D_v=D/h$, the four projections hold $4D^2$ parameters for
+        any $h$: more heads split the same budget into smaller subspaces.
+    \end{tcolorbox}
+
+\end{frame}
+
+\begin{frame}{Visualizing multi-head attention}
+    \centering
+    \vspace{0.5em}
+    \begin{tikzpicture}[x=0.36cm, y=0.3cm,
+            cell/.style={draw=drawgray!70, line width=0.4pt},
+            mlab/.style={font=\small},
+            slab/.style={font=\scriptsize, text=black!60},
+            arr/.style={-{Stealth[length=4pt]}, drawgray, line width=0.6pt},
+        ]
+        % X (T x D)
+        \foreach \r in {0,...,3} \foreach \c in {0,...,5}
+        \draw[cell, fill=drawgray_l] (\c,-\r) rectangle ++(1,-1);
+        \node[mlab] at (3,-5) {$\vc{X}$};
+        \node[slab] at (3,-6.1) {$(T,D)$};
+        % Heads: attention matrices and outputs
+        \foreach \hy/\hname/\pat/\shade in {
+                6/1/{{60,15,15,10},{25,55,10,10},{10,20,55,15},{10,10,20,60}}/12,
+                0/2/{{70,10,10,10},{60,15,15,10},{55,15,15,15},{60,10,15,15}}/30,
+                -6/3/{{25,25,25,25},{30,25,20,25},{20,30,25,25},{25,25,25,25}}/50} {
+                \begin{scope}[yshift=\hy*0.3cm]
+                    \foreach \row [count=\r from 0] in \pat {
+                        \foreach \v [count=\c from 0] in \row {
+                            \draw[cell, fill=black!\v] ({10+\c},-\r) rectangle ++(1,-1);
+                        }
+                    }
+                    \node[slab] at (12,0.7) {head \hname: $\vc{A}_{\hname}$};
+                    \foreach \r in {0,...,3} \foreach \c in {0,1}
+                    \draw[cell, fill=vcolor!\shade] ({16+\c},-\r) rectangle ++(1,-1);
+                    \node[slab] at (17,0.7) {$\vc{H}_{\hname}$};
+                    \draw[arr] (14.3,-2) -- (15.7,-2);
+                \end{scope}
+                \draw[arr] (6.3,-2) -- (7.6,{\hy-2});
+                \draw[arr] (18.3,{\hy-2}) -- (20.2,-2);
+            }
+        % Concatenation
+        \foreach \c/\shade in {0/12,1/12,2/30,3/30,4/50,5/50}
+        \foreach \r in {0,...,3}
+        \draw[cell, fill=vcolor!\shade] ({20.5+\c},-\r) rectangle ++(1,-1);
+        \node[mlab] at (23.5,-5) {concat};
+        \node[slab] at (23.5,-6.1) {$(T,hD_v)$};
+        \draw[arr] (26.8,-2) -- (29.7,-2) node[midway, above=1pt, font=\small] {$\vc{W}_o$};
+        % H (T x D)
+        \foreach \r in {0,...,3} \foreach \c in {0,...,5}
+        \draw[cell, fill=vcolor!25] ({30+\c},-\r) rectangle ++(1,-1);
+        \node[mlab] at (33,-5) {$\vc{H}$};
+        \node[slab] at (33,-6.1) {$(T,D)$};
+    \end{tikzpicture}
+
+    \vspace{1em}
+    {\small Three heads with $D_v=D/3$: each has its own attention pattern
+        (here local, on the first token, and almost uniform). $\vc{W}_o$ mixes
+        the concatenated outputs back into $D$ features.\par}
+
+\end{frame}
+
+\subsection{The transformer block}
+
+\begin{frame}{The transformer block}
+    \setlength{\parskip}{6pt}
+
+    In transformers, the MHA layer is always used inside a more complex block,
+    called the \myalert{transformer block}. Originally, this was composed of a
+    MHA layer, two layer normalization operations, two residual connections,
+    and a so-called \myalert{position-wise} network as follows:
+    \begin{enumerate}
+        \item Start with a MHA layer: $\vc{H}=\operatorname{MHA}(\vc{X})$.
+        \item Add a residual connection and a layer normalization operation:
+              $\vc{H}=\operatorname{LayerNorm}(\vc{H}+\vc{X})$.
+        \item Apply an MLP $g$ on each row: $\vc{F}=g(\vc{H})$.
+        \item Do again step 2: $\vc{H}=\operatorname{LayerNorm}(\vc{F}+\vc{H})$.
+    \end{enumerate}
+
+    The output has shape $(T,D)$ like the input: a transformer is a stack of
+    these blocks.
+
+    \SlideSource{Vaswani et al. (2017), \textit{Attention is all you need}, NeurIPS.}
+
+\end{frame}
+
+\begin{frame}{Design of the block}
+    \setlength{\parskip}{6pt}
+
+    The design of the block was mostly based on empirical considerations.
+    Roughly speaking, steps (1)--(2) correspond to a \myalert{token mixing}
+    operation, while steps (3)--(4) are a per-token update which is akin to a
+    $1\times1$ convolution.
+
+    \begin{columns}[T,onlytextwidth]
+        \begin{column}{0.49\textwidth}
+            \begin{tcolorbox}[nndsblue,courseheight={tf-mixing}{0.27\textheight}]
+                \textbf{\color{darkcerulean}Token mixing (MHA)}
+
+                Combines rows of $\vc{X}$, with weights that depend on the input.
+            \end{tcolorbox}
+        \end{column}
+        \begin{column}{0.49\textwidth}
+            \begin{tcolorbox}[nndsgreen,courseheight={tf-mixing}{0.27\textheight}]
+                \textbf{\color{darkgreen}Channel mixing (MLP)}
+
+                Combines the features of each row, with the same weights for every token.
+            \end{tcolorbox}
+        \end{column}
+    \end{columns}
+
+    The block is similar in spirit to a depthwise separable convolution
+    (spatial mixing and channel mixing in the CNN lecture). The intermediate
+    MLP has two layers, with hidden dimension an integer multiple of $D$
+    ($4D$ in the original model).
+
+    \SlideSource{Vaswani et al. (2017), \textit{Attention is all you need}, NeurIPS.}
+
+\end{frame}
+
+\begin{frame}{Pre- and post-normalized blocks}
+
+    \begin{columns}[c,onlytextwidth]
+        \begin{column}{0.52\textwidth}
+            \centering
+            \begin{tikzpicture}[x=1cm, y=1.2cm, scale=0.7, transform shape,
+                    blk/.style={nnblock, minimum width=1.9cm, minimum height=0.5cm},
+                    lnb/.style={nnother, minimum width=1.9cm, minimum height=0.5cm},
+                    ttl/.style={font=\small\bfseries}]
+                % Post-normalized (original)
+                \begin{scope}
+                    \node[ttl] at (0,1.75) {Post-norm};
+                    \node (in) at (0,1.05) {$\vc{X}$};
+                    \coordinate (s1) at (0,0.55);
+                    \node[blk] (a) at (0,0) {MHA};
+                    \node[nnmerge] (m1) at (0,-0.95) {$+$};
+                    \node[lnb] (n1) at (0,-1.8) {LayerNorm};
+                    \coordinate (s2) at (0,-2.4);
+                    \node[blk] (f) at (0,-3) {MLP};
+                    \node[nnmerge] (m2) at (0,-3.95) {$+$};
+                    \node[lnb] (n2) at (0,-4.8) {LayerNorm};
+                    \draw[thick, drawgray] (in) -- (s1);
+                    \fill[drawgray] (s1) circle (1.5pt);
+                    \draw[nnedge] (s1) -- (a);
+                    \draw[nnedge] (a) -- (m1);
+                    \draw[nnedge] (m1) -- (n1);
+                    \draw[thick, drawgray] (n1) -- (s2);
+                    \fill[drawgray] (s2) circle (1.5pt);
+                    \draw[nnedge] (s2) -- (f);
+                    \draw[nnedge] (f) -- (m2);
+                    \draw[nnedge] (m2) -- (n2);
+                    \draw[nnedge] (n2) -- (0,-5.6);
+                    \draw[nnedge, draw=darkred] (s1) -- (1.3,0.55) |- (m1);
+                    \draw[nnedge, draw=darkred] (s2) -- (1.3,-2.4) |- (m2);
+                \end{scope}
+                % Pre-normalized
+                \begin{scope}[xshift=3.3cm]
+                    \node[ttl] at (0,1.75) {Pre-norm};
+                    \node (in) at (0,1.05) {$\vc{X}$};
+                    \coordinate (s1) at (0,0.55);
+                    \node[lnb] (n1) at (0,0) {LayerNorm};
+                    \node[blk] (a) at (0,-0.85) {MHA};
+                    \node[nnmerge] (m1) at (0,-1.8) {$+$};
+                    \coordinate (s2) at (0,-2.4);
+                    \node[lnb] (n2) at (0,-3) {LayerNorm};
+                    \node[blk] (f) at (0,-3.85) {MLP};
+                    \node[nnmerge] (m2) at (0,-4.8) {$+$};
+                    \draw[thick, drawgray] (in) -- (s1);
+                    \fill[drawgray] (s1) circle (1.5pt);
+                    \draw[nnedge] (s1) -- (n1);
+                    \draw[nnedge] (n1) -- (a);
+                    \draw[nnedge] (a) -- (m1);
+                    \draw[thick, drawgray] (m1) -- (s2);
+                    \fill[drawgray] (s2) circle (1.5pt);
+                    \draw[nnedge] (s2) -- (n2);
+                    \draw[nnedge] (n2) -- (f);
+                    \draw[nnedge] (f) -- (m2);
+                    \draw[nnedge] (m2) -- (0,-5.6);
+                    \draw[nnedge, draw=darkred] (s1) -- (1.3,0.55) |- (m1);
+                    \draw[nnedge, draw=darkred] (s2) -- (1.3,-2.4) |- (m2);
+                \end{scope}
+            \end{tikzpicture}
+        \end{column}
+        \begin{column}{0.44\textwidth}%
+            \small\setlength{\parskip}{6pt}%
+            \RaggedRight\setlength{\parindent}{0pt}%
+            The original block is called \myalert{post-normalized}: every
+            LayerNorm sits on the residual path.
+
+            A \myalert{pre-normalized} variant is also common due to it being
+            simpler to train in most cases:
+            \[
+                \vc{H}=\vc{X}+\operatorname{MHA}(\operatorname{LayerNorm}(\vc{X})) \,.
+            \]
+            The skip path then carries $\vc{X}$ unchanged from the first block
+            to the last, as in the residual networks of the previous lecture.
+        \end{column}
+    \end{columns}
+
+    \SlideSource{Xiong et al. (2020), \textit{On layer normalization in the transformer architecture}, ICML.}
 
 \end{frame}
 
