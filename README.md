@@ -28,6 +28,9 @@ folders or separate notebook copies per course.
 
 Use a full TeX installation with `latexmk`, pdfLaTeX, LuaLaTeX and the packages
 and fonts required by the templates. The migration was checked with TeX Live 2024.
+`courses/nnds/annotate-equations.sty` is a copy of the CTAN package (v0.2.2, MIT
+licence in `annotate-equations-LICENSE`), kept so that NNDS decks build on TeX
+installations that lack it.
 
 ```sh
 python3 scripts/build.py       # all registered LaTeX decks
