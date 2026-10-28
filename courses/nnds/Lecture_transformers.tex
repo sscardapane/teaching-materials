@@ -1463,20 +1463,20 @@
     \setlength{\parskip}{6pt}
 
     The attention weights sum to one, so a head with nothing to retrieve still
-    has to look somewhere. In trained transformers, such heads put almost all
-    their weight on one uninformative token, typically the first one (as in
-    GPT-2 above): an \myalert{attention sink}, often with very large
-    activations.
+    has to look somewhere. Trained transformers put this weight on one
+    uninformative token, typically the first one (as in GPT-2 above): an
+    \myalert{attention sink}, often with very large activations.
 
     In vision transformers, a few background patches become sinks and scratch
     space for global information, creating artifacts in the attention maps.
 
     One fix is to add dedicated tokens, called \myalert{registers}: extra
-    trainable tokens added like the class token and discarded at the output. In gpt-oss, each head instead has a trainable
-    extra score inside its softmax, which lets the weights on the tokens sum to
-    less than one. Sinks matter for long contexts (next lecture).
+    trainable tokens added like the class token and discarded at the output. Another fix adds an extra score to each head's
+    softmax, fixed at zero (a $+1$ in the denominator) or trainable as in
+    gpt-oss, so the weights on the tokens can sum to less than one. Sinks
+    matter for long contexts (next lecture).
 
-    \SlideSource{Xiao et al. (2024), \textit{Efficient streaming language models with attention sinks}, ICLR; Darcet et al. (2024), \textit{Vision transformers need registers}, ICLR; OpenAI (2025), \textit{gpt-oss-120b \& gpt-oss-20b model card}.}
+    \SlideSource{Xiao et al. (2024), \textit{Efficient streaming language models with attention sinks}, ICLR; Darcet et al. (2024), \textit{Vision transformers need registers}, ICLR; E. Miller (2023), \textit{Attention is off by one}; OpenAI (2025), \textit{gpt-oss model card}.}
 
 \end{frame}
 
