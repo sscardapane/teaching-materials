@@ -1334,16 +1334,18 @@
 
     \begin{columns}[T,onlytextwidth]
         \begin{column}{0.49\textwidth}
-            \begin{tcolorbox}[nndsgreen,courseheight={tf-traingen}{0.3\textheight}]
-                \textbf{\color{darkgreen}Training is parallel}
+            \begin{tcolorbox}[nndsgreen,boxsep=1mm,top=1mm,bottom=1mm,courseheight={tf-traingen}{0.22\textheight}]
+                \small
+                \textbf{\color{darkgreen}Training is parallel}\par
 
                 One forward pass on $T$ tokens gives all $T$ predictions. The
                 causal mask guarantees that $\vc{p}_t$ never sees $z_{t+1}$.
             \end{tcolorbox}
         \end{column}
         \begin{column}{0.49\textwidth}
-            \begin{tcolorbox}[nndsorange,courseheight={tf-traingen}{0.3\textheight}]
-                \textbf{\color{draworange!70!black}Generation is sequential}
+            \begin{tcolorbox}[nndsorange,boxsep=1mm,top=1mm,bottom=1mm,courseheight={tf-traingen}{0.22\textheight}]
+                \small
+                \textbf{\color{draworange!70!black}Generation is sequential}\par
 
                 Each new token needs a forward pass, and attention reads all
                 previous tokens. Caching their keys and values avoids
