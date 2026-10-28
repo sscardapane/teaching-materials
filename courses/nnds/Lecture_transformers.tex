@@ -1471,12 +1471,12 @@
     In vision transformers, a few background patches become sinks and scratch
     space for global information, creating artifacts in the attention maps.
 
-    A simple fix is to give the model dedicated tokens for this job:
-    \myalert{registers}, extra trainable tokens added like the class token and
-    discarded at the output. Some language models instead add a trainable sink
-    to the softmax of each head. Sinks matter for long contexts (next lecture).
+    One fix is to add dedicated tokens, called \myalert{registers}: extra
+    trainable tokens added like the class token and discarded at the output. In gpt-oss, each head instead has a trainable
+    extra score inside its softmax, which lets the weights on the tokens sum to
+    less than one. Sinks matter for long contexts (next lecture).
 
-    \SlideSource{Xiao et al. (2024), \textit{Efficient streaming language models with attention sinks}, ICLR; Darcet et al. (2024), \textit{Vision transformers need registers}, ICLR.}
+    \SlideSource{Xiao et al. (2024), \textit{Efficient streaming language models with attention sinks}, ICLR; Darcet et al. (2024), \textit{Vision transformers need registers}, ICLR; OpenAI (2025), \textit{gpt-oss-120b \& gpt-oss-20b model card}.}
 
 \end{frame}
 
