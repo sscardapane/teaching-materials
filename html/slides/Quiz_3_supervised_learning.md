@@ -28,7 +28,7 @@ import BeamerFrame from '../components/BeamerFrame.vue'
 
 <BeamerFrame title="How this quiz works">
 
-There are 11 questions in total, each graded 1 to 3 stars based on expected difficulty.
+There are 11 questions in total, each graded 1 to 3 stars based on expected difficulty. Question 10 is optional: it needs some numerical linear algebra and some practice with solving systems of linear equations.
 
 <p>You can retry a question as many times as you like, or ask for the solution. Every solution comes with an explanation.</p>
 
@@ -48,12 +48,12 @@ layout: full
 import BeamerFrame from '../components/BeamerFrame.vue'
 
 const options = [
-  { text: String.raw`We choose $\lambda$ for ridge regression on the validation set.`, correct: true },
+  { text: String.raw`Hyperparameters are chosen on the validation set.`, correct: true },
   { text: String.raw`The validation set is used to fit $\boldsymbol{\theta}$.` },
-  { text: String.raw`Choosing $\lambda$ by its test loss makes the reported test loss optimistic.`, correct: true },
+  { text: String.raw`Choosing hyperparameters by test loss makes the test loss optimistic.`, correct: true },
   { text: String.raw`The same example can appear in the training and the test set.` },
-  { text: String.raw`Training on scans from one hospital and deploying in another can cause a distribution shift.`, correct: true },
-  { text: String.raw`With i.i.d. samples, the training loss and the test loss of a trained model are equal on average.` },
+  { text: String.raw`Moving from one hospital's scans to another's can cause a distribution shift.`, correct: true },
+  { text: String.raw`With i.i.d. samples, training and test losses are equal on average.` },
 ]
 </script>
 
@@ -64,7 +64,7 @@ Which statements are true?
 <QuizChoice id="3-q1" :options="options" multiple :columns="2">
 <template #explanation>
 
-The training set fits $\boldsymbol{\theta}$, the validation set chooses everything else (like $\lambda$), and the test set is used once at the end. The three sets are disjoint. Once the test set is used to choose $\lambda$, it is part of the training procedure and its loss is biased downwards. The training loss is optimistic for the same reason: $\boldsymbol{\theta}$ was chosen to make it small. See [Training, validation, and test data](https://sscardapane.github.io/teaching-materials/pdf/nnds/Lecture_3_supervised_learning.pdf#page=4).
+The training set fits $\boldsymbol{\theta}$, the validation set chooses the hyperparameters, and the disjoint test set is used once at the end. A test set used to make choices becomes part of training, and its loss is biased downwards, like the training loss. See [Training, validation, and test data](https://sscardapane.github.io/teaching-materials/pdf/nnds/Lecture_3_supervised_learning.pdf#page=4).
 
 </template>
 </QuizChoice>
@@ -86,7 +86,7 @@ A linear classifier takes $28\times 28$ grayscale images, flattened into vectors
 <QuizInput id="3-q2" kind="number" :expected="7850" :tolerance="0" solution="$7850$">
 <template #explanation>
 
-The inputs have $D=784$ features, so $\mathbf{W}\in\mathbb{R}^{10\times 784}$ and $\mathbf{b}\in\mathbb{R}^{10}$: $7840+10=7850$. Each class has its own row of weights, its own template over the pixels. See [Linear models for classification](https://sscardapane.github.io/teaching-materials/pdf/nnds/Lecture_3_supervised_learning.pdf#page=17).
+The inputs have $D=784$ features, so $\mathbf{W}\in\mathbb{R}^{10\times 784}$ and $\mathbf{b}\in\mathbb{R}^{10}$: $7840+10=7850$. Each class has its own row of weights and its own bias. See [Linear models for classification](https://sscardapane.github.io/teaching-materials/pdf/nnds/Lecture_3_supervised_learning.pdf#page=17).
 
 </template>
 </QuizInput>
@@ -123,11 +123,11 @@ layout: full
 import BeamerFrame from '../components/BeamerFrame.vue'
 
 const options = [
-  { text: String.raw`Squared loss: the last example is over $99\%$ of the total.`, correct: true },
-  { text: String.raw`Absolute loss: the last example is over $99\%$ of the total.` },
+  { text: String.raw`With squared loss, the last example dominates the total.`, correct: true },
+  { text: String.raw`Absolute loss gives it a smaller share than squared loss.`, correct: true },
   { text: String.raw`Squared loss is not differentiable at $e=0$.` },
-  { text: String.raw`The absolute loss has a slope of the same magnitude at all four errors.`, correct: true },
-  { text: String.raw`Huber loss with threshold $1$ penalizes the last error linearly.`, correct: true },
+  { text: String.raw`The slope of the absolute loss has the same magnitude at all four errors.`, correct: true },
+  { text: String.raw`Absolute loss is more sensitive to the outlier than squared loss.` },
 ]
 </script>
 
@@ -138,7 +138,7 @@ A regression model makes errors $e=\hat{y}-y$ equal to $0.1$, $-0.2$, $0.1$ and 
 <QuizChoice id="3-q4" :options="options" multiple :columns="2">
 <template #explanation>
 
-Squared losses are $0.01, 0.04, 0.01, 100$, so the last one is $99.9\%$ of the total; absolute losses give $10/10.4\approx 96\%$. The slope of $|e|$ is $\pm 1$ for any non-zero error, while that of $e^2$ is $2e$: with squared loss, the outlier also dominates the gradient. See [Losses for regression](https://sscardapane.github.io/teaching-materials/pdf/nnds/Lecture_3_supervised_learning.pdf#page=10).
+The last squared error is $100$, against at most $0.04$ for the others, so it dominates the loss and its gradient $2e$. The absolute loss grows linearly with slope $\pm 1$, so every example pulls with the same strength. See [Losses for regression](https://sscardapane.github.io/teaching-materials/pdf/nnds/Lecture_3_supervised_learning.pdf#page=10).
 
 </template>
 </QuizChoice>
@@ -163,12 +163,12 @@ const options = [
 
 <BeamerFrame title="5 · Empirical and expected risk  ★★">
 
-The lookup table from the lecture returns $y_i$ on a training input $x_i$, and $\bar{y}$ elsewhere. Which statements are true?
+The lookup table from the lecture returns $y_i$ on training inputs and $\bar{y}$ elsewhere. An estimate is *unbiased* if its average over random datasets equals the true value. Which statements are true?
 
 <QuizChoice id="3-q5" :options="options" multiple :columns="2">
 <template #explanation>
 
-A new input from a continuous distribution matches a training input with probability zero. The training loss is optimistic because $\boldsymbol{\theta}$ was chosen on the same examples; unused test data are independent of $\boldsymbol{\theta}$. A small gap with a large training loss still gives a large risk. See [Expected risk and empirical risk](https://sscardapane.github.io/teaching-materials/pdf/nnds/Lecture_3_supervised_learning.pdf#page=8).
+A new continuous input matches a training input with probability zero. The training loss is optimistic because $\boldsymbol{\theta}$ was fit on the same examples; unused test data are independent of $\boldsymbol{\theta}$. A small gap with a large training loss still means a large risk. See [Expected risk and empirical risk](https://sscardapane.github.io/teaching-materials/pdf/nnds/Lecture_3_supervised_learning.pdf#page=8).
 
 </template>
 </QuizChoice>
@@ -183,12 +183,12 @@ layout: full
 import BeamerFrame from '../components/BeamerFrame.vue'
 
 const options = [
-  { text: String.raw`$p_1=e\cdot p_2$.`, correct: true },
-  { text: String.raw`For a small enough $\tau$, some component becomes exactly $0$.` },
+  { text: String.raw`$p_1=e\cdot p_2$ (Euler's number, $e\approx 2.718$).`, correct: true },
+  { text: String.raw`Ignoring finite precision, a small $\tau$ can make a component exactly $0$.` },
   { text: String.raw`Adding $5$ to every logit leaves $\mathbf{p}$ unchanged.`, correct: true },
   { text: String.raw`Doubling every logit leaves $\mathbf{p}$ unchanged.` },
   { text: String.raw`As $\tau\rightarrow\infty$, every component approaches $1/3$.`, correct: true },
-  { text: String.raw`Changing $\tau$ can change the calibration of the classifier, but not its accuracy.`, correct: true },
+  { text: String.raw`Changing $\tau$ can change calibration, but not accuracy.`, correct: true },
 ]
 </script>
 
@@ -199,7 +199,7 @@ Let $\mathbf{p}=\operatorname{softmax}(\mathbf{z}/\tau)$ with $\mathbf{z}=(2,\,1
 <QuizChoice id="3-q6" :options="options" multiple :columns="2">
 <template #explanation>
 
-Ratios depend only on differences of logits, $p_1/p_2=e^{z_1-z_2}=e$, so adding a constant changes nothing; doubling the logits is $\tau=1/2$. Exponentials never reach $0$, and a large $\tau$ flattens $\mathbf{p}$ towards uniform. $\tau$ keeps the ordering of the logits: it changes the confidence, never the predicted class. See [Softmax and temperature](https://sscardapane.github.io/teaching-materials/pdf/nnds/Lecture_3_supervised_learning.pdf#page=19) and [Can we trust these probabilities?](https://sscardapane.github.io/teaching-materials/pdf/nnds/Lecture_3_supervised_learning.pdf#page=25).
+Ratios depend only on logit differences, $p_1/p_2=e^{z_1-z_2}=e$, so adding a constant changes nothing. Doubling the logits is the case $\tau=1/2$, which sharpens $\mathbf{p}$. Ignoring finite precision, exponentials are positive; a large $\tau$ flattens $\mathbf{p}$. $\tau$ never changes the ordering of the logits, hence the predicted class. See [Softmax and temperature](https://sscardapane.github.io/teaching-materials/pdf/nnds/Lecture_3_supervised_learning.pdf#page=19) and [Can we trust these probabilities?](https://sscardapane.github.io/teaching-materials/pdf/nnds/Lecture_3_supervised_learning.pdf#page=25).
 
 </template>
 </QuizChoice>
@@ -306,14 +306,14 @@ const options = [
 ]
 </script>
 
-<BeamerFrame title="10 · Solving least squares  ★★★">
+<BeamerFrame title="10 · Solving least squares (optional)  ★★★">
 
-Let $\mathbf{X}\in\mathbb{R}^{N\times D}$ and $\mathbf{y}\in\mathbb{R}^N$, with the bias omitted. Which statements are true?
+This question needs some numerical linear algebra. Let $\mathbf{X}\in\mathbb{R}^{N\times D}$ and $\mathbf{y}\in\mathbb{R}^N$, with no bias. Which statements are true?
 
 <QuizChoice id="3-q10" :options="options" multiple :columns="2">
 <template #explanation>
 
-$\mathbf{X}^\top\mathbf{X}$ has rank at most $\min(N,D)$, and a duplicated feature also loses a rank; the normal equations still have infinitely many solutions. With $\lambda>0$, $\mathbf{v}^\top(\mathbf{X}^\top\mathbf{X}+\lambda\mathbf{I})\mathbf{v}=\lVert\mathbf{X}\mathbf{v}\rVert^2+\lambda\lVert\mathbf{v}\rVert^2>0$ for $\mathbf{v}\neq\mathbf{0}$. The normal equations say $\mathbf{X}^\top(\mathbf{y}-\mathbf{X}\mathbf{w}^*)=\mathbf{0}$. Ridge cannot beat least squares on its own objective. See [Solving least squares](https://sscardapane.github.io/teaching-materials/pdf/nnds/Lecture_3_supervised_learning.pdf#page=14).
+$\mathbf{X}^\top\mathbf{X}$ has rank at most $\min(N,D)$, and a duplicated feature loses a rank; the normal equations then have infinitely many solutions. For $\lambda>0$ and $\mathbf{v}\neq\mathbf{0}$, $\mathbf{v}^\top(\mathbf{X}^\top\mathbf{X}+\lambda\mathbf{I})\mathbf{v}=\lVert\mathbf{X}\mathbf{v}\rVert^2+\lambda\lVert\mathbf{v}\rVert^2>0$. The normal equations say $\mathbf{X}^\top(\mathbf{y}-\mathbf{X}\mathbf{w}^*)=\mathbf{0}$. Ridge trades training fit for smaller weights. See [Solving least squares](https://sscardapane.github.io/teaching-materials/pdf/nnds/Lecture_3_supervised_learning.pdf#page=14).
 
 </template>
 </QuizChoice>
@@ -394,7 +394,7 @@ const items = [
   { id: '3-q7', title: 'A ridge estimate', stars: 2, slide: 9 },
   { id: '3-q8', title: 'A decision boundary', stars: 2, slide: 10 },
   { id: '3-q9', title: 'Linear in what?', stars: 2, slide: 11 },
-  { id: '3-q10', title: 'Solving least squares', stars: 3, slide: 12 },
+  { id: '3-q10', title: 'Solving least squares (optional)', stars: 3, slide: 12 },
   { id: '3-q11', title: 'Cross-entropy from logits', stars: 3, slide: 13 },
 ]
 </script>
