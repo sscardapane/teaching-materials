@@ -351,6 +351,9 @@
 	\SlideSource{\href{https://arxiv.org/abs/1807.03819}{Dehghani et al., Universal Transformers (2019)}.}
 \end{frame}
 
+% NNDS moves this slide to the CNN deck (Simone, 2026-10-29) by defining
+% \MLPPositionwiseInCNNDeck in its mlps-settings.tex.
+\ifdefined\MLPPositionwiseInCNNDeck\else
 \begin{frame}{Shared MLPs on structured data}
 	\small
 	\setlength{\abovedisplayskip}{4pt}\setlength{\belowdisplayskip}{4pt}
@@ -381,3 +384,4 @@
 	To exchange information, we need another operation: convolutions over
 	neighborhoods (the next lecture), attention, or a recurrent state.
 \end{frame}
+\fi

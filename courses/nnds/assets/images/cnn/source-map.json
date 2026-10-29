@@ -40,10 +40,11 @@
     },
     {
       "original_export": "6_Convolutional_Neural_Networks/draw.io/Convolutive_layer.pdf",
-      "export": "courses/nnds/assets/images/cnn/source/Convolutive_layer.pdf",
+      "export": "courses/nnds/assets/images/cnn/source/Convolutional_layer.pdf",
       "native_sources": [
-        "courses/nnds/assets/images/cnn/source/Convolutive_layer (1).xml"
+        "courses/nnds/assets/images/cnn/source/Convolutional_layer.xml"
       ],
+      "revised": "2026-10-29: label Convolutive -> Convolutional (Simone); sha256 is the original export",
       "sha256": "766ab07cb84f02a8e5eb3f070bff8aa1e61b39a4e37ccc9510661f4619343514"
     },
     {
@@ -66,6 +67,7 @@
       "native_sources": [
         "courses/nnds/assets/images/cnn/book/CNN_architecture.xml"
       ],
+      "revised": "2026-10-29: groups renamed to Backbone, Pooling, Head (Simone); sha256 is the original export",
       "sha256": "7e9a1dd3f77b37e208978e55dafcabe7471094bd3b8162ef41aa5297fffa6f3b"
     },
     {

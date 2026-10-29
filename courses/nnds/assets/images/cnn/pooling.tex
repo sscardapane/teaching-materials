@@ -1,0 +1,46 @@
+% Editable CNN figure: 2x2 max pooling versus global average pooling on one
+% channel of an activation map, for the map, a copy shifted by one pixel and
+% a rearranged copy. Written by Claude (2026-10-29) at Simone's request.
+\begingroup
+% #1,#2: top-left corner; #3: size (2 or 4); #4: comma list of the values,
+% row by row, as a macro; #5: fill of the non-zero cells; #6: border.
+\newcommand{\cnnMap}[6]{%
+    \begin{scope}[shift={(#1,#2)}]
+        \foreach \v [count=\n from 0] in #4{
+            \pgfmathtruncatemacro{\row}{floor(\n/#3)}
+            \pgfmathtruncatemacro{\col}{mod(\n,#3)}
+            \ifnum\v=0
+                \node[pcell,fill=white,text=drawgray!60] at (0.42*\col+0.21,-0.42*\row-0.21) {$0$};
+            \else
+                \node[pcell,fill=#5] at (0.42*\col+0.21,-0.42*\row-0.21) {$\v$};
+            \fi
+        }
+        \draw[#6,line width=1pt] (0,0) rectangle (0.42*#3,-0.42*#3);
+        \ifnum#3=4
+            % 2x2 pooling blocks
+            \draw[#6,line width=0.8pt] (0.84,0) -- (0.84,-1.68) (0,-0.84) -- (1.68,-0.84);
+        \fi
+    \end{scope}
+}
+\begin{tikzpicture}[x=1cm,y=1cm,
+        pcell/.style={draw=drawgray!70,line width=0.4pt,minimum size=0.42cm,
+            inner sep=0pt,font=\footnotesize},
+        edge/.style={-{Stealth[length=2mm]},line width=0.8pt,draw=drawgray},
+        rowlabel/.style={font=\small,anchor=east,align=right,text=drawgray},
+        colhead/.style={font=\small\bfseries}]
+    \foreach \x/\vals/\pool/\title in {
+        0/{0,0,0,0, 0,8,4,0, 0,4,0,0, 0,0,0,0}/{8,4, 4,0}/{Activation\\map},
+        2.25/{0,0,0,0, 0,0,8,4, 0,0,4,0, 0,0,0,0}/{0,8, 0,4}/{Shifted by\\one pixel},
+        4.5/{4,0,0,0, 0,0,0,0, 0,0,0,8, 0,0,4,0}/{4,0, 0,8}/{Rearranged\\\phantom{p}}}{
+        \node[colhead,align=center,anchor=south] at (\x+0.84,0.1) {\title};
+        \cnnMap{\x}{0}{4}{\vals}{drawblue_l}{drawblue}
+        \draw[edge] (\x+0.84,-1.8) -- ++(0,-0.4);
+        \cnnMap{\x+0.42}{-2.3}{2}{\pool}{drawgreen_l}{drawgreen}
+        \draw[edge] (\x+0.84,-3.25) -- ++(0,-0.4);
+        \node[pcell,draw=draworange,line width=1pt,fill=draworange_l] at (\x+0.84,-3.96) {$1$};
+    }
+    \node[rowlabel] at (-0.2,-0.84) {input};
+    \node[rowlabel] at (-0.2,-2.72) {$2\times2$ max\\pooling};
+    \node[rowlabel] at (-0.2,-3.96) {global\\average};
+\end{tikzpicture}
+\endgroup

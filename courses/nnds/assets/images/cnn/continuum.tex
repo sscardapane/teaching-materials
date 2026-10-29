@@ -1,0 +1,60 @@
+% Editable CNN figure: the running example (four inputs, one channel) under
+% four layers, each a simplification of the previous one. Gray edges are
+% independent weights; coloured edges with the same colour share one weight.
+% Written by Claude (2026-10-29) for the locally-connected step Simone asked for.
+\begingroup
+% #1: x-shift; #2: 0 = dense, 1 = local, 2 = convolution, 3 = 1x1 convolution;
+% #3: title; #4: number of weights.
+\newcommand{\cnnContinuumPanel}[4]{%
+    \begin{scope}[shift={(#1,0)}]
+        \node[font=\small\bfseries,align=center] at (0.93,2.55) {#3};
+        \foreach \p in {0,...,3}{
+            \node[cnncell,draw=drawblue,fill=drawblue_l] (in\p) at (0.62*\p,0) {$x_{\p}$};
+            \node[cnncell,draw=drawgreen,fill=drawgreen_l] (out\p) at (0.62*\p,1.6) {$y_{\p}$};
+        }
+        \foreach \o in {0,...,3}{
+            \foreach \i in {0,...,3}{
+                \pgfmathtruncatemacro{\d}{\i-\o}
+                \pgfmathtruncatemacro{\near}{abs(\d)<=1}
+                \ifcase#2
+                    \draw[drawgray,line width=0.6pt] (in\i.north) -- (out\o.south);
+                \or
+                    \ifnum\near=1
+                        \draw[drawgray,line width=0.6pt] (in\i.north) -- (out\o.south);
+                    \fi
+                \or
+                    \ifnum\near=1
+                        \ifcase\numexpr\d+1\relax
+                            \draw[draworange,line width=1pt] (in\i.north) -- (out\o.south);
+                        \or
+                            \draw[darkcerulean,line width=1pt] (in\i.north) -- (out\o.south);
+                        \or
+                            \draw[drawviolet,line width=1pt] (in\i.north) -- (out\o.south);
+                        \fi
+                    \fi
+                \or
+                    \ifnum\d=0
+                        \draw[darkcerulean,line width=1pt] (in\i.north) -- (out\o.south);
+                    \fi
+                \fi
+            }
+        }
+        \node[font=\small,text=drawgray] at (0.93,-0.75) {#4};
+    \end{scope}
+}
+
+\begin{tikzpicture}[x=1cm,y=1cm,
+        cnncell/.style={minimum width=0.55cm,minimum height=0.55cm,inner sep=0pt,
+            line width=0.9pt,rounded corners=1.5pt,font=\small},
+        stepedge/.style={-{Stealth[length=2mm]},line width=0.8pt,draw=drawgray},
+        steplabel/.style={font=\footnotesize,text=drawgray,align=center}]
+    \cnnContinuumPanel{0}{0}{Fully connected}{16 weights}
+    \cnnContinuumPanel{3.7}{1}{Locally connected}{10 weights}
+    \cnnContinuumPanel{7.4}{2}{Convolution}{3 weights}
+    \cnnContinuumPanel{11.1}{3}{$1\times1$ convolution}{1 weight}
+    \foreach \x/\lab in {2.42/{keep\\neighbors},6.12/{share\\weights},9.82/{$s=1$}}{
+        \draw[stepedge] (\x,0.8) -- ++(0.75,0);
+        \node[steplabel,anchor=south] at (\x+0.375,0.9) {\lab};
+    }
+\end{tikzpicture}
+\endgroup

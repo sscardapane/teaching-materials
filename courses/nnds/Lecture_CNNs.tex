@@ -7,6 +7,15 @@
 \newcommand*{\boldone}{\text{\usefont{U}{bbold}{m}{n}1}}
 % Causal window: the s positions ending at t (Written by Claude, 2026-10-14).
 \newcommand{\causalP}{\overleftarrow{P}}
+% Block-diagram styles, as in shared/slides/mlps.tex (positionwise figure).
+\tikzset{
+    nnblock/.style={
+            draw=drawblue, fill=drawblue_l!25!white, rounded corners=2pt,
+            minimum width=1.25cm, minimum height=0.65cm,
+            inner sep=5pt, font=\small
+        },
+    nnedge/.style={->, thick, draw=drawgray}
+}
 
 \usepackage{annotate-equations}
 \usepackage{subfig}
@@ -54,21 +63,43 @@
 
 \end{frame}
 
-\begin{frame}{An MLP at every pixel}
+% "Shared MLPs on structured data" moved here from the MLP deck at Simone's
+% request (2026-10-29) and merged with "An MLP at every pixel": the lecture
+% starts from the positionwise and the global MLP and simplifies towards
+% convolutions.
+\begin{frame}{An MLP at every position}
+    \small
+    \setlength{\abovedisplayskip}{4pt}\setlength{\belowdisplayskip}{4pt}
 
-    As we saw for sequences, we can apply the same MLP at every pixel:
-    \[
-        \idx{Y}{i,j,:} = f_{\boldsymbol{\theta}}(\idx{X}{i,j,:}),
-        \qquad Y \sim (H,W,C').
-    \]
+    We can share an MLP across the positions of a sequence $\vc{X}\sim(T,D)$
+    or an image $X\sim(H,W,C)$, applying it to each position independently:
 
-    Each pixel is processed independently. The MLP mixes channels, but does
-    not use the neighboring pixels.
+    \begin{columns}[c,onlytextwidth]
+        \begin{column}{0.50\textwidth}
+            \[
+                \begin{aligned}
+                    \idx{\vc{Y}}{t,:} & =f_{\boldsymbol{\theta}}(\idx{\vc{X}}{t,:}), \\
+                    \idx{Y}{i,j,:}    & =f_{\boldsymbol{\theta}}(\idx{X}{i,j,:}),
+                    \ \ Y \sim (H,W,C').
+                \end{aligned}
+            \]
+        \end{column}
+        \begin{column}{0.46\textwidth}
+            \centering
+            \input{../../shared/assets/images/lecture_4/positionwise.tex}
+        \end{column}
+    \end{columns}
 
-    The same parameters are shared across all locations, so the number of
-    parameters does not depend on the size of the image.
+    The number of parameters does not depend on the sequence length or on
+    the size of the image. Transformers use these \textbf{positionwise MLPs}
+    in every block.
 
-    How can we also exchange information between pixels?
+    \medskip
+    \begin{tcolorbox}[nndsorange,boxsep=1mm,top=1mm,bottom=1mm]
+        A positionwise MLP mixes the features (channels) within a position, but no information moves between positions.
+    \end{tcolorbox}
+
+    To exchange information, we need convolutions, attention, or a recurrent state.
 
 \end{frame}
 
@@ -93,12 +124,12 @@
 
 \begin{frame}{Two ways to process an image}
     \centering
-    \scalebox{0.93}{\input{assets/images/cnn/input-mixing.tex}}
+    \input{assets/images/cnn/input-mixing.tex}
 
-    \vspace{0.8em}
+    \vspace{0.5em}
     \raggedright
-    Convolutions sit in between: each output pixel sees a small
-    \myalert{neighborhood}, and the weights are shared across positions.
+    In between, each output pixel sees only a small \myalert{neighborhood}
+    (locality), and we can share the weights across positions.
 \end{frame}
 
 \begin{frame}{An example to keep in mind}
@@ -138,10 +169,35 @@
 
     \vspace{0.5em}
     \begin{tcolorbox}[nndsblue]
-        A layer is \myalert{local} if $\idx{Y}{i,j,:}$ depends only on $P_k(i,j)$ for some $k$.
+        A layer is \myalert{local} if $\idx{Y}{i,j,:}$ depends only on $P_k(i,j)$ for some \textbf{small} $k$ (with $s \ll H,W$).
     \end{tcolorbox}
 
 \end{whiteframe}
+
+% Written by Claude (2026-10-29): intermediate step Simone asked for, between
+% the fully-connected layer and the convolution.
+\begin{frame}{Locally connected layer}
+    \setlength{\arraycolsep}{5pt}
+    \setlength{\abovedisplayskip}{5pt}\setlength{\belowdisplayskip}{5pt}
+
+    As a first step, we apply a \textbf{different} affine map to each neighborhood:
+    \[
+        \idx{Y}{i,j,:}
+        = \phi\!\left(
+        {\color{darkgreen}\vc{W}_{ij}^{\top}}\,
+        \shape{\operatorname{vect}(P_k(i,j))}{(s^2C)}
+        + {\color{darkcerulean}\vc{b}_{ij}}
+        \right).
+    \]
+    This \myalert{locally connected layer} has $HW(s^2CC'+C')$ parameters,
+    which still grow with the image. On our running example with $s=3$:
+    \[
+        \begin{bmatrix} y_0 \\ y_1 \\ y_2 \\ y_3 \end{bmatrix}=\begin{bmatrix}W_{00} & W_{01} & 0 & 0 \\ W_{10} & W_{11} & W_{12} & 0 \\ 0 & W_{21} & W_{22} & W_{23} \\ 0 & 0 & W_{32} & W_{33} \end{bmatrix} \begin{bmatrix} x_0 \\ x_1 \\ x_2 \\ x_3 \end{bmatrix}
+    \]
+    We learn ten coefficients instead of sixteen. However, a pattern learned
+    in one corner of the image must be learned again everywhere else.
+
+\end{frame}
 
 \begin{frame}{Convolutional layer}
 
@@ -155,7 +211,8 @@
         \right).
     \]
 
-    We share the weights $\vc{W} \sim (s^2C,C')$ and bias $\vc{b} \sim (C')$
+    Unlike the locally connected layer, we share the weights
+    $\vc{W} \sim (s^2C,C')$ and bias $\vc{b} \sim (C')$
     \textbf{across all locations}.
 
     This is a \myalert{convolutional layer}. It has $s^2CC' + C'$ parameters,
@@ -173,7 +230,7 @@
 
     \begin{figure}
         \centering
-        \includegraphics[width=0.7\columnwidth]{images/cnn/source/Convolutive_layer.pdf}
+        \includegraphics[width=0.7\columnwidth]{images/cnn/source/Convolutional_layer.pdf}
     \end{figure}
 
 \end{whiteframe}
@@ -260,6 +317,21 @@
     earlier dense layer.
 
 \end{frame}
+
+% Figure: assets/images/cnn/continuum.tex (Claude, 2026-10-29).
+\begin{whiteframe}{From fully connected to convolutional}
+
+    \begin{center}
+        \input{assets/images/cnn/continuum.tex}
+    \end{center}
+
+    \vspace{0.6em}
+    Each layer simplifies the previous one: locality removes connections,
+    and weight sharing ties the remaining ones (same color, same weight).
+    With $s=1$, a convolution is a layer of the positionwise MLP we started
+    from: a \myalert{$1\times1$ convolution}.
+
+\end{whiteframe}
 
 % Figure: assets/images/cnn/filters/make_figures.py
 \begin{whiteframe}{Translation equivariance}
@@ -428,6 +500,31 @@
 
 \end{whiteframe}
 
+% Figure: assets/images/cnn/pooling.tex (Claude, 2026-10-29, at Simone's
+% request: why max pooling inside the network and global pooling at the end).
+\begin{whiteframe}{Max pooling inside, global pooling at the end}
+    \setlength{\parskip}{5pt}
+
+    \begin{columns}[c,onlytextwidth]
+        \begin{column}{0.60\textwidth}
+            \centering
+            \input{assets/images/cnn/pooling.tex}
+        \end{column}
+        \begin{column}{0.37\textwidth}
+            \small\setlength{\parskip}{8pt}
+            Max pooling keeps a coarser grid: the shifted map gives a shifted
+            output, so later layers can still combine \textit{where} features are.
+
+            \myalert{Global pooling} averages each channel over all pixels:
+            the three maps give the same value.
+
+            We pool globally only at the end, when the receptive field covers
+            the image. The output has $C'$ values for any $H'$ and $W'$.
+        \end{column}
+    \end{columns}
+
+\end{whiteframe}
+
 \begin{frame}{Complete architecture of a CNN}
     \setlength{\parskip}{2pt}
 
@@ -445,7 +542,7 @@
         \end{column}
         \begin{column}{0.32\textwidth}
             \begin{tcolorbox}[nndsblue,courseheight={cnn-arch}{}]
-                \textbf{Head:}\\ \myalert{global pooling} (or flattening).
+                \textbf{Pooling:}\\ \myalert{global pooling} (or flattening).
                 \[
                     \vc{h}=\tfrac{1}{H'W'}\textstyle\sum_{i,j}\idx{Z}{i,j,:}
                 \]
@@ -453,7 +550,7 @@
         \end{column}
         \begin{column}{0.32\textwidth}
             \begin{tcolorbox}[nndsblue,courseheight={cnn-arch}{}]
-                \textbf{Classifier:}\\ e.g., logistic regression.
+                \textbf{Head:}\\ e.g., an MLP or logistic regression.
                 \[
                     \vc{y}=\operatorname{softmax}(g(\vc{h}))
                 \]
