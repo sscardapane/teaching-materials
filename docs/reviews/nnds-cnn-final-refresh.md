@@ -150,3 +150,8 @@ After the lecture, Simone asked for six changes, all before "Sequence padding"
   editable TikZ figures; their PDFs stay in `assets/` for the old URLs.
 
 Not exported yet: the tracked PDF waits for Simone's review of the new slides.
+
+Simone then asked to extend the bold-matrix fix to the rest of the deck: the
+embedded matrices in "Sequence padding", `X` and `Y` in "Two tasks on a
+sequence" and "Causal convolutions", and the causal window `P` (also used for
+the dilated window). The padded batch `X ~ (2,T_1,D)` stays a non-bold tensor.

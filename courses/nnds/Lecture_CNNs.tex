@@ -6,7 +6,7 @@
 \graphicspath{{assets/}{../../shared/assets/}}
 \newcommand*{\boldone}{\text{\usefont{U}{bbold}{m}{n}1}}
 % Causal window: the s positions ending at t (Written by Claude, 2026-10-14).
-\newcommand{\causalP}{\overleftarrow{P}}
+\newcommand{\causalP}{\overleftarrow{\vc{P}}}
 % Block-diagram styles, as in shared/slides/mlps.tex (positionwise figure).
 \tikzset{
     nnblock/.style={
@@ -959,12 +959,12 @@
     \setlength{\belowdisplayskip}{7pt}
 
     Two texts may have different lengths. Their embedded matrices
-    $X_1\sim(T_1,D)$ and $X_2\sim(T_2,D)$ share the same feature dimension $D$.
+    $\vc{X}_1\sim(T_1,D)$ and $\vc{X}_2\sim(T_2,D)$ share the same feature dimension $D$.
 
     For $T_1>T_2$, we can build a padded mini-batch:
     \[
         X=\operatorname{stack}\!\left(
-        X_1,\begin{bmatrix}X_2\\\vc{0}\end{bmatrix}
+        \vc{X}_1,\begin{bmatrix}\vc{X}_2\\\vc{0}\end{bmatrix}
         \right),
         \qquad X\sim(2,T_1,D).
     \]
@@ -980,8 +980,8 @@
 \begin{frame}{Two tasks on a sequence}
     \setlength{\parskip}{4pt}
 
-    From the embedded input $X\sim(T,D)$, the convolutional network produces
-    features $Y\sim(T,C')$. We can use them in two ways:
+    From the embedded input $\vc{X}\sim(T,D)$, the convolutional network produces
+    features $\vc{Y}\sim(T,C')$. We can use them in two ways:
     \begin{itemize}
         \item For \myalert{sequence classification}, we pool over the valid
               positions and apply a classifier. We obtain one prediction for the
@@ -989,7 +989,7 @@
         \item For \myalert{next-token prediction}, we keep the positions and
               apply the same vocabulary classifier at each one:
               \[
-                  \vc{p}_t=\operatorname{softmax}(g(\idx{Y}{t,:}))\sim(V).
+                  \vc{p}_t=\operatorname{softmax}(g(\idx{\vc{Y}}{t,:}))\sim(V).
               \]
     \end{itemize}
 
@@ -1005,8 +1005,8 @@
     \setlength{\abovecaptionskip}{2pt}
 
     \begin{tcolorbox}[nndsblue]
-        For a sequence $X\sim(T,C)$, a \myalert{causal model} $Y=f(X)$ is such
-        that $\idx{Y}{t,:}$ depends only on $\idx{X}{t',:}$ for $t'\le t$.
+        For a sequence $\vc{X}\sim(T,C)$, a \myalert{causal model} $\vc{Y}=f(\vc{X})$ is such
+        that $\idx{\vc{Y}}{t,:}$ depends only on $\idx{\vc{X}}{t',:}$ for $t'\le t$.
     \end{tcolorbox}
 
     We pad with $s-1$ zeros on the left only. The window $\causalP(t)\sim(s,C)$
@@ -1015,7 +1015,7 @@
     \begin{columns}[c,onlytextwidth]
         \begin{column}{0.46\textwidth}
             \[
-                \idx{Y}{t,:}=\phi\!\left(\vc{W}^{\top}\operatorname{vect}(\causalP(t))+\vc{b}\right).
+                \idx{\vc{Y}}{t,:}=\phi\!\left(\vc{W}^{\top}\operatorname{vect}(\causalP(t))+\vc{b}\right).
             \]
 
             \vspace{1em}
