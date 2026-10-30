@@ -1,0 +1,47 @@
+% Editable word-level vocabulary: a table of IDs and tokens, and the lookup
+% of two texts, one with a typo that falls back to the unknown token. IDs
+% match the next-token slides (Check = 2, this = 16, out = 3).
+% Written by Claude (2026-10-30).
+\begingroup
+\begin{tikzpicture}[x=1cm,y=1cm,
+        vrow/.style={minimum height=0.42cm,inner sep=0pt,font=\small},
+        tok/.style={draw=drawgray,fill=drawgray_l,rounded corners=1.5pt,line width=0.6pt,
+            minimum height=0.5cm,inner sep=2.5pt,font=\small\ttfamily},
+        tid/.style={draw=draworange,fill=draworange_l,rounded corners=1.5pt,line width=0.6pt,
+            minimum width=0.7cm,minimum height=0.5cm,inner sep=0pt,font=\small},
+        edge/.style={-{Stealth[length=2mm]},line width=0.8pt,draw=drawgray},
+        head/.style={font=\small\bfseries,anchor=south}]
+    % Vocabulary table.
+    \node[head] at (0.9,1.45) {Vocabulary};
+    \foreach \id/\tk [count=\n from 0] in {
+            0/{\textless unk\textgreater},1/{the},2/{Check},3/{out},
+            \vdots/{\vdots},16/{this},\vdots/{\vdots},V{-}1/{zebra}}{
+        \pgfmathsetmacro{\y}{1.2-0.42*\n}
+        \node[vrow,anchor=east,text=draworange] at (0.45,\y-0.21) {$\id$};
+        \node[vrow,anchor=west,font=\small\ttfamily] at (0.7,\y-0.21) {\tk};
+    }
+    \draw[drawgray,line width=0.6pt,rounded corners=2pt] (-0.25,1.25) rectangle (2.1,-2.21);
+    \draw[drawgray!60,line width=0.4pt] (0.58,1.25) -- (0.58,-2.21);
+
+    % Two lookups.
+    \foreach \row/\yy in {0/0.75,1/-1.05}{
+        \ifcase\row
+            \node[tok,anchor=west] (a\row) at (3.4,\yy) {Check};
+            \node[tok,anchor=west] (b\row) at ([xshift=2pt]a\row.east) {this};
+            \node[tok,anchor=west] (c\row) at ([xshift=2pt]b\row.east) {out};
+        \or
+            \node[tok,anchor=west] (a\row) at (3.4,\yy) {Check};
+            \node[tok,anchor=west] (b\row) at ([xshift=2pt]a\row.east) {this};
+            \node[tok,anchor=west,draw=drawred,text=drawred] (c\row) at ([xshift=2pt]b\row.east) {ouut};
+        \fi
+    }
+    \foreach \row/\yy/\ids in {0/0.75/{2,16,3},1/-1.05/{2,16,0}}{
+        \foreach \i [count=\n from 0] in \ids{
+            \node[tid] (i\row\n) at (7.9+0.8*\n,\yy) {$\i$};
+        }
+        \draw[edge] ([xshift=0.15cm]c\row.east) -- ([xshift=-0.1cm]i\row0.west);
+    }
+    \node[font=\footnotesize,text=drawgray,anchor=north] at (5.4,-1.45)
+        {\texttt{ouut} is not in the vocabulary};
+\end{tikzpicture}
+\endgroup

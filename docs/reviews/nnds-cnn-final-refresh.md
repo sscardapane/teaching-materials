@@ -117,3 +117,36 @@ After Simone's own edits (`2129f13`), his review asked for five changes:
 
 The deck loads `decorations.pathreplacing` for the brace. Exported with 2b; baseline
 `verification/export-2b-cnn-2026-10-15.json`.
+
+## Post-lecture fixes (2026-10-30)
+
+> [!note] Written by Claude (2026-10-30)
+
+After the lecture, Simone asked for six changes, all before "Sequence padding"
+(that slide and everything after it are untouched):
+
+- **Title:** "Lecture 5: Convolutional models".
+- **Example of a simple CNN specification:** the return arrow ran along the
+  Backbone border; it now turns outside the box (draw.io source and PDF).
+- **Convolution with explicit indices (new):** the 2D layer with
+  `K ~ (s,s,C,C')` and the 1D layer with `K ~ (s,C,C')`, with the spatial sums in
+  blue and the channel sum in green. It restores the 2024 "Equivalent
+  formulation" slide in zero-based form.
+- **Spatial mixing and channel mixing:** the pointwise layer is now written with
+  indices too; each equation keeps only its colored sum. The separable and group
+  convolution sentences moved to a new **Depthwise-separable convolution** figure
+  slide, which adds the weight count `s^2C + CC'` against `s^2CC'`.
+- **Notation:** matrices are bold uppercase (`X ~ (T,C)`, the 1D window and
+  output, `U(X)`, `Z`, the edge filter, the embedded rows).
+- **A 1D convolutional layer (new):** a figure of the window over a
+  `(T,C)` matrix and the output row in `Y ~ (T,C')`.
+- **Text:** "Handling text data" is now a three-step pipeline figure on
+  `Check this out` (IDs 2, 16, 3, as in the next-token slides). New slides
+  "Step 1: choosing the tokens" (real GPT-4 tokenizer output for
+  `Classify this text!`), "Step 1: building the vocabulary" (three cards) and
+  "Step 2: from tokens to IDs" (vocabulary lookup with an unknown token). The
+  subword and BPE slides are unchanged. "Dense embeddings" became "Step 3: dense
+  embeddings". The old tokenization and embedding figures were replaced by
+  editable TikZ figures; their PDFs stay in `assets/` for the old URLs.
+
+Not exported yet: the tracked PDF waits for Simone's review of the new slides.

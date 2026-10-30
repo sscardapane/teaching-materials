@@ -1,0 +1,40 @@
+% Editable text-to-matrix pipeline: tokenize, look up IDs, embed. Each token
+% becomes one row of X. Uses the same text and IDs as the next-token slides.
+% Written by Claude (2026-10-30), replacing the old embedding figure.
+\begingroup
+\begin{tikzpicture}[x=1cm,y=1cm,
+        tok/.style={draw=drawgray,fill=drawgray_l,rounded corners=1.5pt,line width=0.7pt,
+            minimum width=1.35cm,minimum height=0.55cm,inner sep=2pt,font=\small\ttfamily},
+        tid/.style={draw=draworange,fill=draworange_l,rounded corners=1.5pt,line width=0.7pt,
+            minimum width=0.7cm,minimum height=0.55cm,inner sep=0pt,font=\small},
+        ecell/.style={draw=drawblue,fill=drawblue_l,line width=0.5pt,minimum width=0.42cm,
+            minimum height=0.55cm,inner sep=0pt},
+        edge/.style={-{Stealth[length=2mm]},line width=0.8pt,draw=drawgray},
+        steplab/.style={font=\small\bfseries,anchor=south,align=center},
+        under/.style={font=\small,anchor=north}]
+    \node[draw=drawgray,rounded corners=2pt,line width=0.7pt,inner sep=5pt,
+        font=\small\ttfamily] (text) at (0,0) {Check this out};
+    \foreach \w/\id [count=\t from 0] in {Check/2,this/16,out/3}{
+        \pgfmathsetmacro{\y}{0.75-0.75*\t}
+        \node[tok] (w\t) at (3.6,\y) {\w};
+        \node[tid] (z\t) at (6.0,\y) {$\id$};
+        \foreach \d in {0,...,4}{
+            \node[ecell] at (8.3+0.42*\d,\y) {};
+        }
+        \draw[edge] (w\t.east) -- (z\t.west);
+        \draw[edge] (z\t.east) -- (8.0,\y);
+        \draw[drawgray,line width=0.7pt] (text.east) -- (2.15,0) |- (w\t.west);
+    }
+    \draw[edge] (2.15,0.75) -- (w0.west);
+    \draw[edge] (2.15,0) -- (w1.west);
+    \draw[edge] (2.15,-0.75) -- (w2.west);
+    \draw[drawblue,line width=1pt] (8.09,1.025) rectangle (10.19,-1.025);
+    \node[steplab] at (2.2,1.25) {1. tokenize};
+    \node[steplab] at (4.8,1.25) {2. look up IDs};
+    \node[steplab] at (7.35,1.25) {3. embed};
+    \node[under] at (0,-1.25) {text};
+    \node[under] at (3.6,-1.25) {$T$ tokens};
+    \node[under] at (6.0,-1.25) {$\vc{z}\sim(T)$};
+    \node[under] at (9.14,-1.25) {$\vc{X}\sim(T,D)$};
+\end{tikzpicture}
+\endgroup

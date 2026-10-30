@@ -67,7 +67,7 @@
       "native_sources": [
         "courses/nnds/assets/images/cnn/book/CNN_architecture.xml"
       ],
-      "revised": "2026-10-29: groups renamed to Backbone, Pooling, Head (Simone); sha256 is the original export",
+      "revised": "2026-10-29: groups renamed to Backbone, Pooling, Head (Simone); 2026-10-30: return arrow moved outside the Backbone box; sha256 is the original export",
       "sha256": "7e9a1dd3f77b37e208978e55dafcabe7471094bd3b8162ef41aa5297fffa6f3b"
     },
     {

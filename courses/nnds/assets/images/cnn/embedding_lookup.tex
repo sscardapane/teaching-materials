@@ -1,0 +1,50 @@
+% Editable embedding lookup: the IDs of "Check this out" select rows of
+% E ~ (V,D), which become the rows of X ~ (T,D), the input of a 1D CNN.
+% Written by Claude (2026-10-30), replacing the old embedding figure.
+\begingroup
+\begin{tikzpicture}[x=1cm,y=1cm,
+        ecell/.style={draw=drawgray!70,line width=0.4pt,minimum width=0.4cm,
+            minimum height=0.36cm,inner sep=0pt},
+        tid/.style={draw=draworange,fill=draworange_l,rounded corners=1.5pt,line width=0.6pt,
+            minimum width=0.7cm,minimum height=0.5cm,inner sep=0pt,font=\small},
+        edge/.style={-{Stealth[length=2mm]},line width=0.8pt,draw=drawgray},
+        lab/.style={font=\small},
+        note/.style={font=\footnotesize,text=drawgray}]
+    % Embedding matrix: displayed rows, with the ID of each row on the left.
+    \foreach \id/\fill [count=\n from 0] in {
+            0/white,1/white,2/drawblue_l,3/drawviolet_l,4/white,
+            dots/white,16/draworange_l,dots/white,V{-}1/white}{
+        \pgfmathsetmacro{\y}{1.6-0.36*\n}
+        \def\tmp{dots}
+        \ifx\id\tmp
+            \node[note] at (1.0,\y) {$\vdots$};
+        \else
+            \foreach \d in {0,...,4}{
+                \node[ecell,fill=\fill] at (0.2+0.4*\d,\y) {};
+            }
+            \node[note,anchor=east] at (-0.1,\y) {$\id$};
+        \fi
+    }
+    \node[lab,anchor=south] at (1.0,1.9) {$\vc{E}\sim(V,D)$};
+
+    % X: one row per token.
+    \begin{scope}[shift={(4.2,0)}]
+        \foreach \fill/\w/\id [count=\t from 0] in {drawblue_l/Check/2,draworange_l/this/16,drawviolet_l/out/3}{
+            \foreach \d in {0,...,4}{
+                \node[ecell,fill=\fill] at (0.2+0.4*\d,0.76-0.36*\t) {};
+            }
+            \node[note,anchor=west] at (2.1,0.76-0.36*\t) {\texttt{\w} ($z_{\t}=\id$)};
+        }
+        \node[lab,anchor=south] at (1.0,1.9) {$\vc{X}\sim(T,D)$};
+    \end{scope}
+    % Row copies.
+    \draw[edge,draw=drawblue] (2.1,0.88) to[out=0,in=180] (4.1,0.76);
+    \draw[edge,draw=draworange] (2.1,-0.56) to[out=0,in=180] (4.1,0.40);
+    \draw[edge,draw=drawviolet] (2.1,0.52) to[out=0,in=180] (4.1,0.04);
+    % Next layer.
+    \node[lab,draw=drawblue,fill=drawblue_l!25!white,rounded corners=2pt,
+        inner sep=5pt] (cnn) at (10.7,0.4) {1D CNN};
+    \draw[drawblue,line width=1pt] (4.2,0.94) rectangle (6.2,-0.14);
+    \draw[edge] (8.75,0.4) -- (cnn.west);
+\end{tikzpicture}
+\endgroup

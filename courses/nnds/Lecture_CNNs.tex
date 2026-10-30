@@ -28,7 +28,7 @@
     \vspace{0.5cm}
     \title{\large \begin{spacing}{1.0}Neural Networks for Data Science\end{spacing}\vspace{0.25em}
         \normalsize \begin{spacing}{1.0}\textbf{Master's Degree in Data Science}\end{spacing}\vspace{0.5em}}
-    \subtitle{\Large \textbf{Lecture 5: Convolutional networks -- from images to text generation}}
+    \subtitle{\Large \textbf{Lecture 5: Convolutional models}}
     \date{
         {\includegraphics[scale=0.8]{images/Uniroma1}}
     }
@@ -247,7 +247,7 @@
             and $s=3$, this filter detects vertical edges, and its transpose
             horizontal ones:
             \[
-                K_{\text{v}}=\begin{bmatrix*}[r]-1&0&1\\-2&0&2\\-1&0&1\end{bmatrix*}.
+                \vc{K}_{\text{v}}=\begin{bmatrix*}[r]-1&0&1\\-2&0&2\\-1&0&1\end{bmatrix*}.
             \]
         \end{column}
         \begin{column}{0.55\textwidth}
@@ -396,11 +396,11 @@
     \setlength{\abovedisplayskip}{6pt}
     \setlength{\belowdisplayskip}{6pt}
 
-    We can collect flattened, padded neighborhoods as columns of $U(X)$:
+    We can collect flattened, padded neighborhoods as columns of $\vc{U}(X)$:
     \[
-        \shape{\widetilde{Z}}{(C',HW)}
+        \shape{\widetilde{\vc{Z}}}{(C',HW)}
         = \shape{\vc{W}^{\top}}{(C',s^2C)}\,
-        \shape{U(X)}{(s^2C,HW)}
+        \shape{\vc{U}(X)}{(s^2C,HW)}
         + \vc{b}.
     \]
 
@@ -413,7 +413,7 @@
 
     PyTorch is \myalert{channels-first}, $(B,C,H,W)$, while our math is
     channels-last, $(H,W,C)$. In practice, \verb+nn.Conv2d+ uses a specialized
-    implementation for the hardware, so we do not construct $U(X)$ explicitly.
+    implementation for the hardware, so we do not construct $\vc{U}(X)$ explicitly.
 
     \SlideSource{\href{https://docs.pytorch.org/docs/stable/generated/torch.nn.Unfold.html}{PyTorch: Unfold}
         and \href{https://docs.nvidia.com/deeplearning/performance/dl-performance-convolutional/index.html}{NVIDIA: convolution implementations}.}
@@ -621,30 +621,89 @@
 
 \end{whiteframe}
 
-\begin{frame}{Spatial mixing and channel mixing}
+% Written by Claude (2026-10-30) at Simone's request: the indexed form of the
+% 2D and 1D layers (as in the 2024 "Equivalent formulation" slide), so that
+% the next slide can color what pointwise and depthwise layers remove.
+\begin{frame}{Convolution with explicit indices}
     \setlength{\parskip}{3pt}
     \setlength{\abovedisplayskip}{6pt}
     \setlength{\belowdisplayskip}{6pt}
 
-    Each layer of the positionwise MLP we saw earlier is a $1\times1$ \myalert{pointwise convolution} (the same channel map at every pixel).
-
-    With a \myalert{depthwise convolution}, each channel has instead its own spatial
-    filter. For $K\sim(s,s,C)$ and $s=2k+1$, the layer is:
+    We can reshape $\vc{W}\sim(s^2C,C')$ into a tensor $K\sim(s,s,C,C')$,
+    with one $s\times s\times C$ filter $\idx{K}{:,:,:,a}$ for each output
+    channel $a$. Writing every sum explicitly:
     \[
         \idx{Y}{i,j,a}
-        = \phi\!\left(
-        \sum_{u=-k}^{k}\sum_{v=-k}^{k}
-        \idx{K}{u+k,v+k,a}\,\idx{X}{i+u,j+v,a}+b_a
-        \right).
+        = \phi\Big(
+        \eqnmarkbox[darkcerulean]{sp2d}{\sum_{u=-k}^{k}\sum_{v=-k}^{k}}
+        \eqnmarkbox[darkgreen]{ch2d}{\sum_{c=0}^{C-1}}
+        \idx{K}{u+k,\,v+k,\,c,\,a}\,\idx{X}{i+u,\,j+v,\,c}+b_a
+        \Big).
     \]
+    \annotate[yshift=-0.4em]{below,left}{sp2d}{spatial mixing}
+    \annotate[yshift=-0.4em]{below,right}{ch2d}{channel mixing}
+
+    \vspace{0.9em}
+    For a sequence $\vc{X}\sim(T,C)$, a 1D layer has $K\sim(s,C,C')$ and only
+    one spatial sum:
+    \[
+        \idx{\vc{Y}}{t,a}
+        = \phi\Big(
+        {\color{darkcerulean}\sum_{u=-k}^{k}}\;
+        {\color{darkgreen}\sum_{c=0}^{C-1}}
+        \idx{K}{u+k,\,c,\,a}\,\idx{\vc{X}}{t+u,\,c}+b_a
+        \Big).
+    \]
+
+    In both cases, each output mixes all positions in the neighborhood and all
+    input channels.
+
+\end{frame}
+
+\begin{frame}{Spatial mixing and channel mixing}
+    \setlength{\parskip}{3pt}
+    \setlength{\abovedisplayskip}{5pt}
+    \setlength{\belowdisplayskip}{5pt}
+
+    Each layer of the positionwise MLP we saw earlier is a $1\times1$
+    \myalert{pointwise convolution} (the same channel map at every pixel).
+    Only the {\color{darkgreen}channel sum} remains:
+    \[
+        \idx{Y}{i,j,a}
+        = \phi\Big(
+        {\color{darkgreen}\sum_{c=0}^{C-1}}
+        \idx{\vc{W}}{c,a}\,\idx{X}{i,j,c}+b_a
+        \Big),
+        \qquad \vc{W}\sim(C,C').
+    \]
+
+    With a \myalert{depthwise convolution}, each channel has instead its own spatial
+    filter. For $K\sim(s,s,C)$ and $s=2k+1$, only the
+    {\color{darkcerulean}spatial sums} remain:
+    \[
+        \idx{Y}{i,j,{\color{darkred}a}}
+        = \phi\Big(
+        {\color{darkcerulean}\sum_{u=-k}^{k}\sum_{v=-k}^{k}}
+        \idx{K}{u+k,\,v+k,\,{\color{darkred}a}}\,\idx{X}{i+u,\,j+v,\,{\color{darkred}a}}+b_a
+        \Big).
+    \]
+    Output channel ${\color{darkred}a}$ depends only on input channel
+    ${\color{darkred}a}$, so the layer keeps $C'=C$.
+
+\end{frame}
+
+% Figure: assets/images/cnn/depthwise.tex (Claude, 2026-10-30).
+\begin{whiteframe}{Depthwise-separable convolution}
+
+    {\centering
+        \input{assets/images/cnn/depthwise.tex}\par}
 
     A depthwise convolution followed by a pointwise convolution is called a
     \myalert{depthwise-separable convolution}: we separate spatial mixing
-    from channel mixing.
+    from channel mixing, with $s^2C+CC'$ weights instead of $s^2CC'$.
+    Processing groups of channels independently gives a \textit{group convolution}.
 
-    We can also process groups of channels independently (\textit{group convolution}).
-
-\end{frame}
+\end{whiteframe}
 
 % "A few landmark CNNs" moved to the deeper-models deck (LeNet/AlexNet and
 % ImageNet slides) at Simone's request, 2026-10-20.
@@ -665,7 +724,7 @@
     We represent it using a matrix:
     \vspace{1.5em}
     \[
-        X\sim(\eqnmarkbox[drawred]{seqlength}{T},
+        \vc{X}\sim(\eqnmarkbox[drawred]{seqlength}{T},
         \eqnmarkbox[drawgreen]{seqfeatures}{C}).
     \]
     \annotate[yshift=1em]{above,left}{seqlength}{Length of the sequence}
@@ -680,14 +739,14 @@
     \setlength{\abovedisplayskip}{7pt}
     \setlength{\belowdisplayskip}{7pt}
 
-    With kernel size $s=2k+1$, we take the neighborhood $P_k(t)\sim(s,C)$
+    With kernel size $s=2k+1$, we take the neighborhood $\vc{P}_k(t)\sim(s,C)$
     around position $t$, including all $C$ features.
 
     The same definition now gives a \myalert{1D convolutional layer}:
     \[
-        \idx{Y}{t,:}
-        =\phi\!\left(\vc{W}^{\top}\operatorname{vect}(P_k(t))+\vc{b}\right),
-        \qquad Y\sim(T,C').
+        \idx{\vc{Y}}{t,:}
+        =\phi\!\left(\vc{W}^{\top}\operatorname{vect}(\vc{P}_k(t))+\vc{b}\right),
+        \qquad \vc{Y}\sim(T,C').
     \]
 
     We share $\vc{W}\sim(sC,C')$ and $\vc{b}\sim(C')$ across positions.
@@ -698,33 +757,92 @@
 
 \end{frame}
 
-\begin{frame}{Handling text data}
+% Figure: assets/images/cnn/conv1d.tex (Claude, 2026-10-30).
+\begin{whiteframe}{A 1D convolutional layer}
 
-    Text must be preprocessed to be handled by a neural network. Commonly:
-
-    \begin{enumerate}
-        \item We choose how to split (\myalert{tokenize}) the text, e.g., by word, by character, by byte, by \myalert{subword}, and the maximum number $V$ of unique \myalert{tokens} we can handle (e.g., the $V$ most frequent words). The resulting set of tokens is the \myalert{vocabulary} or \myalert{dictionary}.
-        \item Each token in the text is then converted into a discrete ID $z_t \in \{0,\ldots,V-1\}$, giving us an integer sequence $\vc{z}\sim(T)$.
-        \item We \myalert{embed} each token ID into a vector in $\mathbb{R}^D$ (in a few slides).
-    \end{enumerate}
-
-    By the end of this procedure we have a matrix $X\sim(T,D)$ of $T$ tokens,
-    each represented by $D$ features.
-
-\end{frame}
-
-\begin{whiteframe}{Text tokenization}
-    \setlength{\abovecaptionskip}{5pt}
-
-    \begin{figure}
-        \centering
-        \includegraphics[width=0.85\linewidth,height=0.64\textheight,keepaspectratio]{images/cnn/sequences/text_tokenization.pdf}
-        \caption{Character, subword and word tokenization. Subword tokenizers
-            learn reusable pieces from a corpus, for example with
-            \myalert{byte pair encoding} (BPE).}
-    \end{figure}
+    {\centering
+        \input{assets/images/cnn/conv1d.tex}\par}
+    \smallskip
+    The input is a matrix: the window covers $s$ consecutive rows and all $C$
+    columns, and gives one output row with $C'$ features. We slide the window
+    along the time axis only.
 
 \end{whiteframe}
+
+% Text pipeline rewritten step by step at Simone's request (2026-10-30), with
+% new figures in assets/images/cnn/{text_pipeline,tokenization,vocabulary,
+% embedding_lookup}.tex replacing the old tokenization and embedding figures.
+\begin{whiteframe}{Handling text data}
+
+    Text must be preprocessed to be handled by a neural network. We turn it
+    into a matrix in three steps:
+
+    \vspace{0.3em}
+    \begin{center}
+        \input{assets/images/cnn/text_pipeline.tex}
+    \end{center}
+
+    \vspace{0.5em}
+    {\raggedright
+    By the end of this procedure we have a matrix $\vc{X}\sim(T,D)$ of $T$
+    tokens, each represented by $D$ features.\par}
+
+\end{whiteframe}
+
+\begin{whiteframe}{Step 1: choosing the tokens}
+    \setlength{\parskip}{4pt}
+
+    We first choose how to split (\myalert{tokenize}) the text, e.g., by
+    character, by byte, by \myalert{subword} or by word:
+
+    \begin{center}
+        \input{assets/images/cnn/tokenization.tex}
+    \end{center}
+
+    Larger \myalert{tokens} give shorter sequences, but we need many more of
+    them to cover all possible texts. Byte tokenization works like character
+    tokenization on the $256$ byte values of UTF-8 text.
+
+    \SlideSource{Subwords from the GPT-4 tokenizer (\texttt{cl100k\_base}), via
+        \href{https://github.com/openai/tiktoken}{tiktoken}.}
+
+\end{whiteframe}
+
+\begin{frame}{Step 1: building the vocabulary}
+    \setlength{\parskip}{4pt}
+
+    The set of tokens we can handle is the \myalert{vocabulary} or
+    \myalert{dictionary}. Its size $V$ depends on the type of token:
+
+    \medskip
+    \begin{columns}[T,onlytextwidth]
+        \begin{column}{0.32\textwidth}
+            \begin{tcolorbox}[nndsblue,courseheight={text-vocab}{}]
+                \textbf{Characters or bytes}\\
+                A small fixed set, e.g., the $256$ byte values.
+            \end{tcolorbox}
+        \end{column}
+        \begin{column}{0.32\textwidth}
+            \begin{tcolorbox}[nndsblue,courseheight={text-vocab}{}]
+                \textbf{Words}\\
+                The $V$ most frequent words of a training corpus, plus a
+                special \textit{unknown} token.
+            \end{tcolorbox}
+        \end{column}
+        \begin{column}{0.32\textwidth}
+            \begin{tcolorbox}[nndsblue,courseheight={text-vocab}{}]
+                \textbf{Subwords}\\
+                Reusable pieces learned from a corpus, e.g., with
+                \myalert{byte pair encoding} (BPE).
+            \end{tcolorbox}
+        \end{column}
+    \end{columns}
+
+    \medskip
+    Larger tokens need a larger vocabulary: a few hundred characters, but
+    tens of thousands of words or subwords.
+
+\end{frame}
 
 \begin{frame}{Subword embeddings}
     \setlength{\parskip}{3pt}
@@ -783,14 +901,30 @@
 
 \end{frame}
 
-\begin{frame}{Dense embeddings}
+% Figure: assets/images/cnn/vocabulary.tex (Claude, 2026-10-30).
+\begin{whiteframe}{Step 2: from tokens to IDs}
+    \setlength{\parskip}{4pt}
+
+    Each token in the text is converted into a discrete ID
+    $z_t\in\{0,\ldots,V-1\}$, its position in the vocabulary, giving us an
+    integer sequence $\vc{z}\sim(T)$:
+
+    \begin{center}
+        \input{assets/images/cnn/vocabulary.tex}
+    \end{center}
+
+    A word outside the vocabulary, such as a typo, becomes the unknown token.
+
+\end{whiteframe}
+
+\begin{frame}{Step 3: dense embeddings}
     \setlength{\parskip}{4pt}
     \setlength{\abovedisplayskip}{7pt}
     \setlength{\belowdisplayskip}{7pt}
 
     For embedding we learn an \myalert{embedding matrix} $\vc{E}\sim(V,D)$, with one row for each of the $V$ tokens in the vocabulary. Embedding element $z_t$ of the sequence is just a row lookup:
     \[
-        \idx{X}{t,:}=\idx{\vc{E}}{z_t,:}
+        \idx{\vc{X}}{t,:}=\idx{\vc{E}}{z_t,:}
     \]
 
     We initialize the embeddings randomly and train them with the network, or take them from some pre-trained model or algorithm.
@@ -804,14 +938,18 @@
 
 \end{frame}
 
+% Figure: assets/images/cnn/embedding_lookup.tex (Claude, 2026-10-30).
 \begin{whiteframe}{Visualizing the embedding procedure}
-    \setlength{\abovecaptionskip}{3pt}
 
-    \begin{figure}
-        \centering
-        \includegraphics[width=0.85\columnwidth,height=0.72\textheight,keepaspectratio]{images/cnn/sequences/trainable_embeddings.pdf}
-        \caption{Using custom embeddings for text classification.}
-    \end{figure}
+    \vspace{0.5em}
+    \begin{center}
+        \input{assets/images/cnn/embedding_lookup.tex}
+    \end{center}
+
+    \vspace{0.6em}
+    For $\vc{z}=(2,16,3)$, each ID selects one row of $\vc{E}$. With custom embeddings, we train
+    $\vc{E}$ together with the rest of the network, e.g., a 1D CNN for text
+    classification.
 
 \end{whiteframe}
 

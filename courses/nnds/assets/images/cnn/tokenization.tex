@@ -1,0 +1,36 @@
+% Editable tokenization comparison on one sentence: characters, subwords and
+% words, with the resulting sequence length. Subwords are the actual output of
+% the GPT-4 tokenizer (tiktoken, cl100k_base). Written by Claude (2026-10-30),
+% replacing the old tokenization figure.
+\begingroup
+\begin{tikzpicture}[x=1cm,y=1cm,
+        tk/.style={draw=#1,fill=#1_l,rounded corners=1.5pt,line width=0.6pt,
+            minimum height=0.5cm,inner sep=2.5pt,font=\small\ttfamily,anchor=west},
+        rowlabel/.style={font=\small\bfseries,anchor=east},
+        len/.style={font=\small,anchor=west,text=drawgray}]
+    \def\sp{{\color{drawgray}\textvisiblespace}}
+    \node[font=\small\ttfamily,anchor=west] at (0,0.95) {Classify this text!};
+    \node[rowlabel] at (-0.2,0.95) {Text};
+    % Characters (spaces are tokens too).
+    \node[rowlabel] at (-0.2,0) {Characters};
+    \foreach \ch [count=\n from 0] in {C,l,a,s,s,i,f,y,\sp,t,h,i,s,\sp,t,e,x,t,!}{
+        \node[tk=drawblue,minimum width=0.4cm,inner sep=0pt] at (0.42*\n,0) {\ch};
+    }
+    \node[len] at (8.3,0) {$T=19$};
+    % Subwords.
+    \node[rowlabel] at (-0.2,-0.8) {Subwords};
+    \node[tk=draworange] (s0) at (0,-0.8) {Class};
+    \node[tk=draworange] (s1) at ([xshift=2pt]s0.east) {ify};
+    \node[tk=draworange] (s2) at ([xshift=2pt]s1.east) {\sp this};
+    \node[tk=draworange] (s3) at ([xshift=2pt]s2.east) {\sp text};
+    \node[tk=draworange] (s4) at ([xshift=2pt]s3.east) {!};
+    \node[len] at (8.3,-0.8) {$T=5$};
+    % Words.
+    \node[rowlabel] at (-0.2,-1.6) {Words};
+    \node[tk=drawgreen] (v0) at (0,-1.6) {Classify};
+    \node[tk=drawgreen] (v1) at ([xshift=2pt]v0.east) {this};
+    \node[tk=drawgreen] (v2) at ([xshift=2pt]v1.east) {text};
+    \node[tk=drawgreen] (v3) at ([xshift=2pt]v2.east) {!};
+    \node[len] at (8.3,-1.6) {$T=4$};
+\end{tikzpicture}
+\endgroup

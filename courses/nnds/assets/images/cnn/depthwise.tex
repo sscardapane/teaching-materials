@@ -1,0 +1,61 @@
+% Editable depthwise-separable convolution: each input channel has its own
+% s x s filter (depthwise, spatial mixing), then a 1x1 convolution mixes the
+% channels at every pixel (pointwise, channel mixing). Written by Claude
+% (2026-10-30) at Simone's request for a picture of a depthwise layer.
+\begingroup
+% #1,#2: centre; #3: fill; #4: border; #5: 1 to mark a 3x3 patch.
+\newcommand{\cnnChannel}[5]{%
+    \begin{scope}[shift={(#1,#2)}]
+        \foreach \r in {0,...,3}{
+            \foreach \q in {0,...,3}{
+                \node[ccell,fill=#3] at (0.18*\q-0.27,0.27-0.18*\r) {};
+            }
+        }
+        \draw[#4,line width=1pt] (-0.36,-0.36) rectangle (0.36,0.36);
+        \ifnum#5=1
+            \draw[#4,line width=1.6pt,rounded corners=1pt] (-0.36,-0.18) rectangle (0.18,0.36);
+        \fi
+    \end{scope}
+}
+% #1,#2: centre; #3: colour. A small 3x3 filter.
+\newcommand{\cnnKernel}[3]{%
+    \begin{scope}[shift={(#1,#2)}]
+        \foreach \r in {0,...,2}{
+            \foreach \q in {0,...,2}{
+                \node[kcell,fill=#3!35!white,draw=#3] at (0.12*\q-0.12,0.12-0.12*\r) {};
+            }
+        }
+    \end{scope}
+}
+\begin{tikzpicture}[x=1cm,y=1cm,
+        ccell/.style={draw=drawgray!60,line width=0.3pt,minimum size=0.18cm,inner sep=0pt},
+        kcell/.style={line width=0.4pt,minimum size=0.12cm,inner sep=0pt},
+        edge/.style={-{Stealth[length=2mm]},line width=0.8pt},
+        head/.style={font=\small\bfseries,align=center,anchor=south},
+        note/.style={font=\footnotesize,align=center,anchor=north}]
+    % Input channels and depthwise outputs: one colour per channel.
+    \foreach \c/\col/\fill in {0/drawblue/drawblue_l,1/draworange/draworange_l,2/drawviolet/drawviolet_l}{
+        \pgfmathsetmacro{\y}{0.9-0.9*\c}
+        \cnnChannel{0}{\y}{\fill}{\col}{1}
+        \draw[edge,draw=\col] (0.5,\y) -- (3.1,\y);
+        \cnnKernel{1.8}{\y+0.22}{\col}
+        \cnnChannel{3.6}{\y}{\fill}{\col}{0}
+    }
+    % Pointwise outputs: each mixes all depthwise channels.
+    \foreach \a in {0,...,3}{
+        \pgfmathsetmacro{\ya}{1.26-0.84*\a}
+        \foreach \c in {0,1,2}{
+            \pgfmathsetmacro{\y}{0.9-0.9*\c}
+            \draw[drawgray!80,line width=0.6pt] (4.0,\y) -- (6.4,\ya);
+        }
+        \draw[edge,draw=drawgray] (6.4,\ya) -- (6.5,\ya);
+        \cnnChannel{6.9}{\ya}{drawgreen_l}{drawgreen}{0}
+    }
+    \node[head] at (0,1.62) {Input};
+    \node[head] at (1.8,1.62) {Depthwise};
+    \node[head] at (5.2,1.62) {Pointwise};
+    \node[head] at (6.9,1.62) {Output};
+    \node[note,text=darkcerulean] at (1.8,-1.28) {spatial mixing\\$K\sim(s,s,C)$};
+    \node[note,text=darkgreen] at (5.2,-1.28) {channel mixing\\$\vc{W}\sim(C,C')$};
+\end{tikzpicture}
+\endgroup
