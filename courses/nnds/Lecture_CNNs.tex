@@ -562,7 +562,7 @@
             the few pixels where its pattern appears.
 
             Max pooling keeps the strongest response of each block (\textit{is
-            the pattern somewhere here?}), so a shift inside a block does not
+                the pattern somewhere here?}), so a shift inside a block does not
             change it. The shifted map gives a shifted output: later layers
             can still combine \textit{where} features are.
 
@@ -572,9 +572,9 @@
     \end{columns}
 
     \SlideSource{Boureau, Ponce and LeCun (2010), \textit{A Theoretical Analysis of
-        Feature Pooling in Visual Recognition}, ICML. Scherer, M\"uller and Behnke
+            Feature Pooling in Visual Recognition}, ICML. Scherer, M\"uller and Behnke
         (2010), \textit{Evaluation of Pooling Operations in Convolutional
-        Architectures for Object Recognition}, ICANN.}
+            Architectures for Object Recognition}, ICANN.}
 
 \end{whiteframe}
 
@@ -704,7 +704,7 @@
 
     With a \myalert{depthwise convolution}, each channel has instead its own spatial
     filter. For $K\sim(s,s,C)$ and $s=2k+1$, only the
-    {\color{darkcerulean}spatial sums} remain:
+        {\color{darkcerulean}spatial sums} remain:
     \[
         \idx{Y}{i,j,{\color{darkred}a}}
         = \phi\Big(
@@ -809,8 +809,8 @@
 
     \vspace{0.5em}
     {\raggedright
-    By the end of this procedure we have a matrix $\vc{X}\sim(T,D)$ of $T$
-    tokens, each represented by $D$ features.\par}
+        By the end of this procedure we have a matrix $\vc{X}\sim(T,D)$ of $T$
+        tokens, each represented by $D$ features.\par}
 
 \end{whiteframe}
 
@@ -848,14 +848,14 @@
             \end{tcolorbox}
         \end{column}
         \begin{column}{0.32\textwidth}
-            \begin{tcolorbox}[nndsblue,courseheight={text-vocab}{}]
+            \begin{tcolorbox}[nndsred,courseheight={text-vocab}{}]
                 \textbf{Words}\\
                 The $V$ most frequent words of a training corpus, plus a
                 special \textit{unknown} token.
             \end{tcolorbox}
         \end{column}
         \begin{column}{0.32\textwidth}
-            \begin{tcolorbox}[nndsblue,courseheight={text-vocab}{}]
+            \begin{tcolorbox}[nndsgreen,courseheight={text-vocab}{}]
                 \textbf{Subwords}\\
                 Reusable pieces learned from a corpus, e.g., with
                 \myalert{byte pair encoding} (BPE).
@@ -1101,15 +1101,14 @@
     \texttt{Check this out}, with token IDs from a toy vocabulary:
 
     {\centering
-        \renewcommand{\arraystretch}{1.15}
-        \begin{tabular}{lcc}
-            
-            Position $t$          & $0$                       & $1$                       \\
-            \hline
-            Input $z_t$           & $2$ (\texttt{Check})      & $16$ (\texttt{this})      \\
-            Target $z_{t+1}$      & $16$ (\texttt{this})      & $3$ (\texttt{out})        \\
-            
-        \end{tabular}
+    \renewcommand{\arraystretch}{1.15}
+    \begin{tabular}{lcc}
+
+        Position $t$     & $0$                  & $1$                  \\
+        \hline
+        Input $z_t$      & $2$ (\texttt{Check}) & $16$ (\texttt{this}) \\
+        Target $z_{t+1}$ & $16$ (\texttt{this}) & $3$ (\texttt{out})   \\
+    \end{tabular}
     \par}
 
     Each prediction $\vc{p}_t$ is compared with the next ID, averaging the
