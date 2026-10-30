@@ -500,31 +500,6 @@
 
 \end{whiteframe}
 
-% Figure: assets/images/cnn/pooling.tex (Claude, 2026-10-29, at Simone's
-% request: why max pooling inside the network and global pooling at the end).
-\begin{whiteframe}{Max pooling inside, global pooling at the end}
-    \setlength{\parskip}{5pt}
-
-    \begin{columns}[c,onlytextwidth]
-        \begin{column}{0.60\textwidth}
-            \centering
-            \input{assets/images/cnn/pooling.tex}
-        \end{column}
-        \begin{column}{0.37\textwidth}
-            \small\setlength{\parskip}{8pt}%
-            Max pooling keeps a coarser grid: the shifted map gives a shifted
-            output, so later layers can still combine \textit{where} features are.
-
-            \myalert{Global pooling} averages each channel over all pixels:
-            the three maps give the same value.
-
-            We pool globally only at the end, when the receptive field covers
-            the image. The output has $C'$ values for any $H'$ and $W'$.
-        \end{column}
-    \end{columns}
-
-\end{whiteframe}
-
 \begin{frame}{Complete architecture of a CNN}
     \setlength{\parskip}{2pt}
 
@@ -569,6 +544,31 @@
     \textit{model selection} research issue.
 
 \end{frame}
+
+% Figure: assets/images/cnn/pooling.tex (Claude, 2026-10-29, at Simone's
+% request: why max pooling inside the network and global pooling at the end).
+\begin{whiteframe}{Max pooling inside, global pooling at the end}
+    \setlength{\parskip}{5pt}
+
+    \begin{columns}[c,onlytextwidth]
+        \begin{column}{0.60\textwidth}
+            \centering
+            \input{assets/images/cnn/pooling.tex}
+        \end{column}
+        \begin{column}{0.37\textwidth}
+            \small\setlength{\parskip}{8pt}%
+            Max pooling keeps a coarser grid: the shifted map gives a shifted
+            output, so later layers can still combine \textit{where} features are.
+
+            \myalert{Global pooling} averages each channel over all pixels:
+            the three maps give the same value.
+
+            We pool globally only at the end, when the receptive field covers
+            the image. The output has $C'$ values for any $H'$ and $W'$.
+        \end{column}
+    \end{columns}
+
+\end{whiteframe}
 
 % Figure: assets/images/cnn/filters/make_figures.py
 \begin{whiteframe}{Data augmentation}
