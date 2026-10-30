@@ -3,7 +3,8 @@
 % channels at every pixel (pointwise, channel mixing). Written by Claude
 % (2026-10-30) at Simone's request for a picture of a depthwise layer.
 \begingroup
-% #1,#2: centre; #3: fill; #4: border; #5: 1 to mark a 3x3 patch.
+% #1,#2: centre; #3: fill; #4: border; #5: 1 to mark a 3x3 patch, 2 to mark
+% its centre pixel.
 \newcommand{\cnnChannel}[5]{%
     \begin{scope}[shift={(#1,#2)}]
         \foreach \r in {0,...,3}{
@@ -14,6 +15,9 @@
         \draw[#4,line width=1pt] (-0.36,-0.36) rectangle (0.36,0.36);
         \ifnum#5=1
             \draw[#4,line width=1.6pt,rounded corners=1pt] (-0.36,-0.18) rectangle (0.18,0.36);
+        \fi
+        \ifnum#5=2
+            \draw[#4!70!black,line width=1.6pt] (-0.18,0) rectangle (0,0.18);
         \fi
     \end{scope}
 }
@@ -33,23 +37,27 @@
         edge/.style={-{Stealth[length=2mm]},line width=0.8pt},
         head/.style={font=\small\bfseries,align=center,anchor=south},
         note/.style={font=\footnotesize,align=center,anchor=north}]
-    % Input channels and depthwise outputs: one colour per channel.
+    % Pointwise: the same pixel of every depthwise map feeds the same pixel
+    % of every output map. Drawn first, so the maps cover the line ends.
+    \foreach \a in {0,...,3}{
+        \pgfmathsetmacro{\ya}{1.26-0.84*\a}
+        \foreach \c in {0,1,2}{
+            \pgfmathsetmacro{\y}{0.9-0.9*\c}
+            \draw[drawgray!80,line width=0.6pt] (3.6-0.09,\y+0.09) -- (6.9-0.09,\ya+0.09);
+        }
+    }
+    % Input channels and depthwise outputs: one colour per channel. The
+    % 3x3 patch of each channel gives one pixel of its depthwise map.
     \foreach \c/\col/\fill in {0/drawblue/drawblue_l,1/draworange/draworange_l,2/drawviolet/drawviolet_l}{
         \pgfmathsetmacro{\y}{0.9-0.9*\c}
         \cnnChannel{0}{\y}{\fill}{\col}{1}
         \draw[edge,draw=\col] (0.5,\y) -- (3.1,\y);
         \cnnKernel{1.8}{\y+0.22}{\col}
-        \cnnChannel{3.6}{\y}{\fill}{\col}{0}
+        \cnnChannel{3.6}{\y}{\fill}{\col}{2}
     }
-    % Pointwise outputs: each mixes all depthwise channels.
     \foreach \a in {0,...,3}{
         \pgfmathsetmacro{\ya}{1.26-0.84*\a}
-        \foreach \c in {0,1,2}{
-            \pgfmathsetmacro{\y}{0.9-0.9*\c}
-            \draw[drawgray!80,line width=0.6pt] (4.0,\y) -- (6.4,\ya);
-        }
-        \draw[edge,draw=drawgray] (6.4,\ya) -- (6.5,\ya);
-        \cnnChannel{6.9}{\ya}{drawgreen_l}{drawgreen}{0}
+        \cnnChannel{6.9}{\ya}{drawgreen_l}{drawgreen}{2}
     }
     \node[head] at (0,1.62) {Input};
     \node[head] at (1.8,1.62) {Depthwise};

@@ -1,0 +1,43 @@
+% Editable figure: global max versus global average pooling on one channel,
+% for a map with a detected pattern, the same map shifted, and a map with a
+% single isolated spike. Written by Claude (2026-10-30) at Simone's request:
+% why we use global average pooling at the end.
+\begingroup
+% #1,#2: top-left corner; #3: comma list of the 16 values, row by row.
+\newcommand{\cnnMap}[3]{%
+    \begin{scope}[shift={(#1,#2)}]
+        \foreach \v [count=\n from 0] in #3{
+            \pgfmathtruncatemacro{\row}{floor(\n/4)}
+            \pgfmathtruncatemacro{\col}{mod(\n,4)}
+            \ifnum\v=0
+                \node[pcell,fill=white,text=drawgray!60] at (0.42*\col+0.21,-0.42*\row-0.21) {$0$};
+            \else
+                \node[pcell,fill=drawblue_l] at (0.42*\col+0.21,-0.42*\row-0.21) {$\v$};
+            \fi
+        }
+        \draw[drawblue,line width=1pt] (0,0) rectangle (1.68,-1.68);
+    \end{scope}
+}
+\begin{tikzpicture}[x=1cm,y=1cm,
+        pcell/.style={draw=drawgray!70,line width=0.4pt,minimum size=0.42cm,
+            inner sep=0pt,font=\footnotesize},
+        out/.style={draw=#1,fill=#1_l,line width=1pt,minimum size=0.42cm,
+            inner sep=1pt,font=\footnotesize},
+        edge/.style={-{Stealth[length=2mm]},line width=0.8pt,draw=drawgray},
+        note/.style={font=\footnotesize,anchor=north},
+        colhead/.style={font=\small\bfseries,align=center,anchor=south}]
+    \foreach \x/\vals/\av/\title in {
+        0/{0,0,0,0, 0,8,4,0, 0,4,0,0, 0,0,0,0}/{1}/{Activation\\map},
+        2.6/{0,0,0,0, 0,0,8,4, 0,0,4,0, 0,0,0,0}/{1}/{Shifted\\\phantom{p}},
+        5.2/{0,0,0,0, 0,0,0,0, 0,0,8,0, 0,0,0,0}/{0.5}/{Isolated\\spike}}{
+        \node[colhead] at (\x+0.84,0.1) {\title};
+        \cnnMap{\x}{0}{\vals}
+        \draw[edge] (\x+0.5,-1.8) -- (\x+0.35,-2.2);
+        \draw[edge] (\x+1.18,-1.8) -- (\x+1.33,-2.2);
+        \node[out=drawgreen] at (\x+0.35,-2.5) {$8$};
+        \node[out=draworange] at (\x+1.33,-2.5) {$\av$};
+        \node[note,text=darkgreen] at (\x+0.35,-2.8) {max};
+        \node[note,text=draworange!80!black] at (\x+1.33,-2.8) {average};
+    }
+\end{tikzpicture}
+\endgroup

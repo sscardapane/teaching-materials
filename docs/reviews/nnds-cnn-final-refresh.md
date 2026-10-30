@@ -155,3 +155,20 @@ Simone then asked to extend the bold-matrix fix to the rest of the deck: the
 embedded matrices in "Sequence padding", `X` and `Y` in "Two tasks on a
 sequence" and "Causal convolutions", and the causal window `P` (also used for
 the dilated window). The padded batch `X ~ (2,T_1,D)` stays a non-bold tensor.
+
+After Simone's reorder (`6726490`) he asked for three more changes:
+
+- **Convolution with explicit indices:** the 1D equation is gone, since the 1D
+  layer is defined later with its own slide and figure.
+- **Depthwise-separable convolution:** the figure follows one pixel. The 3x3
+  patch of each channel becomes a highlighted pixel of its depthwise map, and
+  the pointwise lines join that pixel in every depthwise map to the same pixel
+  in every output map.
+- **Pooling:** "Max pooling inside, global pooling at the end" became two
+  slides. "Why max pooling inside the network" compares 2x2 max and average
+  pooling on sparse detections (`pooling_inside.tex`; Boureau et al. 2010,
+  Scherer et al. 2010). "Why global average pooling at the end" compares
+  global max and average on a pattern, its shift and an isolated spike
+  (`pooling_global.tex`; Lin et al. 2014). The old slide's three statements
+  (coarser grid keeps where, global pooling ignores position, pool globally
+  only at the end for any `H'`, `W'`) are kept; `pooling.tex` is removed.

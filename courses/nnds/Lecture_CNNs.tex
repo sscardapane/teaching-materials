@@ -545,28 +545,64 @@
 
 \end{frame}
 
-% Figure: assets/images/cnn/pooling.tex (Claude, 2026-10-29, at Simone's
-% request: why max pooling inside the network and global pooling at the end).
-\begin{whiteframe}{Max pooling inside, global pooling at the end}
+% Figures: assets/images/cnn/pooling_inside.tex and pooling_global.tex
+% (Claude, 2026-10-30, at Simone's request: why max pooling inside the network
+% and global average pooling at the end).
+\begin{whiteframe}{Why max pooling inside the network}
     \setlength{\parskip}{5pt}
 
     \begin{columns}[c,onlytextwidth]
-        \begin{column}{0.60\textwidth}
+        \begin{column}{0.44\textwidth}
             \centering
-            \input{assets/images/cnn/pooling.tex}
+            \input{assets/images/cnn/pooling_inside.tex}
         \end{column}
-        \begin{column}{0.37\textwidth}
-            \small\setlength{\parskip}{8pt}%
-            Max pooling keeps a coarser grid: the shifted map gives a shifted
-            output, so later layers can still combine \textit{where} features are.
+        \begin{column}{0.53\textwidth}
+            \small\setlength{\parskip}{7pt}%
+            Inside the backbone, each channel is a detector that fires at
+            the few pixels where its pattern appears.
 
-            \myalert{Global pooling} averages each channel over all pixels:
-            the three maps give the same value.
+            Max pooling keeps the strongest response of each block (\textit{is
+            the pattern somewhere here?}), so a shift inside a block does not
+            change it. The shifted map gives a shifted output: later layers
+            can still combine \textit{where} features are.
 
-            We pool globally only at the end, when the receptive field covers
-            the image. The output has $C'$ values for any $H'$ and $W'$.
+            Average pooling dilutes each detection and blends nearby ones:
+            the $8$ and the $4$ become a $3$.
         \end{column}
     \end{columns}
+
+    \SlideSource{Boureau, Ponce and LeCun (2010), \textit{A Theoretical Analysis of
+        Feature Pooling in Visual Recognition}, ICML. Scherer, M\"uller and Behnke
+        (2010), \textit{Evaluation of Pooling Operations in Convolutional
+        Architectures for Object Recognition}, ICANN.}
+
+\end{whiteframe}
+
+\begin{whiteframe}{Why global average pooling at the end}
+    \setlength{\parskip}{5pt}
+
+    We pool globally only at the end, when the receptive field covers the
+    image. The output has $C'$ values for any $H'$ and $W'$.
+
+    \begin{columns}[c,onlytextwidth]
+        \begin{column}{0.52\textwidth}
+            \centering
+            \input{assets/images/cnn/pooling_global.tex}
+        \end{column}
+        \begin{column}{0.45\textwidth}
+            \small\setlength{\parskip}{7pt}%
+            \myalert{Global average pooling} averages each channel over all
+            pixels: shifting (or rearranging) the map does not change it.
+
+            It measures \textit{how much} of the image shows the pattern. The
+            global max gives $8$ for an isolated spike too.
+
+            The gradient of the average reaches every position, not only the
+            maximum.
+        \end{column}
+    \end{columns}
+
+    \SlideSource{Lin, Chen and Yan (2014), \href{https://arxiv.org/abs/1312.4400}{\textit{Network In Network}}, ICLR.}
 
 \end{whiteframe}
 
@@ -622,7 +658,7 @@
 \end{whiteframe}
 
 % Written by Claude (2026-10-30) at Simone's request: the indexed form of the
-% 2D and 1D layers (as in the 2024 "Equivalent formulation" slide), so that
+% 2D layer (as in the 2024 "Equivalent formulation" slide), so that
 % the next slide can color what pointwise and depthwise layers remove.
 \begin{frame}{Convolution with explicit indices}
     \setlength{\parskip}{3pt}
@@ -643,20 +679,9 @@
     \annotate[yshift=-0.4em]{below,left}{sp2d}{spatial mixing}
     \annotate[yshift=-0.4em]{below,right}{ch2d}{channel mixing}
 
-    \vspace{0.9em}
-    For a sequence $\vc{X}\sim(T,C)$, a 1D layer has $K\sim(s,C,C')$ and only
-    one spatial sum:
-    \[
-        \idx{\vc{Y}}{t,a}
-        = \phi\Big(
-        {\color{darkcerulean}\sum_{u=-k}^{k}}\;
-        {\color{darkgreen}\sum_{c=0}^{C-1}}
-        \idx{K}{u+k,\,c,\,a}\,\idx{\vc{X}}{t+u,\,c}+b_a
-        \Big).
-    \]
-
-    In both cases, each output mixes all positions in the neighborhood and all
-    input channels.
+    \vspace{1.2em}
+    Each output mixes all positions in the neighborhood and all input
+    channels.
 
 \end{frame}
 

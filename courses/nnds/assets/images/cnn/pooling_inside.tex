@@ -1,0 +1,44 @@
+% Editable figure: 2x2 max pooling versus 2x2 average pooling on one channel
+% of an activation map with two sparse detections, and on a copy shifted by
+% one pixel. Written by Claude (2026-10-30) at Simone's request: why we use
+% max pooling inside the network.
+\begingroup
+% #1,#2: top-left corner; #3: size (2 or 4); #4: comma list of the values,
+% row by row; #5: fill of the non-zero cells; #6: border.
+\newcommand{\cnnMap}[6]{%
+    \begin{scope}[shift={(#1,#2)}]
+        \foreach \v [count=\n from 0] in #4{
+            \pgfmathtruncatemacro{\row}{floor(\n/#3)}
+            \pgfmathtruncatemacro{\col}{mod(\n,#3)}
+            \ifnum\v=0
+                \node[pcell,fill=white,text=drawgray!60] at (0.42*\col+0.21,-0.42*\row-0.21) {$0$};
+            \else
+                \node[pcell,fill=#5] at (0.42*\col+0.21,-0.42*\row-0.21) {$\v$};
+            \fi
+        }
+        \draw[#6,line width=1pt] (0,0) rectangle (0.42*#3,-0.42*#3);
+        \ifnum#3=4
+            \draw[#6,line width=0.8pt] (0.84,0) -- (0.84,-1.68) (0,-0.84) -- (1.68,-0.84);
+        \fi
+    \end{scope}
+}
+\begin{tikzpicture}[x=1cm,y=1cm,
+        pcell/.style={draw=drawgray!70,line width=0.4pt,minimum size=0.42cm,
+            inner sep=0pt,font=\footnotesize},
+        edge/.style={-{Stealth[length=2mm]},line width=0.8pt,draw=drawgray},
+        note/.style={font=\footnotesize,anchor=north},
+        colhead/.style={font=\small\bfseries,align=center,anchor=south}]
+    \foreach \x/\vals/\mx/\av/\title in {
+        0/{0,0,0,0, 0,8,4,0, 0,4,0,0, 0,0,0,0}/{8,4, 4,0}/{2,1, 1,0}/{Activation\\map},
+        3.0/{0,0,0,0, 0,0,8,4, 0,0,4,0, 0,0,0,0}/{0,8, 0,4}/{0,3, 0,1}/{Shifted by\\one pixel}}{
+        \node[colhead] at (\x+0.84,0.1) {\title};
+        \cnnMap{\x}{0}{4}{\vals}{drawblue_l}{drawblue}
+        \draw[edge] (\x+0.5,-1.8) -- (\x+0.2,-2.25);
+        \draw[edge] (\x+1.18,-1.8) -- (\x+1.48,-2.25);
+        \cnnMap{\x-0.22}{-2.35}{2}{\mx}{drawgreen_l}{drawgreen}
+        \cnnMap{\x+1.06}{-2.35}{2}{\av}{draworange_l}{draworange}
+        \node[note,text=darkgreen] at (\x+0.2,-3.3) {max};
+        \node[note,text=draworange!80!black] at (\x+1.48,-3.3) {average};
+    }
+\end{tikzpicture}
+\endgroup
