@@ -1208,13 +1208,26 @@
               again.
     \end{itemize}
 
+    \SlideSource{Holtzman et al. (2020), \href{https://arxiv.org/abs/1904.09751}{\textit{The Curious Case of Neural Text Degeneration}}, ICLR.}
+
+\end{frame}
+
+% Figure: assets/images/cnn/decoding_tree.tex (Claude, 2026-11-05).
+\begin{whiteframe}{Greedy decoding and beam search}
+
+    \begin{center}
+        \input{assets/images/cnn/decoding_tree.tex}
+    \end{center}
+
+    \vspace{0.6em}
+    Keeping \texttt{dog} lets beam search find a more likely sequence.
+
+    \medskip
     Convolutions exchange information through fixed neighborhoods.
     What if the interactions between positions could depend on the input?
     This will lead us to \myalert{attention}.
 
-    \SlideSource{Holtzman et al. (2020), \href{https://arxiv.org/abs/1904.09751}{\textit{The Curious Case of Neural Text Degeneration}}, ICLR.}
-
-\end{frame}
+\end{whiteframe}
 
 \begin{frame}{What comes next}
     \setlength{\parskip}{6pt}

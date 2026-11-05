@@ -1,0 +1,33 @@
+% Editable figure: two decoding steps after the prompt "the". Edge labels are
+% next-token probabilities; the column on the right is p of each sequence.
+% Greedy decoding (orange) and beam search with k=2 (green) end differently.
+% Written by Claude (2026-11-05).
+\begingroup
+\begin{tikzpicture}[x=1cm,y=1cm,
+        tok/.style={draw=drawgray,fill=drawgray_l,rounded corners=1.5pt,line width=0.6pt,
+            minimum height=0.48cm,inner sep=2.5pt,font=\small\ttfamily},
+        edge/.style={line width=0.8pt,draw=drawgray!60},
+        greedy/.style={line width=1.6pt,draw=draworange},
+        beam/.style={line width=1.6pt,draw=drawgreen},
+        prob/.style={font=\footnotesize,fill=white,inner sep=1pt},
+        seq/.style={font=\small,anchor=west}]
+    \node[tok] (r) at (0,0) {the};
+    \node[tok] (a) at (2.6,0.9) {cat};
+    \node[tok] (b) at (2.6,-0.9) {dog};
+    \node[tok,anchor=west] (aa) at (4.9,1.35) {sat};
+    \node[tok,anchor=west] (ab) at (4.9,0.45) {is};
+    \node[tok,anchor=west] (ba) at (4.9,-0.45) {barks};
+    \node[tok,anchor=west] (bb) at (4.9,-1.35) {runs};
+    \draw[greedy] (r.east) -- node[prob] {0.5} (a.west);
+    \draw[beam] (r.east) -- node[prob] {0.4} (b.west);
+    \draw[greedy] (a.east) -- node[prob] {0.4} (aa.west);
+    \draw[edge] (a.east) -- node[prob] {0.3} (ab.west);
+    \draw[beam] (b.east) -- node[prob] {0.9} (ba.west);
+    \draw[edge] (b.east) -- node[prob] {0.1} (bb.west);
+    \node[font=\small\bfseries] at (7.5,1.85) {$p(\text{sequence})$};
+    \node[seq,text=draworange] at (6.8,1.35) {$0.20$ \enspace greedy};
+    \node[seq,text=drawgray] at (6.8,0.45) {$0.15$};
+    \node[seq,text=drawgreen!70!black] at (6.8,-0.45) {$0.36$ \enspace beam, $k=2$};
+    \node[seq,text=drawgray] at (6.8,-1.35) {$0.04$};
+\end{tikzpicture}
+\endgroup
