@@ -1008,26 +1008,45 @@
     From the embedded input $\vc{X}\sim(T,D)$, the convolutional network produces
     features $\vc{Y}\sim(T,C')$. We can use them in two ways:
     \begin{itemize}
-        \item For \myalert{sequence classification}, we pool over the valid
-              positions and apply a classifier. We obtain one prediction for the
-              whole text, such as its topic or sentiment.
-        \item For \myalert{next-token prediction}, we keep the positions and
-              apply the same vocabulary classifier at each one:
-              \[
-                  \vc{p}_t=\operatorname{softmax}(g(\idx{\vc{Y}}{t,:}))\sim(V).
-              \]
+        \item For a \myalert{sequence-level task}, such as sequence
+              classification, we pool over the valid positions and apply a
+              classifier. We obtain one prediction for the whole text, such as
+              its topic or sentiment.
+        \item For a \myalert{token-level task}, we keep the positions and
+              apply the same classifier $g$ at each one, obtaining one
+              prediction per token, such as whether each word is a noun or a
+              verb.
     \end{itemize}
 
-    At position $t$, $\vc{p}_t$ predicts token $z_{t+1}$. Which input positions
-    can we let it use?
-
 \end{frame}
+
+% Figure: assets/images/cnn/next_token_examples.tex (Claude, 2026-11-05).
+\begin{whiteframe}{Next-token prediction}
+    \setlength{\parskip}{4pt}
+    \setlength{\abovedisplayskip}{4pt}
+    \setlength{\belowdisplayskip}{4pt}
+
+    A token-level task of special interest is \myalert{next-token prediction}:
+    at each position, a vocabulary classifier
+    $\vc{p}_t=\operatorname{softmax}(g(\idx{\vc{Y}}{t,:}))\sim(V)$ predicts
+    the following token $z_{t+1}$.
+
+    The targets come from the text itself, without human labels: the task is
+    \myalert{self-supervised}, and a text of $T+1$ tokens gives $T$ examples:
+
+    \begin{center}
+        \input{assets/images/cnn/next_token_examples.tex}
+    \end{center}
+
+\end{whiteframe}
 
 \begin{whiteframe}{Causal convolutions}
     \setlength{\parskip}{3pt}
     \setlength{\abovedisplayskip}{4pt}
     \setlength{\belowdisplayskip}{4pt}
     \setlength{\abovecaptionskip}{2pt}
+
+    To get all $T$ examples from one forward pass, $\vc{p}_t$ must not see $z_{t+1}$:
 
     \begin{tcolorbox}[nndsblue]
         For a sequence $\vc{X}\sim(T,C)$, a \myalert{causal model} $\vc{Y}=f(\vc{X})$ is such
@@ -1054,9 +1073,6 @@
             {\footnotesize Kernel size $s=2$, with one zero on the left.}
         \end{column}
     \end{columns}
-
-    \medskip
-    The prediction of $z_{t+1}$ must not already depend on that token.
 
 \end{whiteframe}
 
@@ -1097,20 +1113,8 @@
     \setlength{\abovedisplayskip}{4pt}
     \setlength{\belowdisplayskip}{4pt}
 
-    We train on a \myalert{shifted target}. Take the text
-    \texttt{Check this out}, with token IDs from a toy vocabulary:
-
-    {\centering
-    \renewcommand{\arraystretch}{1.15}
-    \begin{tabular}{lcc}
-
-        Position $t$     & $0$                  & $1$                  \\
-        \hline
-        Input $z_t$      & $2$ (\texttt{Check}) & $16$ (\texttt{this}) \\
-        Target $z_{t+1}$ & $16$ (\texttt{this}) & $3$ (\texttt{out})   \\
-    \end{tabular}
-    \par}
-
+    We train on a \myalert{shifted target}: the input is $z_0,\ldots,z_{T-1}$
+    and the target is the same text moved by one position, $z_1,\ldots,z_T$.
     Each prediction $\vc{p}_t$ is compared with the next ID, averaging the
     cross-entropy over the $T$ input positions:
     \[
@@ -1120,6 +1124,28 @@
 
     During training we feed the true tokens (\myalert{teacher forcing}), so a
     causal CNN computes all predictions in parallel without seeing future targets.
+
+\end{frame}
+
+\begin{frame}{A probabilistic view}
+    \setlength{\parskip}{4pt}
+    \setlength{\abovedisplayskip}{6pt}
+    \setlength{\belowdisplayskip}{6pt}
+
+    Consider the probability $p(\vc{z})$ of a whole sequence. By the product
+    rule of probability, we can always write it as
+    \[
+        p(\vc{z})=\prod_{t=0}^{T-1}p(z_{t+1}\mid z_0,\ldots,z_t),
+    \]
+    where $z_0$ is a fixed start token, so it needs no factor. A causal model estimates every factor
+    with the same network, $p(z_{t+1}\mid z_0,\ldots,z_t)\approx\idx{\vc{p}_t}{z_{t+1}}$.
+
+    Our loss is then $\mathcal{L}=-\frac{1}{T}\log p(\vc{z})$: training
+    maximizes the likelihood of the training texts. A model of $p(\vc{z})$
+    over text is a \myalert{language model}. Since we can sample new sequences
+    from it, it is also a \myalert{generative model}.
+
+    \SlideSource{Section 8.4 of the book.}
 
 \end{frame}
 
@@ -1163,11 +1189,32 @@
             sampled token IDs. Gray circles mark unused positions.}
     \end{figure}
 
+\end{whiteframe}
+
+\begin{frame}{Decoding strategies}
+    \setlength{\parskip}{4pt}
+
+    The rule we use to pick each token from $\vc{p}_t$ is called
+    \myalert{decoding}:
+    \begin{itemize}
+        \item \textbf{Greedy decoding} always takes the most probable token.
+              Since $p(\vc{z})$ is a product of many factors, a likely token now
+              can lead to an unlikely sequence later.
+        \item \textbf{Sampling} draws the token from $\vc{p}_t$, with a
+              temperature $\tau$ ($\tau\to0$ recovers greedy). Top-$k$ and
+              top-$p$ sampling first discard the unlikely tail.
+        \item \textbf{Beam search} keeps the $k$ partial sequences with the
+              highest $\log p$, extends each of them, and keeps the best $k$
+              again.
+    \end{itemize}
+
     Convolutions exchange information through fixed neighborhoods.
     What if the interactions between positions could depend on the input?
     This will lead us to \myalert{attention}.
 
-\end{whiteframe}
+    \SlideSource{Holtzman et al. (2020), \href{https://arxiv.org/abs/1904.09751}{\textit{The Curious Case of Neural Text Degeneration}}, ICLR.}
+
+\end{frame}
 
 \begin{frame}{What comes next}
     \setlength{\parskip}{6pt}

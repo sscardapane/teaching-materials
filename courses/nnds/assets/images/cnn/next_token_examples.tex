@@ -1,0 +1,31 @@
+% Editable figure: one sentence becomes one next-token example per position.
+% Each row shows the prefix z_0..z_t (gray tokens, as in vocabulary.tex) and
+% its target z_{t+1} (green); the targets column is the input shifted by one.
+% Written by Claude (2026-11-05).
+\begingroup
+\begin{tikzpicture}[x=1cm,y=1cm,
+        tok/.style={draw=drawgray,fill=drawgray_l,rounded corners=1.5pt,line width=0.6pt,
+            minimum height=0.48cm,inner sep=2.5pt,font=\small\ttfamily},
+        tgt/.style={draw=drawgreen,fill=drawgreen_l,rounded corners=1.5pt,line width=0.6pt,
+            minimum height=0.48cm,inner sep=2.5pt,font=\small\ttfamily},
+        edge/.style={-{Stealth[length=2mm]},line width=0.8pt,draw=drawgray},
+        lab/.style={font=\small,text=drawgray}]
+    \node[font=\small\bfseries,anchor=south west] at (0.9,0.3) {Input $z_0,\ldots,z_t$};
+    \node[font=\small\bfseries,anchor=south] at (7.6,0.3) {Target $z_{t+1}$};
+    \foreach \t/\prefix/\target in {
+            0/{the}/cat,
+            1/{the,cat}/sat,
+            2/{the,cat,sat}/on,
+            3/{the,cat,sat,on}/the,
+            4/{the,cat,sat,on,the}/mat}{
+        \node[lab,anchor=east] at (0.75,-0.62*\t) {$t=\t$};
+        \coordinate (last) at (0.9,-0.62*\t);
+        \foreach \w in \prefix{
+            \node[tok,anchor=west] (cur) at ([xshift=2pt]last) {\w};
+            \coordinate (last) at (cur.east);
+        }
+        \node[tgt] (y) at (7.6,-0.62*\t) {\target};
+        \draw[edge] ([xshift=0.15cm]last) -- ([xshift=-0.1cm]y.west);
+    }
+\end{tikzpicture}
+\endgroup
