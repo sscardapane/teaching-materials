@@ -699,10 +699,11 @@
             return out @ Wo
     \end{python}
 
-    This \myalert{naive} implementation stores all the attention matrices,
-    $(B,h,T,T)$ numbers. PyTorch's
-    \pythoninline{F.scaled_dot_product_attention} gives the same result
-    computing $\vc{A}$ block by block, without storing it (next lecture).
+    This \myalert{naive} implementation of causal MHA stores all the attention
+    matrices, $(B,h,T,T)$ numbers. PyTorch's
+    \pythoninline{F.scaled_dot_product_attention} (with
+    \pythoninline{is_causal=True}) gives the same result computing $\vc{A}$
+    block by block, without storing it (next lecture).
 
 \end{frame}
 
@@ -755,6 +756,7 @@
         \end{column}
     \end{columns}
 
+    \medskip
     The block is similar in spirit to a depthwise separable convolution
     (spatial mixing and channel mixing in the CNN lecture). The intermediate
     MLP has two layers, with hidden dimension an integer multiple of $D$
@@ -1342,6 +1344,7 @@
         \end{column}
     \end{columns}
 
+    \medskip
     Cheap training and expensive generation drive much of the design of modern
     models.
 
@@ -1779,6 +1782,7 @@
         \end{column}
     \end{columns}
 
+    \medskip
     All are \myalert{self-supervised} (the targets come from the text itself)
     and give \myalert{contextual} embeddings: ``bank'' differs in ``river
     bank'' and ``bank account''. Turning them into assistants
@@ -1902,6 +1906,7 @@
         \end{column}
     \end{columns}
 
+    \medskip
     Locality and translation equivariance are useful priors when data is
     scarce; with enough data, attention can learn what it needs.
 
@@ -1928,7 +1933,7 @@
               retrieval.
     \end{itemize}
 
-    \SlideSource{He et al. (2022), \textit{Masked autoencoders are scalable vision learners}, CVPR; Oquab et al. (2024), \textit{DINOv2}, TMLR; Radford et al. (2021), \textit{CLIP}, ICML; Zhai et al. (2023), \textit{SigLIP}, ICCV.}
+    \SlideSource{He et al. (2022), \textit{Masked autoencoders are scalable vision learners}, CVPR; Oquab et al. (2024), \textit{DINOv2}, TMLR; Siméoni et al. (2025), \textit{DINOv3}, arXiv; Radford et al. (2021), \textit{CLIP}, ICML; Zhai et al. (2023), \textit{SigLIP}, ICCV.}
 
 \end{frame}
 
