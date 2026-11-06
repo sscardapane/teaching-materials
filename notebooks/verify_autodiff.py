@@ -13,13 +13,13 @@ NAME = "PT03_Automatic_differentiation"
 SOLUTIONS = ROOT / f"{NAME}_solutions.ipynb"
 STUDENT = ROOT / f"{NAME}.ipynb"
 EXERCISES = {"ad-local-exercise": "ad-local-reference",
-             "ad-broadcast-exercise": "ad-broadcast-reference",
              "ad-nonlinear-exercise": "ad-nonlinear-reference",
              "ad-backward-exercise": "ad-backward-reference",
              "ad-step-exercise": "ad-step-reference",
              "ad-mlp-exercise": "ad-mlp-reference",
              "ad-grad-exercise": "ad-grad-reference",
-             "ad-jacobian-exercise": "ad-jacobian-reference"}
+             "ad-jacobian-exercise": "ad-jacobian-reference",
+             "ad-topo-exercise": "ad-topo-reference"}
 
 
 REGRESSION_CHECKS = r'''
@@ -62,20 +62,40 @@ relu_vjp = lambda x, v: (x >= 0) * v  # Passes the adjoint through at exactly ze
 must_reject(check_nonlinear_vjps)
 relu_vjp = saved_relu
 
-saved_backward = backward
-def overwriting_backward(output, seed=None):
-    nodes = topological_order(output)
-    adjoints = initial_adjoints(nodes, output, seed)
-    for node in reversed(nodes):
-        if node.vjp is not None:
-            for parent, contribution in zip(node.parents, node.vjp(adjoints[node])):
+saved_backward = Tensor.backward
+def overwriting_backward(self, gradient=None):
+    adjoints = {self: initial_adjoint(self, gradient)}
+    for node in reversed(topological_order(self)):
+        if node.vjp is None:
+            node.grad = adjoints[node].copy() if node.grad is None else node.grad + adjoints[node]
+            continue
+        for parent, contribution in zip(node.parents, node.vjp(adjoints[node])):
+            if parent.requires_grad:
                 adjoints[parent] = np.asarray(contribution).copy()
-    return adjoints
-backward = overwriting_backward
+Tensor.backward = overwriting_backward
 must_reject(check_backward)
-backward = premature_backward
+Tensor.backward = lambda self, gradient=None: premature_backward(self)
 must_reject(check_backward)
-backward = saved_backward
+def resetting_backward(self, gradient=None):  # Overwrites .grad instead of accumulating.
+    for node in topological_order(self):
+        node.grad = None
+    saved_backward(self, gradient)
+Tensor.backward = resetting_backward
+must_reject(check_backward)
+def retaining_backward(self, gradient=None):  # Stores .grad on intermediate nodes too.
+    saved_backward(self, gradient)
+    for node in topological_order(self):
+        if node.vjp is not None:
+            node.grad = np.zeros_like(node.data)
+Tensor.backward = retaining_backward
+must_reject(check_backward)
+Tensor.backward = saved_backward
+
+must_reject(lambda: check_topological_order(
+    lambda output: [node for node in graph_nodes(output) if node.requires_grad]))
+must_reject(lambda: check_topological_order(lambda output: topological_order(output)[::-1]))
+must_reject(lambda: check_topological_order(
+    lambda output: list(reversed(graph_nodes(output)))))  # Includes constants.
 
 saved_step = classifier_step
 def frozen_bias(X, targets, W, b, lr):
@@ -93,45 +113,56 @@ cross_entropy = sum_loss
 must_reject(check_classifier_step)
 cross_entropy = saved_ce
 
-# Supplied primitives: non-unit seeds, offsets, validation and immutability.
-z = Tensor([[1000., 1001., -999.], [10., 11., 12.]])
+# Supplied primitives: non-unit seeds, offsets, validation and copies.
+z = Tensor([[1000., 1001., -999.], [10., 11., 12.]], requires_grad=True)
 t = np.array([0, 2])
 shift = np.array([[1e12], [-1e12]])
-close(cross_entropy(Tensor(z.value + shift), t).value, cross_entropy(z, t).value)
-close(backward(cross_entropy(z, t), np.array(3.))[z],
-      3 * backward(cross_entropy(z, t))[z])
+close(cross_entropy(Tensor(z.data + shift), t).data, cross_entropy(z, t).data)
+cross_entropy(z, t).backward(np.array(3.))
+tripled = z.grad
+z.grad = None
+cross_entropy(z, t).backward()
+close(tripled, 3 * z.grad)
 expect_error(ValueError, lambda: cross_entropy(z, np.array([0., 1.])))
 expect_error(ValueError, lambda: cross_entropy(z, np.array([0, 9])))
 expect_error(ValueError, lambda: cross_entropy(Tensor(np.empty((0, 3))), np.array([], dtype=int)))
 expect_error(ValueError, lambda: Tensor(np.ones((2, 2, 2))) @ Tensor([1., 2.]))
 expect_error(ValueError, lambda: sum_to_shape(np.ones((2, 3)), (2,)))
+close(sum_to_shape(np.arange(1., 10.).reshape(3, 3), (3, 1)), [[6.], [15.], [24.]])
+close(sum_to_shape(np.ones((2, 3, 4)), (1, 3, 1)), np.full((1, 3, 1), 8.))
+close(sum_to_shape(np.arange(9.).reshape(3, 3), ()), 36.)
 value = np.array([1., 2.])
-immutable = Tensor(value)
+copied = Tensor(value)
 value[0] = 100
-close(immutable.value, np.array([1., 2.]))
-expect_error(ValueError, lambda: immutable.value.__setitem__(0, 7.))
+close(copied.data, np.array([1., 2.]))
+assert not (Tensor(1.) + Tensor(2.)).requires_grad
+assert (Tensor(1., requires_grad=True) * 2.).requires_grad
+assert (3. - Tensor(1., requires_grad=True)).requires_grad
 
 # More broadcast / reduction edge cases, checked independently with PyTorch.
 for a_shape, b_shape in [((2, 1, 4), (1, 3, 1)), ((), ()), ((1, 1), (3, 4))]:
     gen = np.random.default_rng(91)
-    a, b = Tensor(gen.normal(size=a_shape)), Tensor(gen.normal(size=b_shape))
-    custom = (a * b + a).sum()
-    ca = backward(custom)
-    ta = torch.tensor(a.value.copy(), requires_grad=True)
-    tb = torch.tensor(b.value.copy(), requires_grad=True)
+    a = Tensor(gen.normal(size=a_shape), requires_grad=True)
+    b = Tensor(gen.normal(size=b_shape), requires_grad=True)
+    (a * b + a).sum().backward()
+    ta = torch.tensor(a.data, requires_grad=True)
+    tb = torch.tensor(b.data, requires_grad=True)
     ((ta * tb) + ta).sum().backward()
-    close(ca[a], ta.grad.numpy())
-    close(ca[b], tb.grad.numpy())
+    close(a.grad, ta.grad.numpy())
+    close(b.grad, tb.grad.numpy())
 
-matrix = Tensor(np.arange(6.).reshape(2, 3))
-close(backward(matrix.sum(axis=-1), np.array([2., 3.]))[matrix],
-      np.array([[2., 2., 2.], [3., 3., 3.]]))
-close(backward(matrix.sum(axis=()), np.ones((2, 3)))[matrix], np.ones((2, 3)))
-cube = Tensor(np.arange(24.).reshape(2, 3, 4))
-close(backward(cube.sum(axis=(0, -1)), np.array([1., 2., 3.]))[cube],
-      np.broadcast_to(np.array([1., 2., 3.])[None, :, None], (2, 3, 4)))
-scalar = Tensor(2.)
-close(backward(scalar.sum())[scalar], np.array(1.))
+matrix = Tensor(np.arange(6.).reshape(2, 3), requires_grad=True)
+matrix.sum(axis=-1).backward(np.array([2., 3.]))
+close(matrix.grad, np.array([[2., 2., 2.], [3., 3., 3.]]))
+matrix.grad = None
+matrix.sum(axis=()).backward(np.ones((2, 3)))
+close(matrix.grad, np.ones((2, 3)))
+cube = Tensor(np.arange(24.).reshape(2, 3, 4), requires_grad=True)
+cube.sum(axis=(0, -1)).backward(np.array([1., 2., 3.]))
+close(cube.grad, np.broadcast_to(np.array([1., 2., 3.])[None, :, None], (2, 3, 4)))
+scalar = Tensor(2., requires_grad=True)
+scalar.sum().backward()
+close(scalar.grad, np.array(1.))
 close(grad(lambda x: x * x)(np.array(3.)), np.array(6.))
 close(jacobian(lambda x: x * x, np.array(3.)), np.array(6.))
 close(jacobian(lambda x: Tensor(np.array([])), np.array([1., 2.])), np.empty((0, 2)))
@@ -181,7 +212,7 @@ def verify_autodiff(execute, write_outputs=False):
     completed_student.cells.append(nbformat.v4.new_code_cell(REGRESSION_CHECKS,
                                                             id="autodiff-private-verification"))
     execute(completed_student)
-    print("PASS completed autodiff student path and rejection of nine legacy-style errors", flush=True)
+    print("PASS completed autodiff student path and rejection of fourteen legacy-style errors", flush=True)
 
     if write_outputs:
         executed_instructor.metadata.kernelspec = {

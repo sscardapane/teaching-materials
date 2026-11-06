@@ -44,11 +44,13 @@ download/upload step.
   diagnostic, and a complete coordinate-MLP reference experiment.
 - Matching `.html` files: reading previews; use the notebooks to edit or run
   code.
-- `PT03_Automatic_differentiation.ipynb`: standalone NumPy reverse-mode lab. Students
-  write local VJPs (including broadcasting and `tanh`/`relu`), a reverse topological
-  backward pass and a classifier update. Terminology follows the lecture slides
-  (JVP, VJP, adjoint). A live demonstration shows why each node must wait for all
-  its consumers.
+- `PT03_Automatic_differentiation.ipynb`: standalone NumPy reverse-mode lab with a
+  PyTorch-like `Tensor` (`requires_grad`, `.grad`, `backward()`), which gains its
+  operations section by section. Students write local VJPs (including `tanh`/`relu`),
+  the `backward` method and a classifier update; `sum_to_shape` and the topological
+  order are given, and writing the order is optional. Terminology follows the lecture
+  slides (JVP, VJP, adjoint). A live demonstration shows why each node must wait for
+  all its consumers.
 - `PT03_Automatic_differentiation_solutions.ipynb`: editable instructor source with
   executable core and optional solutions, graph plots and training comparisons.
 - `PT04_Convolutional_neural_networks.ipynb`: CNN building blocks from scratch on

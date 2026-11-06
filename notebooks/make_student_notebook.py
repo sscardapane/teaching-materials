@@ -166,11 +166,11 @@ def build_autodiff():
     reference_ids = {cell["id"] for cell in notebook["cells"]
                      if "reference" in cell.get("metadata", {}).get("tags", [])}
     expected = {"ad-shape-answer", "ad-local-reference-text", "ad-local-reference",
-                "ad-broadcast-reference", "ad-nonlinear-reference",
+                "ad-nonlinear-reference",
                 "ad-backward-reference-text", "ad-backward-reference",
                 "ad-step-reference-text", "ad-step-reference", "ad-core-answers",
                 "ad-mlp-reference", "ad-grad-reference", "ad-jacobian-reference",
-                "ad-jacobian-answer"}
+                "ad-jacobian-answer", "ad-topo-reference"}
     if reference_ids != expected:
         raise RuntimeError("The autodiff reference cells changed; review the student export.")
     notebook["cells"] = [cell for cell in notebook["cells"] if cell["id"] not in reference_ids]
