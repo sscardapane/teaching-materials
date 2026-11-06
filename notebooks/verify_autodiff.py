@@ -18,8 +18,7 @@ EXERCISES = {"ad-local-exercise": "ad-local-reference",
              "ad-step-exercise": "ad-step-reference",
              "ad-mlp-exercise": "ad-mlp-reference",
              "ad-grad-exercise": "ad-grad-reference",
-             "ad-jacobian-exercise": "ad-jacobian-reference",
-             "ad-topo-exercise": "ad-topo-reference"}
+             "ad-jacobian-exercise": "ad-jacobian-reference"}
 
 
 REGRESSION_CHECKS = r'''
@@ -90,12 +89,6 @@ def retaining_backward(self, gradient=None):  # Stores .grad on intermediate nod
 Tensor.backward = retaining_backward
 must_reject(check_backward)
 Tensor.backward = saved_backward
-
-must_reject(lambda: check_topological_order(
-    lambda output: [node for node in graph_nodes(output) if node.requires_grad]))
-must_reject(lambda: check_topological_order(lambda output: topological_order(output)[::-1]))
-must_reject(lambda: check_topological_order(
-    lambda output: list(reversed(graph_nodes(output)))))  # Includes constants.
 
 saved_step = classifier_step
 def frozen_bias(X, targets, W, b, lr):
@@ -212,7 +205,7 @@ def verify_autodiff(execute, write_outputs=False):
     completed_student.cells.append(nbformat.v4.new_code_cell(REGRESSION_CHECKS,
                                                             id="autodiff-private-verification"))
     execute(completed_student)
-    print("PASS completed autodiff student path and rejection of fourteen legacy-style errors", flush=True)
+    print("PASS completed autodiff student path and rejection of eleven legacy-style errors", flush=True)
 
     if write_outputs:
         executed_instructor.metadata.kernelspec = {

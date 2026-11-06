@@ -48,7 +48,7 @@ download/upload step.
   PyTorch-like `Tensor` (`requires_grad`, `.grad`, `backward()`), which gains its
   operations section by section. Students write local VJPs (including `tanh`/`relu`),
   the `backward` method and a classifier update; `sum_to_shape` and the topological
-  order are given, and writing the order is optional. Terminology follows the lecture
+  order are given. Terminology follows the lecture
   slides (JVP, VJP, adjoint). A live demonstration shows why each node must wait for
   all its consumers.
 - `PT03_Automatic_differentiation_solutions.ipynb`: editable instructor source with

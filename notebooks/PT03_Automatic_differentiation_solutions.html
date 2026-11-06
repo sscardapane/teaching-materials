@@ -7844,8 +7844,7 @@ all operations in the right order.</p>
 <p>The <code>Tensor</code> class grows as we go: each section adds the operations it needs.
 The reduction that undoes broadcasting, the topological order of the graph,
 graph plots, data and loss are given. Optional sections at the end train an MLP
-with your engine, build gradients and Jacobians as functions, and sort the graph
-yourself. Exercises are rated from 1 to 3 stars based on expected difficulty.</p>
+with your engine and build gradients and Jacobians as functions. Exercises are rated from 1 to 3 stars based on expected difficulty.</p>
 <p><strong>How to work.</strong> Run the cells in order. Each activity is followed by a check
 cell: if your code is wrong, the check stops with a message telling you what to
 look at. A function that still raises <code>NotImplementedError</code> stops the notebook
@@ -8771,7 +8770,9 @@ of them works. The constant <code>3</code> needs no adjoint: it does not require
 <ul>
 <li><code>topological_order(output)</code> returns every node that requires gradients and is
 reachable from <code>output</code>, each exactly once, with parents before the nodes that
-use them. Writing it yourself is Optional E.</li>
+use them. It runs a depth-first search from <code>output</code> with an explicit stack
+(recursion would stop at Python's depth limit of about 1000) and appends each
+node once all its parents are in the order.</li>
 <li><code>initial_adjoint(output, gradient)</code> returns the seed and raises the same
 errors as PyTorch: the seed is 1 for a scalar output, while a nonscalar output
 needs an explicit <code>gradient</code> of its shape.</li>
@@ -9079,13 +9080,7 @@ you opened the notebook alone in Colab. Nothing to do here.</p>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>Examples:</pre>
-</div>
-</div>
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre> 205 training, 68 validation, 69 test
+<pre>Examples: 205 training, 68 validation, 69 test
 </pre>
 </div>
 </div>
@@ -9172,13 +9167,7 @@ results with it. The last lines test the loss on very large logits.</p>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>Supplied loss: value and gradient on large logits match PyTorch.</pre>
-</div>
-</div>
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>
+<pre>Supplied loss: value and gradient on large logits match PyTorch.
 </pre>
 </div>
 </div>
@@ -9836,113 +9825,6 @@ Nothing to implement here.</p>
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="application/vnd.jupyter.stderr" tabindex="0">
 <pre>/Users/simonescardapane/Repositories/teaching-materials/.venv/lib/python3.12/site-packages/torch/jit/_script.py:1491: FutureWarning: `torch.jit.script` is deprecated. Please switch to `torch.compile` or `torch.export`.
   warnings.warn(
-</pre>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=ad-optional-topo-text">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="Optional-E:-the-topological-order-%E2%98%85%E2%98%85">Optional E: the topological order ★★<a class="anchor-link" href="#Optional-E:-the-topological-order-%E2%98%85%E2%98%85">¶</a></h2><p>In Section 5, <code>topological_order</code> was given. Write your own version,
-<code>my_topological_order(output)</code>. It returns every node that requires gradients
-and is reachable from <code>output</code>, each exactly once, with parents before the
-nodes that use them.</p>
-<p>Use an explicit stack rather than recursion: Python stops recursion at a depth
-of about 1000, and the check builds a chain of 1500 operations. One standard
-approach:</p>
-<ul>
-<li>Start with the stack <code>[(output, False)]</code> and an empty <code>seen</code> set.</li>
-<li>Pop <code>(node, False)</code>: if the node is not in <code>seen</code>, add it, push <code>(node, True)</code>,
-then push <code>(parent, False)</code> for each parent that requires gradients.</li>
-<li>Pop <code>(node, True)</code>: all its parents are already in the order, so append the node.</li>
-</ul>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=ad-topo-exercise">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [35]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython3"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">my_topological_order</span><span class="p">(</span><span class="n">output</span><span class="p">):</span>
-    <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">'Optional exercise: my_topological_order'</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs celltag_reference" id="cell-id=ad-topo-reference">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [36]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython3"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">my_topological_order</span><span class="p">(</span><span class="n">output</span><span class="p">):</span>
-    <span class="n">order</span><span class="p">,</span> <span class="n">seen</span><span class="p">,</span> <span class="n">stack</span> <span class="o">=</span> <span class="p">[],</span> <span class="nb">set</span><span class="p">(),</span> <span class="p">[(</span><span class="n">output</span><span class="p">,</span> <span class="kc">False</span><span class="p">)]</span>
-    <span class="k">while</span> <span class="n">stack</span><span class="p">:</span>
-        <span class="n">node</span><span class="p">,</span> <span class="n">parents_done</span> <span class="o">=</span> <span class="n">stack</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
-        <span class="k">if</span> <span class="n">parents_done</span><span class="p">:</span>
-            <span class="n">order</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="n">node</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">seen</span><span class="p">:</span>
-            <span class="n">seen</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
-            <span class="n">stack</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">node</span><span class="p">,</span> <span class="kc">True</span><span class="p">))</span>
-            <span class="n">stack</span><span class="o">.</span><span class="n">extend</span><span class="p">((</span><span class="n">parent</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span> <span class="k">for</span> <span class="n">parent</span> <span class="ow">in</span> <span class="nb">reversed</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">parents</span><span class="p">)</span>
-                         <span class="k">if</span> <span class="n">parent</span><span class="o">.</span><span class="n">requires_grad</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">order</span>
-</pre></div>
-</div>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=ad-topo-checks">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [37]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython3"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">check_topological_order</span><span class="p">(</span><span class="n">order_function</span><span class="p">):</span>
-    <span class="n">x</span> <span class="o">=</span> <span class="n">Tensor</span><span class="p">([</span><span class="mf">1.</span><span class="p">,</span> <span class="o">-</span><span class="mf">2.</span><span class="p">],</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-    <span class="n">shared</span> <span class="o">=</span> <span class="n">x</span> <span class="o">*</span> <span class="n">x</span>
-    <span class="n">deep</span> <span class="o">=</span> <span class="n">Tensor</span><span class="p">(</span><span class="mf">0.</span><span class="p">,</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1500</span><span class="p">):</span>
-        <span class="n">deep</span> <span class="o">=</span> <span class="n">deep</span> <span class="o">+</span> <span class="mf">1.</span>
-    <span class="k">for</span> <span class="n">output</span> <span class="ow">in</span> <span class="p">[</span><span class="n">order_loss</span><span class="p">,</span> <span class="p">(</span><span class="n">shared</span> <span class="o">+</span> <span class="n">shared</span> <span class="o">*</span> <span class="mf">3.</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(),</span> <span class="n">deep</span><span class="p">]:</span>
-        <span class="n">order</span> <span class="o">=</span> <span class="n">order_function</span><span class="p">(</span><span class="n">output</span><span class="p">)</span>
-        <span class="n">positions</span> <span class="o">=</span> <span class="p">{</span><span class="n">node</span><span class="p">:</span> <span class="n">i</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">node</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">order</span><span class="p">)}</span>
-        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">positions</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">order</span><span class="p">),</span> <span class="s1">'each node must appear exactly once'</span>
-        <span class="k">assert</span> <span class="nb">set</span><span class="p">(</span><span class="n">order</span><span class="p">)</span> <span class="o">==</span> <span class="nb">set</span><span class="p">(</span><span class="n">topological_order</span><span class="p">(</span><span class="n">output</span><span class="p">)),</span> \
-            <span class="s1">'every node that requires gradients, and only those'</span>
-        <span class="k">assert</span> <span class="nb">all</span><span class="p">(</span><span class="n">positions</span><span class="p">[</span><span class="n">parent</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">positions</span><span class="p">[</span><span class="n">node</span><span class="p">]</span>
-                   <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">order</span> <span class="k">for</span> <span class="n">parent</span> <span class="ow">in</span> <span class="n">node</span><span class="o">.</span><span class="n">parents</span> <span class="k">if</span> <span class="n">parent</span><span class="o">.</span><span class="n">requires_grad</span><span class="p">),</span> \
-            <span class="s1">'every parent must come before the nodes that use it'</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s1">'Optional E: topological order checks passed, including a chain of 1500 operations.'</span><span class="p">)</span>
-
-<span class="n">check_topological_order</span><span class="p">(</span><span class="n">my_topological_order</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
-</div>
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>Optional E: topological order checks passed, including a chain of 1500 operations.
 </pre>
 </div>
 </div>

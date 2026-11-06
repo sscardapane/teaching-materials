@@ -170,7 +170,7 @@ def build_autodiff():
                 "ad-backward-reference-text", "ad-backward-reference",
                 "ad-step-reference-text", "ad-step-reference", "ad-core-answers",
                 "ad-mlp-reference", "ad-grad-reference", "ad-jacobian-reference",
-                "ad-jacobian-answer", "ad-topo-reference"}
+                "ad-jacobian-answer"}
     if reference_ids != expected:
         raise RuntimeError("The autodiff reference cells changed; review the student export.")
     notebook["cells"] = [cell for cell in notebook["cells"] if cell["id"] not in reference_ids]

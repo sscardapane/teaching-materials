@@ -7,8 +7,8 @@
 - Simplify PT03 at Simone's request. The `Tensor` now follows PyTorch
   (`data`, `requires_grad`, `.grad`, and a `backward()` method that accumulates
   into the `.grad` of leaves) and gains its operations section by section.
-  `sum_to_shape` and `topological_order` are given; writing the order is the new
-  Optional E. The verifier's rejection checks follow the new API.
+  `sum_to_shape` and `topological_order` are given. The verifier's rejection
+  checks follow the new API.
 
 ## 2026-10-26
 
