@@ -131,23 +131,23 @@ layout: full
 import BeamerFrame from '../components/BeamerFrame.vue'
 
 const options = [
-  { text: String.raw`One hidden layer can approximate a continuous $g$ on a compact $K$ to any accuracy $\varepsilon$.`, correct: true },
-  { text: String.raw`The theorem says how many hidden units are needed for a given $\varepsilon$.` },
-  { text: String.raw`It holds for $\phi(s)=s^2$.` },
-  { text: String.raw`It holds for ReLU.`, correct: true },
-  { text: String.raw`It guarantees that gradient descent finds suitable parameters.` },
-  { text: String.raw`It does not imply a small test error from a finite dataset.`, correct: true },
+  { text: String.raw`For binary classification, a sigmoid on the scalar output gives a probability.`, correct: true },
+  { text: String.raw`The learning rate is part of $\boldsymbol{\theta}$ and is learned by gradient descent.` },
+  { text: String.raw`For $C$ classes, the output layer has $C$ outputs, followed by a softmax.`, correct: true },
+  { text: String.raw`The number of hidden layers is a parameter.` },
+  { text: String.raw`The gradients of all layers can be computed by automatic differentiation.`, correct: true },
+  { text: String.raw`For regression, we apply a ReLU to the output.` },
 ]
 </script>
 
-<BeamerFrame title="4 · Universal approximation  ★★">
+<BeamerFrame title="4 · Training an MLP  ★">
 
-Which statements about the universal approximation theorem from the lecture are true?
+We train an MLP by minimizing the average loss over a dataset. Which statements are true?
 
-<QuizChoice id="4-q4" :options="options" multiple :columns="2">
+<QuizChoice id="4-q4t" :options="options" multiple :columns="2">
 <template #explanation>
 
-The theorem needs $\phi$ continuous and non-polynomial: ReLU qualifies, $s^2$ does not. It is an existence result: it says nothing about the width, the data, or whether training finds the parameters. See [Universal approximation](https://sscardapane.github.io/teaching-materials/pdf/nnds/Lecture_4_Fully_connected.pdf#page=7).
+The output and the loss are those of the linear models in Lecture 3: no activation for regression, a sigmoid or a softmax for classification. A ReLU output could never predict negative targets. Gradient descent learns only $\boldsymbol{\theta}$; the learning rate and the layer count are hyperparameters. See [Training the network](https://sscardapane.github.io/teaching-materials/pdf/nnds/Lecture_4_Fully_connected.pdf#page=6) and [Some terminology](https://sscardapane.github.io/teaching-materials/pdf/nnds/Lecture_4_Fully_connected.pdf#page=8).
 
 </template>
 </QuizChoice>
@@ -423,7 +423,7 @@ const items = [
   { id: '4-q1', title: 'The multilayer perceptron', stars: 1, slide: 3 },
   { id: '4-q2', title: 'Counting parameters', stars: 1, slide: 4 },
   { id: '4-q3', title: 'Weight decay', stars: 1, slide: 5 },
-  { id: '4-q4', title: 'Universal approximation', stars: 2, slide: 6 },
+  { id: '4-q4t', title: 'Training an MLP', stars: 1, slide: 6 },
   { id: '4-q5', title: 'Regions of a ReLU network', stars: 2, slide: 7 },
   { id: '4-q6', title: 'Depth versus width', stars: 2, slide: 8 },
   { id: '4-q7', title: 'Initializing the weights', stars: 2, slide: 9 },
