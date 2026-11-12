@@ -302,6 +302,23 @@
 
 \end{frame}
 
+% Written by Claude (2026-11-12), after the 2026-11-12 lecture: the board
+% diagram of where BN sits, before the BN equations.
+\begin{frame}{Normalizing inside the network}
+    \setlength{\parskip}{6pt}
+
+    \begin{center}
+        \input{assets/images/deeper/bn_position.tex}
+    \end{center}
+
+    We add normalization as a new layer (orange). During training, a BN layer
+    receives the outputs $\vc{Z}\sim(B,D)$ of the previous linear layer for
+    the whole mini-batch, standardizes each column (one unit), and passes the
+    result to the activation. The next slides describe the computation inside
+    one orange block.
+
+\end{frame}
+
 \begin{frame}{Batch normalization}
     \setlength{\parskip}{5pt}
 
@@ -320,6 +337,67 @@
     whose bias becomes redundant.
 
     \SlideSource{Ioffe and Szegedy (2015), \textit{Batch normalization: accelerating deep network training by reducing internal covariate shift}, ICML.}
+
+\end{frame}
+
+% Written by Claude (2026-11-12), after the 2026-11-12 lecture: a toy example
+% for gamma and beta. Standard Gaussian: P(x > 1.2816) = 0.10.
+\begin{frame}{Why do we need $\gamma$ and $\beta$?}
+
+    \begin{columns}[c,onlytextwidth]
+        \begin{column}{0.5\textwidth}%
+            \small\setlength{\parskip}{5pt}%
+            \RaggedRight\setlength{\parindent}{0pt}%
+            Standardizing also removes the bias of the previous layer. Take
+            one unit $\text{ReLU}(\text{BN}(z))$ with $\gamma = 1$:
+
+            \textbf{With $\beta = 0$}, the unit is active on about half of
+            every mini-batch, whatever its weights.
+
+            \textbf{With $\beta \approx -1.28$}, it is active on 10\% of the
+            inputs, as a detector of a rare pattern.
+
+            $\gamma$ sets the scale: $\gamma = 0$ switches the unit off, and $\gamma_j =
+            \widetilde{\sigma}_j$, $\beta_j = \widetilde{\mu}_j$ undo the
+            normalization.
+        \end{column}
+        \begin{column}{0.46\textwidth}
+            \centering
+            \begin{tikzpicture}
+                \begin{groupplot}[
+                        group style={group size=1 by 2, vertical sep=0.7cm},
+                        width=0.78\linewidth, height=0.3\textheight,
+                        xmin=-4, xmax=3, ymin=0, ymax=0.47,
+                        xtick={-3,-2,-1,0,1,2,3}, ytick=\empty,
+                        tick label style={font=\scriptsize},
+                        axis lines=left, axis line style={drawgray}, clip=false,
+                        every axis plot/.append style={thick, mark=none, samples=60},
+                    ]
+                    \nextgroupplot
+                    \node[font=\scriptsize, anchor=east, align=right] at (axis cs:-4.3,0.22) {$\beta = 0$\\50\% active};
+                    \addplot[draworange, fill=draworange_l, draw=none, domain=0:3] {exp(-x^2/2)/sqrt(2*pi)} \closedcycle;
+                    \addplot[drawgray, domain=-4:3] {exp(-x^2/2)/sqrt(2*pi)};
+                    \addplot[drawgray, dashed, thin] coordinates {(0,0) (0,0.45)};
+                    \nextgroupplot[xlabel={$\text{BN}(z)$}, label style={font=\small}]
+                    \node[font=\scriptsize, anchor=east, align=right] at (axis cs:-4.3,0.22) {$\beta = -1.28$\\10\% active};
+                    \addplot[draworange, fill=draworange_l, draw=none, domain=0:3] {exp(-(x+1.28)^2/2)/sqrt(2*pi)} \closedcycle;
+                    \addplot[drawgray, domain=-4:3] {exp(-(x+1.28)^2/2)/sqrt(2*pi)};
+                    \addplot[drawgray, dashed, thin] coordinates {(0,0) (0,0.45)};
+                \end{groupplot}
+            \end{tikzpicture}
+
+            {\scriptsize $\text{BN}(z)$ over a mini-batch, if roughly
+            Gaussian; the ReLU keeps the orange part.\par}
+        \end{column}
+    \end{columns}
+
+    \vspace{0.5em}
+    \begin{tcolorbox}[nndsgreen]
+        $\gamma$ and $\beta$ let each unit learn its own mean and scale, so BN
+        does not restrict what the layer can compute.
+    \end{tcolorbox}
+
+    \SlideSource{Ioffe and Szegedy (2015), \textit{Batch normalization}, ICML, Sec.~3.}
 
 \end{frame}
 
@@ -464,6 +542,33 @@
     inference, even with $B=1$. LN is the standard in transformers.
 
     \SlideSource{Ba et al. (2016), \textit{Layer normalization}.}
+
+\end{frame}
+
+% Written by Claude (2026-11-12), after the 2026-11-12 lecture: the role of
+% gamma and beta in LN, for students who skip the geometric slides.
+% (1,3,5,7): mean 4, variance 5, (z - 4)/sqrt(5) = (-1.34, -0.45, 0.45, 1.34).
+\begin{frame}{$\gamma$ and $\beta$ in LN}
+    \setlength{\parskip}{5pt}
+
+    LN gives the $D$ features of each example mean 0 and variance 1. As in
+    BN, $\gamma_j$ and $\beta_j$ then give feature $j$ its own scale and
+    offset, so the output is not tied to these values. A toy example with
+    $D = 4$, neglecting $\varepsilon$:
+    \[
+        \begin{aligned}
+            \vc{z}                       & = (1, 3, 5, 7)     & \longrightarrow\quad & \tfrac{1}{\sqrt{5}}(\vc{z} - 4) = (-1.34, -0.45, 0.45, 1.34)   \\
+            \vc{z}' = 2\vc{z} + 10\vc{1} & = (12, 16, 20, 24) & \longrightarrow\quad & \tfrac{1}{\sqrt{20}}(\vc{z}' - 18) = (-1.34, -0.45, 0.45, 1.34)
+        \end{aligned}
+    \]
+    Both inputs reach $\vc{\gamma} \odot (\cdot) + \vc{\beta}$ as the same
+    vector, so they give the same output for any $\vc{\gamma}$ and $\vc{\beta}$.
+
+    \begin{tcolorbox}[nndsblue]
+        The normalization alone decides which inputs give the same output
+        ($a\vc{z} + c\vc{1}$, $a > 0$); $\gamma$ and $\beta$ act afterwards
+        and do not change this, in BN as in LN.
+    \end{tcolorbox}
 
 \end{frame}
 

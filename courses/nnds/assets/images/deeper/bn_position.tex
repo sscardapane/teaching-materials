@@ -1,0 +1,44 @@
+% Editable figure: where BN sits in an MLP (orange blocks) and what one BN
+% layer normalizes: the mini-batch of pre-activations Z ~ (B, D), one column
+% (unit) at a time. Uses the nnblock/nnother/nnedge styles of the deck.
+% Written by Claude (2026-11-12).
+\begingroup
+\begin{tikzpicture}[node distance=4.5mm,
+        bnblock/.style={nnblock, draw=draworange, fill=draworange_l!60!white, line width=0.9pt},
+        cell/.style={draw=drawgray!70, fill=white, minimum size=0.36cm, inner sep=0pt},
+        hcell/.style={cell, draw=draworange, fill=draworange_l}]
+    \node (x) {$\vc{x}$};
+    \node[nnblock, right=of x] (l1) {Linear};
+    \node[bnblock, right=of l1] (bn1) {BN};
+    \node[nnother, right=of bn1] (a1) {ReLU};
+    \node[nnblock, right=of a1] (l2) {Linear};
+    \node[bnblock, right=of l2] (bn2) {BN};
+    \node[nnother, right=of bn2] (a2) {ReLU};
+    \node[right=of a2] (dots) {$\cdots$};
+    \foreach \a/\b in {x/l1, l1/bn1, bn1/a1, a1/l2, l2/bn2, bn2/a2, a2/dots}
+        \draw[nnedge] (\a)--(\b);
+
+    % Zoom on the first BN layer: the mini-batch matrix Z, one column highlighted.
+    \begin{scope}[shift={($(bn1.south)+(-0.9,-1.25)$)}]
+        \foreach \i in {0,...,3} {
+            \foreach \j in {0,...,4} {
+                \ifnum\j=2
+                    \node[hcell] at (0.36*\j, -0.36*\i) {};
+                \else
+                    \node[cell] at (0.36*\j, -0.36*\i) {};
+                \fi
+            }
+        }
+        \coordinate (gridNW) at (-0.18,0.18);
+        \coordinate (gridNE) at (1.62,0.18);
+        \coordinate (gridSW) at (-0.18,-1.26);
+        \node[font=\small, anchor=east] at (-0.3,-0.54) {$\vc{Z}$};
+        \node[font=\scriptsize, text=drawgray, rotate=90, anchor=south] at (-0.75,-0.54) {$B$ examples};
+        \node[font=\scriptsize, text=drawgray, anchor=north] at (0.72,-1.32) {$D$ units};
+        \node[font=\scriptsize, text=draworange!80!black, anchor=west, align=left] at (1.85,-0.54)
+            {column $j$: one mean $\widetilde{\mu}_j$\\ and one variance $\widetilde{\sigma}_j^2$};
+    \end{scope}
+    \draw[draworange, dashed] (bn1.south west) -- (gridNW);
+    \draw[draworange, dashed] (bn1.south east) -- (gridNE);
+\end{tikzpicture}
+\endgroup
