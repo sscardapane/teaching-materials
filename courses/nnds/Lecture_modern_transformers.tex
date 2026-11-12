@@ -158,8 +158,8 @@
     \setlength{\parskip}{6pt}
 
     The original block has a bias in every linear layer and in every
-    LayerNorm. Most recent models remove all of them (RMSNorm only has the
-    gain $\vc{\gamma}$):
+    LayerNorm. Most recent language models remove all of them (RMSNorm only
+    has the gain $\vc{\gamma}$):
 
     \begin{itemize}
         \setlength{\itemsep}{4pt}
@@ -196,8 +196,9 @@
     \vspace{0.4em}
 
     The score is a cosine similarity in $[-g,g]$. Recent models (ViT-22B,
-    Gemma~3, Qwen3) use a LayerNorm or RMSNorm with its own gain instead.
-    Rotations preserve the norm, so RoPE is applied as before.
+    Gemma~3, Qwen3) keep the fixed scaling and apply a LayerNorm or RMSNorm,
+    with its own gain, to queries and keys. RoPE comes after it: rotations
+    preserve the norm.
 
     \SlideSource{\href{https://arxiv.org/abs/2010.04245}{Henry et al. (2020)}; \href{https://arxiv.org/abs/2302.05442}{Dehghani et al., ViT-22B (2023)}; \href{https://arxiv.org/abs/2503.19786}{Gemma 3 (2025)}; \href{https://arxiv.org/abs/2505.09388}{Qwen3 (2025)}.}
 
@@ -238,9 +239,9 @@
     In this way, the initial and final projections of the MLP and MHA layers
     can be fused, each in a single matrix product.
 
-    PaLM reports about $15\%$ faster training, with similar quality for large
-    models. Most open language models (Llama, Qwen, Gemma) still use the
-    sequential block.
+    PaLM reports about $15\%$ faster training, with no loss in quality for
+    its larger models. Most open language models (Llama, Qwen, Gemma) still
+    use the sequential block.
 
     \SlideSource{\href{https://arxiv.org/abs/2302.05442}{Dehghani et al., ViT-22B (2023)}, ICML; \href{https://arxiv.org/abs/2204.02311}{Chowdhery et al., PaLM (2023)}, JMLR.}
 
