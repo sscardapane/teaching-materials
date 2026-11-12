@@ -340,67 +340,6 @@
 
 \end{frame}
 
-% Written by Claude (2026-11-12), after the 2026-11-12 lecture: a toy example
-% for gamma and beta. Standard Gaussian: P(x > 1.2816) = 0.10.
-\begin{frame}{Why do we need $\gamma$ and $\beta$?}
-
-    \begin{columns}[c,onlytextwidth]
-        \begin{column}{0.5\textwidth}%
-            \small\setlength{\parskip}{5pt}%
-            \RaggedRight\setlength{\parindent}{0pt}%
-            Standardizing also removes the bias of the previous layer. Take
-            one unit $\text{ReLU}(\text{BN}(z))$ with $\gamma = 1$:
-
-            \textbf{With $\beta = 0$}, the unit is active on about half of
-            every mini-batch, whatever its weights.
-
-            \textbf{With $\beta \approx -1.28$}, it is active on 10\% of the
-            inputs, as a detector of a rare pattern.
-
-            $\gamma$ sets the scale: $\gamma = 0$ switches the unit off, and $\gamma_j =
-            \widetilde{\sigma}_j$, $\beta_j = \widetilde{\mu}_j$ undo the
-            normalization.
-        \end{column}
-        \begin{column}{0.46\textwidth}
-            \centering
-            \begin{tikzpicture}
-                \begin{groupplot}[
-                        group style={group size=1 by 2, vertical sep=0.7cm},
-                        width=0.78\linewidth, height=0.3\textheight,
-                        xmin=-4, xmax=3, ymin=0, ymax=0.47,
-                        xtick={-3,-2,-1,0,1,2,3}, ytick=\empty,
-                        tick label style={font=\scriptsize},
-                        axis lines=left, axis line style={drawgray}, clip=false,
-                        every axis plot/.append style={thick, mark=none, samples=60},
-                    ]
-                    \nextgroupplot
-                    \node[font=\scriptsize, anchor=east, align=right] at (axis cs:-4.3,0.22) {$\beta = 0$\\50\% active};
-                    \addplot[draworange, fill=draworange_l, draw=none, domain=0:3] {exp(-x^2/2)/sqrt(2*pi)} \closedcycle;
-                    \addplot[drawgray, domain=-4:3] {exp(-x^2/2)/sqrt(2*pi)};
-                    \addplot[drawgray, dashed, thin] coordinates {(0,0) (0,0.45)};
-                    \nextgroupplot[xlabel={$\text{BN}(z)$}, label style={font=\small}]
-                    \node[font=\scriptsize, anchor=east, align=right] at (axis cs:-4.3,0.22) {$\beta = -1.28$\\10\% active};
-                    \addplot[draworange, fill=draworange_l, draw=none, domain=0:3] {exp(-(x+1.28)^2/2)/sqrt(2*pi)} \closedcycle;
-                    \addplot[drawgray, domain=-4:3] {exp(-(x+1.28)^2/2)/sqrt(2*pi)};
-                    \addplot[drawgray, dashed, thin] coordinates {(0,0) (0,0.45)};
-                \end{groupplot}
-            \end{tikzpicture}
-
-            {\scriptsize $\text{BN}(z)$ over a mini-batch, if roughly
-            Gaussian; the ReLU keeps the orange part.\par}
-        \end{column}
-    \end{columns}
-
-    \vspace{0.5em}
-    \begin{tcolorbox}[nndsgreen]
-        $\gamma$ and $\beta$ let each unit learn its own mean and scale, so BN
-        does not restrict what the layer can compute.
-    \end{tcolorbox}
-
-    \SlideSource{Ioffe and Szegedy (2015), \textit{Batch normalization}, ICML, Sec.~3.}
-
-\end{frame}
-
 \begin{frame}{Batch normalization in CNNs}
     \setlength{\parskip}{3pt}
 
@@ -545,29 +484,29 @@
 
 \end{frame}
 
-% Written by Claude (2026-11-12), after the 2026-11-12 lecture: the role of
-% gamma and beta in LN, for students who skip the geometric slides.
-% (1,3,5,7): mean 4, variance 5, (z - 4)/sqrt(5) = (-1.34, -0.45, 0.45, 1.34).
+% Written by Claude (2026-11-12), after the 2026-11-12 lecture: gamma and
+% beta in LN are a parameterization inherited from BN. In a pre-LN transformer
+% each LN feeds a linear layer, so they fold into it.
 \begin{frame}{$\gamma$ and $\beta$ in LN}
-    \setlength{\parskip}{5pt}
+    \setlength{\parskip}{6pt}
 
-    LN gives the $D$ features of each example mean 0 and variance 1. As in
-    BN, $\gamma_j$ and $\beta_j$ then give feature $j$ its own scale and
-    offset, so the output is not tied to these values. A toy example with
-    $D = 4$, neglecting $\varepsilon$:
+    LN keeps $\gamma$ and $\beta$ from the design of BN: a trainable scale and
+    offset for each feature, applied after the normalization.
+
+    In most transformers (next lectures), each LN is followed by a linear
+    layer. Writing $\vc{u}$ for the normalized vector, $\gamma$ and $\beta$
+    fold into that layer, as BN does at inference:
     \[
-        \begin{aligned}
-            \vc{z}                       & = (1, 3, 5, 7)     & \longrightarrow\quad & \tfrac{1}{\sqrt{5}}(\vc{z} - 4) = (-1.34, -0.45, 0.45, 1.34)   \\
-            \vc{z}' = 2\vc{z} + 10\vc{1} & = (12, 16, 20, 24) & \longrightarrow\quad & \tfrac{1}{\sqrt{20}}(\vc{z}' - 18) = (-1.34, -0.45, 0.45, 1.34)
-        \end{aligned}
+        \vc{W}\left(\vc{\gamma} \odot \vc{u} + \vc{\beta}\right) + \vc{b}
+        = \left(\vc{W}\,\text{diag}(\vc{\gamma})\right)\vc{u}
+          + \left(\vc{W}\vc{\beta} + \vc{b}\right) .
     \]
-    Both inputs reach $\vc{\gamma} \odot (\cdot) + \vc{\beta}$ as the same
-    vector, so they give the same output for any $\vc{\gamma}$ and $\vc{\beta}$.
 
     \begin{tcolorbox}[nndsblue]
-        The normalization alone decides which inputs give the same output
-        ($a\vc{z} + c\vc{1}$, $a > 0$); $\gamma$ and $\beta$ act afterwards
-        and do not change this, in BN as in LN.
+        In this setting, $\gamma$ and $\beta$ do not change what the network can
+        compute: they are additional trainable parameters, left over from how BN
+        was built. RMSNorm, two slides ahead, drops $\beta$; we come back to this in the
+        transformer lectures.
     \end{tcolorbox}
 
 \end{frame}
@@ -880,6 +819,80 @@
 
 \end{frame}
 
+
+% Written by Claude (2026-11-12), after the 2026-11-12 lecture: the
+% invariances explain gamma and beta. Ioffe and Szegedy (2015), Sec. 3
+% (sigmoid kept in its linear regime). Gaussian numbers: P(x > 1.2816) = 0.10;
+% |3x| > 2 for |x| > 0.667, half of N(0, 1).
+\begin{frame}{Why BN needs $\gamma$ and $\beta$}
+    \small
+    \setlength{\parskip}{4pt}
+
+    The invariances also explain $\gamma$ and $\beta$. BN cancels two things
+    the previous layer controls: its bias,
+    $\text{BN}(\vc{z} + b\vc{1}) = \text{BN}(\vc{z})$, and the scale of its
+    weights, $\text{BN}(a\vc{z}) = \text{BN}(\vc{z})$. Without $\gamma$ and
+    $\beta$, the activation would always see inputs with mean 0 and
+    variance 1: they give each unit an offset and a scale again.
+
+    \medskip
+    \begin{columns}[t,onlytextwidth]
+        \begin{column}{0.48\textwidth}
+            \centering
+            \begin{tikzpicture}
+                \begin{axis}[
+                        width=\linewidth, height=0.38\textheight,
+                        xmin=-4, xmax=3, ymin=0, ymax=0.55, ytick=\empty,
+                        xtick={-3,-2,-1,0,1,2,3}, tick label style={font=\scriptsize},
+                        axis lines=left, axis line style={drawgray}, clip=false,
+                        every axis plot/.append style={thick, mark=none, samples=60},
+                    ]
+                    \addplot[fill=draworange_l, draw=none, domain=0:3] {exp(-(x+1.28)^2/2)/sqrt(2*pi)} \closedcycle;
+                    \addplot[drawgray, domain=-4:3] {exp(-x^2/2)/sqrt(2*pi)};
+                    \addplot[draworange, domain=-4:3] {exp(-(x+1.28)^2/2)/sqrt(2*pi)};
+                    \addplot[drawgray, dashed, thin] coordinates {(0,0) (0,0.55)};
+                    \node[font=\scriptsize, text=drawgray, anchor=south west] at (axis cs:0.25,0.42) {$\beta = 0$: 50\%};
+                    \node[font=\scriptsize, text=draworange!80!black, anchor=south] at (axis cs:-1.6,0.42) {$\beta = -1.28$: 10\%};
+                \end{axis}
+            \end{tikzpicture}
+
+            \RaggedRight
+            \textbf{$\beta$ before a ReLU} sets how often the unit is active
+            (fraction of the mini-batch, with $\gamma = 1$).
+        \end{column}
+        \begin{column}{0.48\textwidth}
+            \centering
+            \begin{tikzpicture}
+                \begin{axis}[
+                        width=\linewidth, height=0.38\textheight,
+                        xmin=-3, xmax=3, ymin=-1.1, ymax=1.1,
+                        xtick={-3,-2,-1,0,1,2,3}, ytick={-1,0,1},
+                        tick label style={font=\scriptsize},
+                        axis lines=left, axis line style={drawgray}, clip=false,
+                        every axis plot/.append style={thick, mark=none, samples=80},
+                    ]
+                    \fill[drawgray!15] (axis cs:-3,-1.1) -- plot[domain=-3:3, samples=60] (axis cs:\x,{-1.1 + 1.2*exp(-\x*\x/2)}) -- (axis cs:3,-1.1) -- cycle;
+                    \addplot[drawblue, domain=-3:3] {tanh(x)};
+                    \addplot[draworange, domain=-3:3] {tanh(3*x)};
+                    \node[font=\scriptsize, text=drawblue, anchor=west] at (axis cs:1.0,0.4) {$\gamma = 1$};
+                    \node[font=\scriptsize, text=draworange!80!black, anchor=east] at (axis cs:-0.4,0.8) {$\gamma = 3$};
+                \end{axis}
+            \end{tikzpicture}
+
+            \RaggedRight
+            \textbf{$\gamma$ before tanh} sets its regime: close to linear
+            for $\gamma = 1$, while for $\gamma = 3$ half of the inputs
+            saturate (gray: inputs after BN).
+        \end{column}
+    \end{columns}
+
+    In BN $\to$ ReLU $\to$ linear, $\gamma$ is redundant
+    ($\text{ReLU}(\gamma x) = \gamma\,\text{ReLU}(x)$ for $\gamma > 0$, and the
+    next layer absorbs it); it matters before tanh, GELU or SiLU.
+
+    \SlideSource{Ioffe and Szegedy (2015), \textit{Batch normalization}, ICML, Sec.~3.}
+
+\end{frame}
 
 % Written by Claude (2026-10-20). Ba et al. (2016): Sec. 5.1 and Table 1
 % (invariances), Sec. 6.7 (similar contributions of hidden units; CNN caveat).
