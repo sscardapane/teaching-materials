@@ -1,0 +1,271 @@
+\documentclass[11pt,aspectratio=169]{beamer}
+
+\input{style.tex}
+\usetikzlibrary{arrows.meta,calc,decorations.pathreplacing}
+\graphicspath{{assets/}{../../shared/assets/}}
+
+\usepackage{annotate-equations}
+
+% Written by Claude (2026-11-12): second deck of the Transformer refresh (plan
+% in the vault's NNDS Slide Refresh Log, 2026-11-12). Built block by block;
+% this file starts with the first block, the modern transformer block.
+
+\input{transformers-settings.tex}
+
+\begin{document}
+
+{\usebackgroundtemplate{\tikz\node[opacity=0.4,inner sep=0]{\includegraphics[width=\paperwidth,height=\paperheight]{images/header}};}%
+\begin{frame}[plain]
+    \vspace{0.5cm}
+    \title{\large \begin{spacing}{1.0}Neural Networks for Data Science\end{spacing}\vspace{0.25em}
+        \normalsize \begin{spacing}{1.0}\textbf{Master's Degree in Data Science}\end{spacing}\vspace{0.5em}}
+    \subtitle{\Large \textbf{Modern transformers}}
+    \date{
+        {\includegraphics[scale=0.8]{images/Uniroma1}}
+    }
+    \author{
+        \setlength{\tabcolsep}{2pt}
+        \begin{tabular}{rl}
+            \textbf{Lecturer}: & S. Scardapane \\
+        \end{tabular}
+    }\titlepage
+\end{frame}
+}
+
+\part{1}
+
+\section{The modern transformer block}
+\subsection{Normalization, positions and the MLP}
+
+\begin{frame}{From 2017 to today}
+    \setlength{\parskip}{5pt}
+
+    Current language models still stack the transformer block of the last
+    lecture (2017), but almost every component inside it has been replaced.
+
+    \centering
+    \begin{tikzpicture}[x=1.17cm, y=1cm,
+            pb/.style={tfblk, minimum width=1.5cm, minimum height=0.6cm},
+            pn/.style={tfnorm, minimum width=1.5cm, minimum height=0.6cm},
+            skip/.style={tfarr, drawgray!70},
+            ttl/.style={font=\small\bfseries, anchor=west, text=black!70},
+        ]
+        % 2017: X -> MHA -> + -> LN -> MLP -> + -> LN
+        \node[ttl] (t17) at (-0.2,1.05) {2017};
+        \node[tflab, anchor=base west] at (t17.base east) {positional embeddings added to $\vc{X}$, biases in every layer};
+        \node[font=\small] (x) at (0,0) {$\vc{X}$};
+        \node[pb] (a) at (1.6,0) {MHA};
+        \node[tfsum] (m1) at (3.1,0) {$+$};
+        \node[pn] (n1) at (4.6,0) {LayerNorm};
+        \node[pb] (f) at (6.6,0) {MLP};
+        \node[tfsum] (m2) at (8.1,0) {$+$};
+        \node[pn] (n2) at (9.6,0) {LayerNorm};
+        \node[font=\small] (y) at (11.1,0) {$\vc{H}$};
+        \draw[tfarr] (x) -- (a); \draw[tfarr] (a) -- (m1); \draw[tfarr] (m1) -- (n1);
+        \draw[tfarr] (n1) -- (f); \draw[tfarr] (f) -- (m2); \draw[tfarr] (m2) -- (n2);
+        \draw[tfarr] (n2) -- (y);
+        \draw[skip] (0.6,0) -- (0.6,0.65) -| (m1);
+        \draw[skip] (5.6,0) -- (5.6,0.65) -| (m2);
+        \fill[drawgray] (0.6,0) circle (1.3pt); \fill[drawgray] (5.6,0) circle (1.3pt);
+        \node[tflab, below=3pt] at (f.south) {ReLU};
+
+        % Today: X -> RMSNorm -> MHA -> + -> RMSNorm -> MLP -> +
+        \begin{scope}[yshift=-2.0cm]
+            \node[ttl] (tnow) at (-0.2,1.05) {Today};
+            \node[tflab, anchor=base west] at (tnow.base east) {no biases};
+            \node[font=\small] (x) at (0,0) {$\vc{X}$};
+            \node[pn] (n1) at (1.6,0) {RMSNorm};
+            \node[pb] (a) at (3.6,0) {MHA};
+            \node[tfsum] (m1) at (5.1,0) {$+$};
+            \node[pn] (n2) at (6.6,0) {RMSNorm};
+            \node[pb] (f) at (8.6,0) {MLP};
+            \node[tfsum] (m2) at (10.1,0) {$+$};
+            \node[font=\small] (y) at (11.1,0) {$\vc{H}$};
+            \draw[tfarr] (x) -- (n1); \draw[tfarr] (n1) -- (a); \draw[tfarr] (a) -- (m1);
+            \draw[tfarr] (m1) -- (n2); \draw[tfarr] (n2) -- (f); \draw[tfarr] (f) -- (m2);
+            \draw[tfarr] (m2) -- (y);
+            \draw[skip] (0.6,0) -- (0.6,0.65) -| (m1);
+            \draw[skip] (5.6,0) -- (5.6,0.65) -| (m2);
+            \fill[drawgray] (0.6,0) circle (1.3pt); \fill[drawgray] (5.6,0) circle (1.3pt);
+            \node[tflab, below=3pt] at (n1.south) {pre-norm};
+            \node[tflab, below=3pt] at (a.south) {RoPE, (QK-norm)};
+            \node[tflab, below=3pt] at (f.south) {SwiGLU};
+        \end{scope}
+    \end{tikzpicture}
+    \par\vspace{0.4em}
+    \justifying
+
+    Most recent decoders (e.g., Llama~3, Qwen3) use the second block.
+
+    \SlideSource{\href{https://arxiv.org/abs/1706.03762}{Vaswani et al. (2017)}; \href{https://arxiv.org/abs/2407.21783}{Grattafiori et al., Llama 3 (2024)}; \href{https://arxiv.org/abs/2505.09388}{Yang et al., Qwen3 (2025)}.}
+
+\end{frame}
+
+\begin{frame}{Changes we have already seen}
+    \setlength{\parskip}{6pt}
+
+    Three of these changes come from the previous lectures:
+    \[
+        \vc{H}'=\vc{X}+\operatorname{MHA}(\operatorname{RMSNorm}(\vc{X})) \,,
+        \qquad
+        \vc{H}=\vc{H}'+\operatorname{MLP}(\operatorname{RMSNorm}(\vc{H}')) \,.
+    \]
+    \begin{itemize}
+        \setlength{\itemsep}{5pt}
+        \item \myalert{Pre-normalization}: the skip path carries $\vc{X}$, and
+              the gradient, unchanged through all blocks. The stack needs a
+              final normalization before the classifier.
+        \item \myalert{RMSNorm} instead of LayerNorm: we divide by the norm
+              without subtracting the mean, which the previous linear layer
+              can learn.
+        \item \myalert{RoPE} instead of positional embeddings added to
+              $\vc{X}$: every MHA layer rotates \qc{queries} and \kc{keys},
+              so the scores depend on $t'-t$.
+    \end{itemize}
+
+    \SlideSource{\href{https://arxiv.org/abs/2002.04745}{Xiong et al. (2020)}; \href{https://arxiv.org/abs/1910.07467}{Zhang and Sennrich (2019)}; \href{https://arxiv.org/abs/2104.09864}{Su et al., RoFormer (2024)}.}
+
+\end{frame}
+
+\begin{frame}{The MLP: SwiGLU}
+    \setlength{\parskip}{5pt}
+
+    Most recent models replace the two-layer MLP with the \myalert{SwiGLU}
+    layer of the MLP lecture, where a second projection of the input acts as
+    a gate:
+
+    \begin{center}
+        \input{../../shared/assets/images/lecture_4/swiglu.tex}
+    \end{center}
+    \vspace{-0.8em}
+    \[
+        \vc{y}=\vc{W}_o\left[(\vc{W}_u\vc{x})\odot\operatorname{SiLU}(\vc{W}_g\vc{x})\right] ,
+        \qquad \vc{W}_u,\vc{W}_g\in\mathbb{R}^{M\times D},\;\;
+        \vc{W}_o\in\mathbb{R}^{D\times M} \,.
+    \]
+    There are now three matrices instead of two. To keep the $8D^2$
+    parameters of the original MLP, we reduce the hidden size from $4D$ to
+    $M=\tfrac{2}{3}\cdot 4D$, so that $3DM=8D^2$ (Llama~2 7B: $D=4096$,
+    $M=11008$). The block still has \myalert{$12D^2$ parameters}.
+
+    \SlideSource{\href{https://arxiv.org/abs/2002.05202}{Shazeer (2020)}; \href{https://arxiv.org/abs/2302.13971}{Touvron et al., LLaMA (2023)}.}
+
+\end{frame}
+
+\subsection{Biases, QK-norm and parallel blocks}
+
+\begin{frame}{Removing the biases}
+    \setlength{\parskip}{6pt}
+
+    The original block has a bias in every linear layer and in every
+    LayerNorm. Most recent models remove all of them (RMSNorm only has the
+    gain $\vc{\gamma}$):
+
+    \begin{itemize}
+        \setlength{\itemsep}{4pt}
+        \item They are few: in GPT-2 (small), biases and LayerNorm parameters
+              are about $0.12$M out of $124$M.
+        \item Some have no effect. A bias $\vc{b}$ on the keys adds
+              $\qc{\vc{q}_t^{\top}}\vc{b}$ to all the scores of token $t$, and
+              the softmax ignores a constant:
+              \[
+                  \operatorname{softmax}_{t'}\big(\qc{\vc{q}_t^{\top}}(\kc{\vc{k}_{t'}}+\vc{b})\big)
+                  =\operatorname{softmax}_{t'}\big(\qc{\vc{q}_t^{\top}}\kc{\vc{k}_{t'}}\big) \,.
+              \]
+        \item Training large models was found to be more stable without them.
+    \end{itemize}
+
+    \SlideSource{\href{https://arxiv.org/abs/2204.02311}{Chowdhery et al., PaLM (2023)}, JMLR.}
+
+\end{frame}
+
+\begin{frame}{Normalizing queries and keys}
+    \setlength{\parskip}{6pt}
+
+    Dividing by $\sqrt{D_k}$ keeps the scores small at initialization, but
+    not during training: if queries and keys grow, a single large score
+    saturates the softmax.
+
+    \myalert{Q/K normalized} variants add a normalization over the keys and
+    queries before computing the scores. In the simplest version:
+    \[
+        s_{t,t'}=\eqnmarkbox[drawblue]{gain}{g}\;
+        \frac{\qc{\vc{q}_t^{\top}}\kc{\vc{k}_{t'}}}{\lVert\qc{\vc{q}_t}\rVert\,\lVert\kc{\vc{k}_{t'}}\rVert} \,.
+    \]
+    \annotate[yshift=-0.6em]{below,left}{gain}{trainable scale, replaces $1/\sqrt{D_k}$}
+    \vspace{0.4em}
+
+    The score is a cosine similarity in $[-g,g]$. Recent models (ViT-22B,
+    Gemma~3, Qwen3) use a LayerNorm or RMSNorm with its own gain instead.
+    Rotations preserve the norm, so RoPE is applied as before.
+
+    \SlideSource{\href{https://arxiv.org/abs/2010.04245}{Henry et al. (2020)}; \href{https://arxiv.org/abs/2302.05442}{Dehghani et al., ViT-22B (2023)}; \href{https://arxiv.org/abs/2503.19786}{Gemma 3 (2025)}; \href{https://arxiv.org/abs/2505.09388}{Qwen3 (2025)}.}
+
+\end{frame}
+
+\begin{frame}{Parallel blocks}
+    \setlength{\parskip}{5pt}
+
+    \myalert{Parallel} variants perform the MHA and MLP operations in
+    parallel, on the same normalized input:
+    $\vc{H}=\vc{X}+\operatorname{MHA}(\operatorname{Norm}(\vc{X}))+\operatorname{MLP}(\operatorname{Norm}(\vc{X}))$.
+
+    \vspace{0.2em}
+    \centering
+    \begin{tikzpicture}[x=1.17cm, y=1cm,
+            pb/.style={tfblk, minimum width=1.5cm, minimum height=0.6cm},
+            pn/.style={tfnorm, minimum width=1.5cm, minimum height=0.6cm},
+            skip/.style={tfarr, drawgray!70},
+        ]
+        \node[font=\small] (x) at (0,0) {$\vc{X}$};
+        \node[pn] (n) at (2.0,0) {Norm};
+        \node[pb] (a) at (4.6,0) {MHA};
+        \node[pb] (f) at (4.6,-1.0) {MLP};
+        \node[tfsum] (m) at (6.9,0) {$+$};
+        \node[font=\small] (y) at (8.3,0) {$\vc{H}$};
+        \draw[tfarr] (x) -- (n);
+        \draw[tfarr] (n) -- (a);
+        \draw[tfarr] (a) -- (m);
+        \draw[tfarr] (3.3,0) |- (f.west);
+        \draw[tfarr] (f.east) -| (m.south);
+        \draw[tfarr] (m) -- (y);
+        \draw[skip] (0.7,0) -- (0.7,0.65) -| (m);
+        \fill[drawgray] (0.7,0) circle (1.3pt); \fill[drawgray] (3.3,0) circle (1.3pt);
+    \end{tikzpicture}
+    \par\vspace{0.3em}
+    \justifying
+
+    In this way, the initial and final projections of the MLP and MHA layers
+    can be fused, each in a single matrix product.
+
+    PaLM reports about $15\%$ faster training, with similar quality for large
+    models. Most open language models (Llama, Qwen, Gemma) still use the
+    sequential block.
+
+    \SlideSource{\href{https://arxiv.org/abs/2302.05442}{Dehghani et al., ViT-22B (2023)}, ICML; \href{https://arxiv.org/abs/2204.02311}{Chowdhery et al., PaLM (2023)}, JMLR.}
+
+\end{frame}
+
+\begin{frame}[fragile]{A modern block in code}
+    \setlength{\parskip}{5pt}
+
+    \begin{python}[gobble=8,aboveskip=2pt,belowskip=4pt]
+        def forward(self, x):                                  # x: (B, T, D)
+            B, T, D = x.shape
+            q, k, v = (z.view(B, T, self.h, -1).transpose(1, 2)   # (B, h, T, D/h)
+                       for z in self.qkv(self.norm1(x)).chunk(3, -1))
+            a = F.scaled_dot_product_attention(
+                    rope(q), rope(k), v, is_causal=True)
+            x = x + self.out(a.transpose(1, 2).reshape(B, T, D))
+            z = self.norm2(x)
+            return x + self.down(self.up(z) * F.silu(self.gate(z)))
+    \end{python}
+
+    The two normalizations are \pythoninline{nn.RMSNorm(D)}, all the other
+    layers are \pythoninline{nn.Linear} with \pythoninline{bias=False}, and
+    \pythoninline{rope} is the function of the last lecture. In total, the
+    block has $12D^2+2D$ parameters.
+
+\end{frame}
+
+\end{document}
