@@ -5,6 +5,8 @@
 \graphicspath{{assets/}{../../shared/assets/}}
 
 \usepackage{annotate-equations}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
 
 % Written by Claude (2026-11-12): second deck of the Transformer refresh (plan
 % in the vault's NNDS Slide Refresh Log, 2026-11-12). Built block by block;
@@ -315,25 +317,26 @@
 \end{whiteframe}
 
 \begin{frame}[fragile]{The KV cache in code}
-    \setlength{\parskip}{4pt}
+    \setlength{\parskip}{6pt}
 
-    \begin{python}[gobble=8,aboveskip=0pt,belowskip=2pt]
-        def attend(self, x, start):                    # x: (B, T, D), new tokens only
-            B, T, D = x.shape
-            q, k, v = (z.view(B, T, self.h, -1).transpose(1, 2)   # (B, h, T, D/h)
-                       for z in self.qkv(self.norm1(x)).chunk(3, -1))
-            q, k = rope(q, start), rope(k, start)      # positions start, start + 1, ...
-            if start > 0:                              # decode: append to the cache
-                k = torch.cat([self.k_cache, k], dim=2)
-                v = torch.cat([self.v_cache, v], dim=2)
-            self.k_cache, self.v_cache = k, v          # (B, h, start + T, D/h)
-            a = F.scaled_dot_product_attention(q, k, v, is_causal=(start == 0))
-            return self.out(a.transpose(1, 2).reshape(B, T, D))
+    Inside each attention layer, \pythoninline{x} holds only the new tokens:
 
-        logits = model(prompt, start=0)                # prefill: fills the caches
+    \begin{python}[gobble=8,aboveskip=2pt,belowskip=2pt]
+        q, k, v = self.qkv_heads(x, start)            # RoPE from position start
+        if start > 0:                                 # decode: append to the cache
+            k = torch.cat([self.k_cache, k], dim=2)
+            v = torch.cat([self.v_cache, v], dim=2)
+        self.k_cache, self.v_cache = k, v
+        a = F.scaled_dot_product_attention(q, k, v, is_causal=(start == 0))
+    \end{python}
+
+    Generation is one prefill call, then one call per token:
+
+    \begin{python}[gobble=8,aboveskip=2pt,belowskip=2pt]
+        logits = model(prompt, start=0)               # prefill: fills the caches
         for t in range(T_p, T_p + n):
-            z = logits[:, -1].argmax(-1, keepdim=True) # greedy decoding, (B, 1)
-            logits = model(z, start=t)                 # decode: one token
+            z = logits[:, -1].argmax(-1, keepdim=True)
+            logits = model(z, start=t)                # decode: one token
     \end{python}
 
 \end{frame}
@@ -341,22 +344,45 @@
 \begin{frame}{How large is the KV cache?}
     \setlength{\parskip}{6pt}
 
-    For each token and each layer we store a key and a value of size $D$
-    (all the heads together). With $N$ layers and $b$ bytes per number, a
-    sequence of $T$ tokens needs:
-    \[
-        \underbrace{2}_{\kc{\vc{k}},\,\vcl{\vc{v}}}\cdot N\cdot D\cdot T\cdot b
-        \text{ bytes.}
-    \]
-    For Llama~2 7B ($N=32$, $D=4096$, $16$-bit numbers), this is about
-    $0.5$\,MB per token, and $2$\,GB for a full context of $T=4096$ tokens. A batch of $16$
-    sequences needs about $34$\,GB of cache, more than twice the $13.5$\,GB of
-    the weights.
+    \begin{columns}[T,onlytextwidth]
+        \begin{column}{0.46\textwidth}
+            \setlength{\parskip}{6pt}
+            In each of the $N$ layers, every token stores a \kc{key} and a
+            \vcl{value} of size $D$. With $b$ bytes per number:
+            \[
+                \text{cache}=2\cdot N\cdot D\cdot T\cdot b \text{ bytes.}
+            \]
+            Llama~2 7B ($N=32$, $D=4096$, $16$ bits): $0.5$\,MB per token,
+            $2$\,GB per sequence of $T=4096$ tokens.
+        \end{column}
+        \begin{column}{0.5\textwidth}
+            \centering
+            \begin{tikzpicture}
+                \begin{axis}[
+                        width=\linewidth, height=0.56\textheight,
+                        ybar stacked, bar width=16pt, ymin=0, ymax=90,
+                        symbolic x coords={1,4,16,32}, xtick=data,
+                        xlabel={Sequences in the batch}, ylabel={Memory (GB)},
+                        label style={font=\small}, tick label style={font=\small},
+                        axis lines=left, axis line style={drawgray},
+                        enlarge x limits=0.18, clip=false,
+                        legend style={font=\scriptsize, draw=none, fill=none, at={(0.03,0.82)}, anchor=north west},
+                        legend cell align=left,
+                    ]
+                    \addplot[fill=drawblue_l, draw=drawblue] coordinates {(1,13.5) (4,13.5) (16,13.5) (32,13.5)};
+                    \addplot[fill=draworange!70, draw=draworange] coordinates {(1,2.1) (4,8.6) (16,34.4) (32,68.7)};
+                    \legend{Weights, KV cache}
+                    \draw[drawred, dashed, thick] (rel axis cs:0,0.889) -- (rel axis cs:1,0.889)
+                        node[anchor=south east, font=\scriptsize, text=drawred] {80 GB GPU};
+                \end{axis}
+            \end{tikzpicture}
+        \end{column}
+    \end{columns}
 
-    Each decode step also reads the whole cache from memory to produce a
-    single token, so the size of the cache, not the number of operations,
-    limits how many sequences we can generate at once and how fast. The next
-    section makes the cache smaller by sharing keys and values among heads.
+    \medskip
+    Each decode step reads the whole cache, so its size limits how many
+    sequences we can serve at once. The next section makes it smaller by
+    sharing \kc{keys} and \vcl{values} among heads.
 
     \SlideSource{\href{https://arxiv.org/abs/2307.09288}{Touvron et al., Llama 2 (2023)}; \href{https://arxiv.org/abs/2211.05102}{Pope et al., Efficiently scaling transformer inference (2023)}.}
 
