@@ -158,8 +158,7 @@
     \setlength{\parskip}{6pt}
 
     The original block has a bias in every linear layer and in every
-    LayerNorm. Most recent language models remove all of them (RMSNorm only
-    has the gain $\vc{\gamma}$):
+    LayerNorm. Most recent language models remove all of them:
 
     \begin{itemize}
         \setlength{\itemsep}{4pt}
@@ -174,6 +173,9 @@
               \]
         \item Training large models was found to be more stable without them.
     \end{itemize}
+
+    RMSNorm keeps only its gain $\vc{\gamma}$ which, as in the deeper-models
+    lecture, the next linear layer absorbs: \mbox{$\vc{W}(\vc{\gamma}\odot\vc{u})=(\vc{W}\operatorname{diag}(\vc{\gamma}))\vc{u}$}.
 
     \SlideSource{\href{https://arxiv.org/abs/2204.02311}{Chowdhery et al., PaLM (2023)}, JMLR.}
 
@@ -266,6 +268,97 @@
     layers are \pythoninline{nn.Linear} with \pythoninline{bias=False}, and
     \pythoninline{rope} is the function of the last lecture. In total, the
     block has $12D^2+2D$ parameters.
+
+\end{frame}
+
+\section{Generating text}
+\subsection{The KV cache}
+
+\begin{frame}{Prefill and decode}
+    \setlength{\parskip}{6pt}
+
+    Generating an answer to a prompt of $T_p$ tokens has two phases:
+    \begin{itemize}
+        \setlength{\itemsep}{4pt}
+        \item \myalert{Prefill}: one forward pass on the whole prompt, in
+              parallel as in training. The last prediction gives the first new
+              token.
+        \item \myalert{Decode}: one forward pass for each new token, which
+              must attend to all the tokens before it.
+    \end{itemize}
+
+    Because of the causal mask, a new token does not change the hidden states
+    of the earlier ones, in any layer. Their \kc{keys} and \vcl{values} stay
+    the same, so recomputing them at every step is wasted work.
+
+    \begin{tcolorbox}[nndsgreen]
+        \textbf{\color{darkgreen}KV cache}: in every layer, we store the
+        \kc{keys} and \vcl{values} of past tokens, and compute $\qc{\vc{q}}$,
+        $\kc{\vc{k}}$, $\vcl{\vc{v}}$ only for the new token.
+    \end{tcolorbox}
+
+\end{frame}
+
+\begin{whiteframe}{The KV cache}
+    \setlength{\abovecaptionskip}{6pt}
+
+    \begin{figure}
+        \centering
+        \includegraphics[width=0.75\textwidth]{images/transformers/book/kv_cache.pdf}
+        \caption{Decoding the fourth token: only the last row of the attention
+            matrix is needed, and it has no masked entries. The new query $\qc{\vc{q}_4}$ is compared with
+            $\kc{\vc{k}_1},\ldots,\kc{\vc{k}_4}$, where only $\kc{\vc{k}_4}$ and
+            $\vcl{\vc{v}_4}$ are new. The cost of a step per layer goes from
+            $\mathcal{O}(tD^2+t^2D)$ to $\mathcal{O}(D^2+tD)$.}
+    \end{figure}
+
+\end{whiteframe}
+
+\begin{frame}[fragile]{The KV cache in code}
+    \setlength{\parskip}{4pt}
+
+    \begin{python}[gobble=8,aboveskip=0pt,belowskip=2pt]
+        def attend(self, x, start):                    # x: (B, T, D), new tokens only
+            B, T, D = x.shape
+            q, k, v = (z.view(B, T, self.h, -1).transpose(1, 2)   # (B, h, T, D/h)
+                       for z in self.qkv(self.norm1(x)).chunk(3, -1))
+            q, k = rope(q, start), rope(k, start)      # positions start, start + 1, ...
+            if start > 0:                              # decode: append to the cache
+                k = torch.cat([self.k_cache, k], dim=2)
+                v = torch.cat([self.v_cache, v], dim=2)
+            self.k_cache, self.v_cache = k, v          # (B, h, start + T, D/h)
+            a = F.scaled_dot_product_attention(q, k, v, is_causal=(start == 0))
+            return self.out(a.transpose(1, 2).reshape(B, T, D))
+
+        logits = model(prompt, start=0)                # prefill: fills the caches
+        for t in range(T_p, T_p + n):
+            z = logits[:, -1].argmax(-1, keepdim=True) # greedy decoding, (B, 1)
+            logits = model(z, start=t)                 # decode: one token
+    \end{python}
+
+\end{frame}
+
+\begin{frame}{How large is the KV cache?}
+    \setlength{\parskip}{6pt}
+
+    For each token and each layer we store a key and a value of size $D$
+    (all the heads together). With $N$ layers and $b$ bytes per number, a
+    sequence of $T$ tokens needs:
+    \[
+        \underbrace{2}_{\kc{\vc{k}},\,\vcl{\vc{v}}}\cdot N\cdot D\cdot T\cdot b
+        \text{ bytes.}
+    \]
+    For Llama~2 7B ($N=32$, $D=4096$, $16$-bit numbers), this is about
+    $0.5$\,MB per token, and $2$\,GB for a full context of $T=4096$ tokens. A batch of $16$
+    sequences needs about $34$\,GB of cache, more than twice the $13.5$\,GB of
+    the weights.
+
+    Each decode step also reads the whole cache from memory to produce a
+    single token, so the size of the cache, not the number of operations,
+    limits how many sequences we can generate at once and how fast. The next
+    section makes the cache smaller by sharing keys and values among heads.
+
+    \SlideSource{\href{https://arxiv.org/abs/2307.09288}{Touvron et al., Llama 2 (2023)}; \href{https://arxiv.org/abs/2211.05102}{Pope et al., Efficiently scaling transformer inference (2023)}.}
 
 \end{frame}
 
