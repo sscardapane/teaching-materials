@@ -42,8 +42,8 @@
 \begin{frame}{From 2017 to today}
     \setlength{\parskip}{5pt}
 
-    Current language models still stack the transformer block of the last
-    lecture (2017), but almost every component inside it has been replaced.
+    Modern language models are still built by stacking transformer blocks,
+    but most components inside the block have changed since the 2017 design:
 
     \centering
     \begin{tikzpicture}[x=1.17cm, y=1cm,
@@ -97,7 +97,8 @@
     \par\vspace{0.4em}
     \justifying
 
-    Most recent decoders (e.g., Llama~3, Qwen3) use the second block.
+    Most recent decoder models (e.g., Llama~3, Qwen3) use the second block,
+    with minor variations.
 
     \SlideSource{\href{https://arxiv.org/abs/1706.03762}{Vaswani et al. (2017)}; \href{https://arxiv.org/abs/2407.21783}{Grattafiori et al., Llama 3 (2024)}; \href{https://arxiv.org/abs/2505.09388}{Yang et al., Qwen3 (2025)}.}
 
@@ -106,7 +107,7 @@
 \begin{frame}{Changes we have already seen}
     \setlength{\parskip}{6pt}
 
-    Three of these changes come from the previous lectures:
+    We have already seen three of these changes in the previous lectures:
     \[
         \vc{H}'=\vc{X}+\operatorname{MHA}(\operatorname{RMSNorm}(\vc{X})) \,,
         \qquad
@@ -114,15 +115,15 @@
     \]
     \begin{itemize}
         \setlength{\itemsep}{5pt}
-        \item \myalert{Pre-normalization}: the skip path carries $\vc{X}$, and
-              the gradient, unchanged through all blocks. The stack needs a
-              final normalization before the classifier.
-        \item \myalert{RMSNorm} instead of LayerNorm: we divide by the norm
-              without subtracting the mean, which the previous linear layer
-              can learn.
-        \item \myalert{RoPE} instead of positional embeddings added to
-              $\vc{X}$: every MHA layer rotates \qc{queries} and \kc{keys},
-              so the scores depend on $t'-t$.
+        \item \myalert{Pre-normalization}: the residual path carries $\vc{X}$
+              (and its gradient) unchanged through the stack, with an
+              additional normalization before the classifier.
+        \item \myalert{RMSNorm} instead of LayerNorm: we only divide by the
+              norm, without subtracting the mean (the previous linear layer
+              can learn it).
+        \item \myalert{RoPE} instead of additive positional embeddings: the
+              \qc{queries} and \kc{keys} are rotated in every MHA layer, so
+              that the scores depend on the relative position $t'-t$.
     \end{itemize}
 
     \SlideSource{\href{https://arxiv.org/abs/2002.04745}{Xiong et al. (2020)}; \href{https://arxiv.org/abs/1910.07467}{Zhang and Sennrich (2019)}; \href{https://arxiv.org/abs/2104.09864}{Su et al., RoFormer (2024)}.}
@@ -133,8 +134,8 @@
     \setlength{\parskip}{5pt}
 
     Most recent models replace the two-layer MLP with the \myalert{SwiGLU}
-    layer of the MLP lecture, where a second projection of the input acts as
-    a gate:
+    layer we saw in the MLP lecture, in which a second projection of the
+    input acts as a gate:
 
     \begin{center}
         \input{../../shared/assets/images/lecture_4/swiglu.tex}
@@ -145,10 +146,11 @@
         \qquad \vc{W}_u,\vc{W}_g\in\mathbb{R}^{M\times D},\;\;
         \vc{W}_o\in\mathbb{R}^{D\times M} \,.
     \]
-    There are now three matrices instead of two. To keep the $8D^2$
-    parameters of the original MLP, we reduce the hidden size from $4D$ to
-    $M=\tfrac{2}{3}\cdot 4D$, so that $3DM=8D^2$ (Llama~2 7B: $D=4096$,
-    $M=11008$). The block still has \myalert{$12D^2$ parameters}.
+    We now have three matrices instead of two. To keep the $8D^2$ parameters
+    of the original MLP, the hidden size is reduced from $4D$ to
+    $M=\tfrac{2}{3}\cdot 4D$, so that $3DM=8D^2$ (e.g., $D=4096$ and
+    $M=11008$ in Llama~2 7B). In this way, the block still has
+    \myalert{$12D^2$~parameters}.
 
     \SlideSource{\href{https://arxiv.org/abs/2002.05202}{Shazeer (2020)}; \href{https://arxiv.org/abs/2302.13971}{Touvron et al., LLaMA (2023)}.}
 
@@ -160,24 +162,25 @@
     \setlength{\parskip}{6pt}
 
     The original block has a bias in every linear layer and in every
-    LayerNorm. Most recent language models remove all of them:
+    LayerNorm. Most recent language models remove all of them, for a few
+    reasons:
 
     \begin{itemize}
         \setlength{\itemsep}{4pt}
-        \item They are few: in GPT-2 (small), biases and LayerNorm parameters
-              are about $0.12$M out of $124$M.
-        \item Some have no effect. A bias $\vc{b}$ on the keys adds
-              $\qc{\vc{q}_t^{\top}}\vc{b}$ to all the scores of token $t$, and
-              the softmax ignores a constant:
+        \item They are a tiny fraction of the model: in GPT-2 (small), biases
+              and LayerNorm parameters are about $0.12$M out of $124$M.
+        \item Some of them have no effect. For example, a bias $\vc{b}$ on the
+              keys adds the same value $\qc{\vc{q}_t^{\top}}\vc{b}$ to all the
+              scores of token $t$, which is ignored by the softmax:
               \[
                   \operatorname{softmax}_{t'}\big(\qc{\vc{q}_t^{\top}}(\kc{\vc{k}_{t'}}+\vc{b})\big)
                   =\operatorname{softmax}_{t'}\big(\qc{\vc{q}_t^{\top}}\kc{\vc{k}_{t'}}\big) \,.
               \]
-        \item Training large models was found to be more stable without them.
+        \item Empirically, training large models is more stable without them.
     \end{itemize}
 
-    RMSNorm keeps only its gain $\vc{\gamma}$ which, as in the deeper-models
-    lecture, the next linear layer absorbs: \mbox{$\vc{W}(\vc{\gamma}\odot\vc{u})=(\vc{W}\operatorname{diag}(\vc{\gamma}))\vc{u}$}.
+    RMSNorm only keeps the gain $\vc{\gamma}$ which, as discussed in the
+    lecture on deeper models, can be absorbed by the next linear layer: \mbox{$\vc{W}(\vc{\gamma}\odot\vc{u})=(\vc{W}\operatorname{diag}(\vc{\gamma}))\vc{u}$}.
 
     \SlideSource{\href{https://arxiv.org/abs/2204.02311}{Chowdhery et al., PaLM (2023)}, JMLR.}
 
@@ -187,8 +190,8 @@
     \setlength{\parskip}{6pt}
 
     Dividing by $\sqrt{D_k}$ keeps the scores small at initialization, but
-    not during training: if queries and keys grow, a single large score
-    saturates the softmax.
+    not necessarily during training: if queries and keys grow, a single large
+    score can saturate the softmax.
 
     \myalert{Q/K normalized} variants add a normalization over the keys and
     queries before computing the scores. In the simplest version:
@@ -199,10 +202,10 @@
     \annotate[yshift=-0.6em]{below,left}{gain}{trainable scale, replaces $1/\sqrt{D_k}$}
     \vspace{0.4em}
 
-    The score is a cosine similarity in $[-g,g]$. Recent models (ViT-22B,
-    Gemma~3, Qwen3) keep the fixed scaling and apply a LayerNorm or RMSNorm,
-    with its own gain, to queries and keys. RoPE comes after it: rotations
-    preserve the norm.
+    The score is now a cosine similarity, bounded in $[-g,g]$. Recent models
+    (e.g., ViT-22B, Gemma~3, Qwen3) keep the fixed scaling and apply a
+    LayerNorm or RMSNorm (with its own gain) to queries and keys, before RoPE
+    (rotations do not change the norm).
 
     \SlideSource{\href{https://arxiv.org/abs/2010.04245}{Henry et al. (2020)}; \href{https://arxiv.org/abs/2302.05442}{Dehghani et al., ViT-22B (2023)}; \href{https://arxiv.org/abs/2503.19786}{Gemma 3 (2025)}; \href{https://arxiv.org/abs/2505.09388}{Qwen3 (2025)}.}
 
@@ -244,8 +247,8 @@
     can be fused, each in a single matrix product.
 
     PaLM reports about $15\%$ faster training, with no loss in quality for
-    its larger models. Most open language models (Llama, Qwen, Gemma) still
-    use the sequential block.
+    its larger models. However, most open language models (e.g., Llama, Qwen,
+    Gemma) still use the sequential block.
 
     \SlideSource{\href{https://arxiv.org/abs/2302.05442}{Dehghani et al., ViT-22B (2023)}, ICML; \href{https://arxiv.org/abs/2204.02311}{Chowdhery et al., PaLM (2023)}, JMLR.}
 
@@ -266,10 +269,10 @@
             return x + self.down(self.up(z) * F.silu(self.gate(z)))
     \end{python}
 
-    The two normalizations are \pythoninline{nn.RMSNorm(D)}, all the other
+    Here, the two normalizations are \pythoninline{nn.RMSNorm(D)}, all other
     layers are \pythoninline{nn.Linear} with \pythoninline{bias=False}, and
-    \pythoninline{rope} is the function of the last lecture. In total, the
-    block has $12D^2+2D$ parameters.
+    \pythoninline{rope} is the function we wrote in the last lecture. In
+    total, the block has $12D^2+2D$ parameters (the $2D$ are the two gains).
 
 \end{frame}
 
@@ -279,24 +282,24 @@
 \begin{frame}{Prefill and decode}
     \setlength{\parskip}{6pt}
 
-    Generating an answer to a prompt of $T_p$ tokens has two phases:
+    Generating the answer to a prompt of $T_p$ tokens happens in two phases:
     \begin{itemize}
         \setlength{\itemsep}{4pt}
-        \item \myalert{Prefill}: one forward pass on the whole prompt, in
-              parallel as in training. The last prediction gives the first new
-              token.
-        \item \myalert{Decode}: one forward pass for each new token, which
-              must attend to all the tokens before it.
+        \item \myalert{Prefill}: a single forward pass over the entire
+              prompt, computed in parallel as during training. The last
+              prediction gives us the first new token.
+        \item \myalert{Decode}: one forward pass for every new token, which
+              must attend to all the previous ones.
     \end{itemize}
 
     Because of the causal mask, a new token does not change the hidden states
-    of the earlier ones, in any layer. Their \kc{keys} and \vcl{values} stay
-    the same, so recomputing them at every step is wasted work.
+    of the previous ones (in any layer), so recomputing their \kc{keys} and
+    \vcl{values} at every step is wasteful.
 
     \begin{tcolorbox}[nndsgreen]
         \textbf{\color{darkgreen}KV cache}: in every layer, we store the
-        \kc{keys} and \vcl{values} of past tokens, and compute $\qc{\vc{q}}$,
-        $\kc{\vc{k}}$, $\vcl{\vc{v}}$ only for the new token.
+        \kc{keys} and \vcl{values} of all past tokens, and we compute
+        $\qc{\vc{q}}$, $\kc{\vc{k}}$, $\vcl{\vc{v}}$ only for the new token.
     \end{tcolorbox}
 
 \end{frame}
@@ -307,11 +310,12 @@
     \begin{figure}
         \centering
         \includegraphics[width=0.75\textwidth]{images/transformers/book/kv_cache.pdf}
-        \caption{Decoding the fourth token: only the last row of the attention
-            matrix is needed, and it has no masked entries. The new query $\qc{\vc{q}_4}$ is compared with
-            $\kc{\vc{k}_1},\ldots,\kc{\vc{k}_4}$, where only $\kc{\vc{k}_4}$ and
-            $\vcl{\vc{v}_4}$ are new. The cost of a step per layer goes from
-            $\mathcal{O}(tD^2+t^2D)$ to $\mathcal{O}(D^2+tD)$.}
+        \caption{Decoding the fourth token with a KV cache. We only need the
+            last row of the attention matrix (which has no masked entries): the
+            new query $\qc{\vc{q}_4}$ is compared with
+            $\kc{\vc{k}_1},\ldots,\kc{\vc{k}_4}$, of which only $\kc{\vc{k}_4}$
+            and $\vcl{\vc{v}_4}$ are new. For each layer, the cost of a step goes
+            from $\mathcal{O}(tD^2+t^2D)$ to $\mathcal{O}(D^2+tD)$.}
     \end{figure}
 
 \end{whiteframe}
@@ -319,7 +323,8 @@
 \begin{frame}[fragile]{The KV cache in code}
     \setlength{\parskip}{6pt}
 
-    Inside each attention layer, \pythoninline{x} holds only the new tokens:
+    Inside each attention layer, \pythoninline{x} now contains only the new
+    tokens:
 
     \begin{python}[gobble=8,aboveskip=2pt,belowskip=2pt]
         q, k, v = self.qkv_heads(x, start)            # RoPE from position start
@@ -330,7 +335,8 @@
         a = F.scaled_dot_product_attention(q, k, v, is_causal=(start == 0))
     \end{python}
 
-    Generation is one prefill call, then one call per token:
+    Generation is a single prefill call, followed by one call for each new
+    token (here, with greedy decoding):
 
     \begin{python}[gobble=8,aboveskip=2pt,belowskip=2pt]
         logits = model(prompt, start=0)               # prefill: fills the caches
@@ -347,13 +353,13 @@
     \begin{columns}[T,onlytextwidth]
         \begin{column}{0.46\textwidth}
             \setlength{\parskip}{6pt}
-            In each of the $N$ layers, every token stores a \kc{key} and a
-            \vcl{value} of size $D$. With $b$ bytes per number:
+            For each of the $N$ layers, every token stores a \kc{key} and a
+            \vcl{value} of size $D$. With $b$ bytes per number, the total is:
             \[
                 \text{cache}=2\cdot N\cdot D\cdot T\cdot b \text{ bytes.}
             \]
-            Llama~2 7B ($N=32$, $D=4096$, $16$ bits): $0.5$\,MB per token,
-            $2$\,GB per sequence of $T=4096$ tokens.
+            For example, Llama~2 7B ($N=32$, $D=4096$, $16$ bits) needs
+            $0.5$\,MB per token, or $2$\,GB for a sequence of $T=4096$ tokens.
         \end{column}
         \begin{column}{0.5\textwidth}
             \centering
@@ -380,9 +386,9 @@
     \end{columns}
 
     \medskip
-    Each decode step reads the whole cache, so its size limits how many
-    sequences we can serve at once. The next section makes it smaller by
-    sharing \kc{keys} and \vcl{values} among heads.
+    Since every decoding step reads the entire cache, its size limits how
+    many sequences we can serve at once. Next, we reduce it by sharing
+    \kc{keys} and \vcl{values} among heads.
 
     \SlideSource{\href{https://arxiv.org/abs/2307.09288}{Touvron et al., Llama 2 (2023)}; \href{https://arxiv.org/abs/2211.05102}{Pope et al., Efficiently scaling transformer inference (2023)}.}
 
@@ -394,14 +400,16 @@
 \begin{frame}{Multi-query and grouped-query attention}
     \setlength{\parskip}{6pt}
 
-    In MHA, the cache stores the \kc{keys} and \vcl{values} of all $h$ heads.
-    Two variants keep $h$ \qc{query} heads but fewer key/value heads:
+    In MHA, we need to cache the \kc{keys} and \vcl{values} of all $h$ heads.
+    Two common variants keep the $h$ \qc{query} heads, but reduce the number
+    of key/value heads:
     \begin{itemize}
         \setlength{\itemsep}{3pt}
-        \item \myalert{Multi-query attention} (MQA): all query heads share one
-              key and one value head.
-        \item \myalert{Grouped-query attention} (GQA): $G$ groups of query
-              heads, each sharing one key and one value head.
+        \item \myalert{Multi-query attention} (MQA): all query heads share a
+              single key head and a single value head.
+        \item \myalert{Grouped-query attention} (GQA): the query heads are
+              split into $G$ groups, and each group shares one key and one value
+              head.
     \end{itemize}
 
     \vspace{0.3em}
@@ -415,14 +423,15 @@
 \begin{frame}[fragile]{Grouped-query attention in practice}
     \setlength{\parskip}{6pt}
 
-    The cache goes from $2hD_k$ to $2GD_k$ numbers per token and layer. MQA
-    loses some quality; GQA with a few groups is close to MHA in quality and
-    to MQA in speed.
+    With GQA, the cache goes from $2hD_k$ to $2GD_k$ numbers per token and
+    layer. MQA can lose some quality, while GQA is close to MHA in quality
+    and to MQA in speed.
 
-    Llama~3 8B has the same $N=32$ and $D=4096$ as Llama~2 7B, but $G=8$ key/value
-    heads for $h=32$ query heads: $128$\,KB per token instead of $512$\,KB.
+    For example, Llama~3 8B has the same $N=32$ and $D=4096$ as Llama~2 7B,
+    but $G=8$ key/value heads for $h=32$ query heads: $128$\,KB per token
+    instead of $512$\,KB.
 
-    In code, the key and value projections get $G$ heads:
+    In code, we only change the number of key and value heads:
     \begin{python}[gobble=8,aboveskip=2pt,belowskip=2pt]
         q = self.wq(x).view(B, T, h, -1).transpose(1, 2)    # (B, h, T, D_k)
         k = self.wk(x).view(B, T, G, -1).transpose(1, 2)    # (B, G, T, D_k)
@@ -431,8 +440,8 @@
                                            enable_gqa=True)   # each k, v serves h/G heads
     \end{python}
 
-    An MHA model can be converted to GQA by averaging the key and value heads
-    of each group, followed by a short additional training.
+    An MHA model can also be converted to GQA by averaging the key and value
+    heads of each group, followed by a short additional training.
 
     \SlideSource{\href{https://arxiv.org/abs/2305.13245}{Ainslie et al., GQA (2023)}, EMNLP; \href{https://arxiv.org/abs/2407.21783}{Grattafiori et al., Llama 3 (2024)}.}
 
@@ -441,8 +450,8 @@
 \begin{frame}{Multi-head latent attention (MLA)}
     \setlength{\parskip}{6pt}
 
-    Instead of sharing heads, MLA compresses. Each token stores a single
-    latent vector, from which every head reconstructs its key and value:
+    In MLA, each token stores instead a single compressed vector, from which
+    every head reconstructs its key and value:
     \[
         \eqnmarkbox[drawblue]{lat}{\vc{c}_t=\vc{W}_c\vc{x}_t} \,, \qquad
         \kc{\vc{k}_{t,i}=\vc{W}_{k,i}\vc{c}_t} \,, \qquad
@@ -451,14 +460,14 @@
     \annotate[yshift=-0.5em]{below,left}{lat}{cached, size $d_c\ll 2hD_k$}
     \vspace{0.6em}
 
-    The keys are never computed: $\qc{\vc{q}_{t,i}^{\top}}\vc{W}_{k,i}\vc{c}_{t'}=(\vc{W}_{k,i}^{\top}\qc{\vc{q}_{t,i}})^{\top}\vc{c}_{t'}$,
-    so $\vc{W}_{k,i}$ is merged into the query projection ($\vc{W}_{v,i}$ into
-    the output one). RoPE depends on the position and would break this, so
-    MLA adds a small rotated key shared by all heads.
+    We never compute the keys explicitly, since $\qc{\vc{q}_{t,i}^{\top}}\vc{W}_{k,i}\vc{c}_{t'}=(\vc{W}_{k,i}^{\top}\qc{\vc{q}_{t,i}})^{\top}\vc{c}_{t'}$
+    and $\vc{W}_{k,i}$ can be merged into the query projection ($\vc{W}_{v,i}$
+    into the output one). RoPE would break this trick, so MLA adds a small
+    key with RoPE, shared by all heads.
 
-    DeepSeek-V2 and V3 cache $512+64=576$ numbers per token and layer, against
-    $2hD_k=32{,}768$ for MHA with the same heads: the cache of GQA with $2.25$
-    groups, with better quality than MHA in their experiments.
+    In DeepSeek-V2 and V3, this is $512+64=576$ numbers per token and layer,
+    against $2hD_k=32{,}768$ for MHA (equivalent to GQA with $2.25$ groups),
+    with better quality than MHA in their experiments.
 
     \SlideSource{\href{https://arxiv.org/abs/2405.04434}{DeepSeek-AI, DeepSeek-V2 (2024)}; \href{https://arxiv.org/abs/2412.19437}{DeepSeek-V3 (2024)}.}
 
