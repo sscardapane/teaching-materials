@@ -1,0 +1,38 @@
+% Written by Claude (2026-11-13): query heads and the key/value heads they
+% read, for MHA, GQA (G = 2) and MQA, with h = 8 query heads.
+\begin{tikzpicture}[x=0.92cm, y=1cm,
+        hd/.style={minimum size=0.32cm, inner sep=0pt, line width=0.6pt},
+        qh/.style={hd, draw=qcolor, fill=qcolor!25},
+        kh/.style={hd, draw=kcolor, fill=kcolor!30},
+        vh/.style={hd, draw=vcolor, fill=vcolor!25},
+        ln/.style={drawgray, line width=0.5pt},
+        ttl/.style={font=\small\bfseries, text=black!75},
+        rowlab/.style={font=\scriptsize, text=black!60, anchor=east},
+    ]
+    % #1: x offset, #2: number of key/value heads
+    \newcommand{\kvpanel}[3]{%
+        \begin{scope}[xshift=#1cm]
+            \pgfmathsetmacro{\gs}{8/#2}
+            \foreach \i in {0,...,7} {
+                    \node[qh] (q\i) at ({\i*0.42},1.5) {};
+                }
+            \foreach \g in {1,...,#2} {
+                    \pgfmathsetmacro{\xc}{((\g-1)*\gs + (\gs-1)/2)*0.42}
+                    \node[kh] (k\g) at (\xc,0.5) {};
+                    \node[vh] (v\g) at (\xc,0.0) {};
+                    \pgfmathtruncatemacro{\first}{(\g-1)*\gs}
+                    \pgfmathtruncatemacro{\last}{\g*\gs-1}
+                    \foreach \i in {\first,...,\last} {
+                            \draw[ln] (q\i.south) -- (k\g.north);
+                        }
+                }
+            \node[ttl] at (1.47,2.1) {#3};
+        \end{scope}
+    }
+    \kvpanel{0}{8}{Multi-head ($G=h$)}
+    \kvpanel{4.4}{2}{Grouped-query ($G=2$)}
+    \kvpanel{8.8}{1}{Multi-query ($G=1$)}
+    \node[rowlab] at (-0.3,1.5) {\qc{queries}};
+    \node[rowlab] at (-0.3,0.5) {\kc{keys}};
+    \node[rowlab] at (-0.3,0.0) {\vcl{values}};
+\end{tikzpicture}

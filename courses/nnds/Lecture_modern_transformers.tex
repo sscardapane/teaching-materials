@@ -388,4 +388,80 @@
 
 \end{frame}
 
+\section{Smaller caches}
+\subsection{Sharing keys and values among heads}
+
+\begin{frame}{Multi-query and grouped-query attention}
+    \setlength{\parskip}{6pt}
+
+    In MHA, the cache stores the \kc{keys} and \vcl{values} of all $h$ heads.
+    Two variants keep $h$ \qc{query} heads but fewer key/value heads:
+    \begin{itemize}
+        \setlength{\itemsep}{3pt}
+        \item \myalert{Multi-query attention} (MQA): all query heads share one
+              key and one value head.
+        \item \myalert{Grouped-query attention} (GQA): $G$ groups of query
+              heads, each sharing one key and one value head.
+    \end{itemize}
+
+    \vspace{0.3em}
+    \centering
+    \input{assets/images/transformers/kv_heads.tex}
+
+    \SlideSource{\href{https://arxiv.org/abs/1911.02150}{Shazeer (2019)}; \href{https://arxiv.org/abs/2305.13245}{Ainslie et al., GQA (2023)}, EMNLP.}
+
+\end{frame}
+
+\begin{frame}[fragile]{Grouped-query attention in practice}
+    \setlength{\parskip}{6pt}
+
+    The cache goes from $2hD_k$ to $2GD_k$ numbers per token and layer. MQA
+    loses some quality; GQA with a few groups is close to MHA in quality and
+    to MQA in speed.
+
+    Llama~3 8B has the same $N=32$ and $D=4096$ as Llama~2 7B, but $G=8$ key/value
+    heads for $h=32$ query heads: $128$\,KB per token instead of $512$\,KB.
+
+    In code, the key and value projections get $G$ heads:
+    \begin{python}[gobble=8,aboveskip=2pt,belowskip=2pt]
+        q = self.wq(x).view(B, T, h, -1).transpose(1, 2)    # (B, h, T, D_k)
+        k = self.wk(x).view(B, T, G, -1).transpose(1, 2)    # (B, G, T, D_k)
+        v = self.wv(x).view(B, T, G, -1).transpose(1, 2)    # (B, G, T, D_k)
+        a = F.scaled_dot_product_attention(q, k, v, is_causal=True,
+                                           enable_gqa=True)   # each k, v serves h/G heads
+    \end{python}
+
+    An MHA model can be converted to GQA by averaging the key and value heads
+    of each group, followed by a short additional training.
+
+    \SlideSource{\href{https://arxiv.org/abs/2305.13245}{Ainslie et al., GQA (2023)}, EMNLP; \href{https://arxiv.org/abs/2407.21783}{Grattafiori et al., Llama 3 (2024)}.}
+
+\end{frame}
+
+\begin{frame}{Multi-head latent attention (MLA)}
+    \setlength{\parskip}{6pt}
+
+    Instead of sharing heads, MLA compresses. Each token stores a single
+    latent vector, from which every head reconstructs its key and value:
+    \[
+        \eqnmarkbox[drawblue]{lat}{\vc{c}_t=\vc{W}_c\vc{x}_t} \,, \qquad
+        \kc{\vc{k}_{t,i}=\vc{W}_{k,i}\vc{c}_t} \,, \qquad
+        \vcl{\vc{v}_{t,i}=\vc{W}_{v,i}\vc{c}_t} \,.
+    \]
+    \annotate[yshift=-0.5em]{below,left}{lat}{cached, size $d_c\ll 2hD_k$}
+    \vspace{0.6em}
+
+    The keys are never computed: $\qc{\vc{q}_{t,i}^{\top}}\vc{W}_{k,i}\vc{c}_{t'}=(\vc{W}_{k,i}^{\top}\qc{\vc{q}_{t,i}})^{\top}\vc{c}_{t'}$,
+    so $\vc{W}_{k,i}$ is merged into the query projection ($\vc{W}_{v,i}$ into
+    the output one). RoPE depends on the position and would break this, so
+    MLA adds a small rotated key shared by all heads.
+
+    DeepSeek-V2 and V3 cache $512+64=576$ numbers per token and layer, against
+    $2hD_k=32{,}768$ for MHA with the same heads: the cache of GQA with $2.25$
+    groups, with better quality than MHA in their experiments.
+
+    \SlideSource{\href{https://arxiv.org/abs/2405.04434}{DeepSeek-AI, DeepSeek-V2 (2024)}; \href{https://arxiv.org/abs/2412.19437}{DeepSeek-V3 (2024)}.}
+
+\end{frame}
+
 \end{document}
