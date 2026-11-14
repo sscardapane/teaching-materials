@@ -473,4 +473,96 @@
 
 \end{frame}
 
+\subsection{Restricting attention to a window}
+
+\begin{frame}{Sliding-window attention}
+    \setlength{\parskip}{6pt}
+
+    The previous variants reduce the size of each cached token. We can also
+    reduce the number of cached tokens: in \myalert{sliding-window attention},
+    each token only attends to the $w$ most recent tokens (itself included).
+
+    \centering
+    \input{assets/images/transformers/sliding_window_masks.tex}
+    \par\vspace{-0.8em}
+    \justifying
+
+    We only change the mask. The cost of a layer goes from
+    $\mathcal{O}(T^2)$ to $\mathcal{O}(Tw)$, and when decoding we keep only
+    the last $w$ \kc{keys} and \vcl{values} (a cache of fixed size).
+
+    \SlideSource{\href{https://arxiv.org/abs/2004.05150}{Beltagy et al., Longformer (2020)}; \href{https://arxiv.org/abs/2310.06825}{Jiang et al., Mistral 7B (2023)}.}
+
+\end{frame}
+
+\begin{frame}{Reach through depth}
+    \setlength{\parskip}{6pt}
+
+    Tokens outside the window can still influence the output through the
+    previous layers. After $N$ layers, a token depends on up to $N(w-1)$
+    tokens in the past, in the same way as the receptive field of a stack of
+    convolutions grows with depth:
+
+    \centering
+    \input{assets/images/transformers/window_reach.tex}
+    \par\vspace{-0.8em}
+    \justifying
+
+    For example, Mistral 7B uses $w=4096$ in all its 32 layers (a reach of
+    about $131$K tokens). However, information that passes through many layers
+    is hard to retrieve, so most recent models keep some full-attention layers.
+
+    \SlideSource{\href{https://arxiv.org/abs/2310.06825}{Jiang et al., Mistral 7B (2023)}.}
+
+\end{frame}
+
+\begin{frame}{Interleaving local and global layers}
+    \setlength{\parskip}{6pt}
+
+    \centering
+    \vspace{0.2em}
+    \input{assets/images/transformers/local_global.tex}
+    \par\vspace{-0.4em}
+    \justifying
+
+    Recent models alternate sliding-window (local) layers with full-attention
+    (global) layers, e.g., five local layers ($w=1024$) for each global one in
+    Gemma~3, or one every other layer ($w=128$) in gpt-oss. The local layers
+    handle nearby tokens, while the global layers retrieve from the entire
+    context (as the NoPE layers of the last lecture).
+
+    Only the global layers have a cache that grows with $T$. For example,
+    Inkling 2 Small has 40 local and 8 global layers, with $8$ key/value heads
+    of size $128$: $2\cdot 8\cdot 8\cdot 128\cdot 2$ bytes $=32$\,KB per
+    token, or about $34$\,GB for a context of 1M tokens. With 48 global layers,
+    this would be six times more.
+
+    \SlideSource{\href{https://arxiv.org/abs/2503.19786}{Gemma 3 (2025)}; \href{https://arxiv.org/abs/2508.10925}{OpenAI, gpt-oss model card (2025)}; \href{https://huggingface.co/thinkingmachines/Inkling-2-Small}{Thinking Machines, Inkling 2 Small (2026)}.}
+
+\end{frame}
+
+\begin{frame}{Attention sinks in long contexts}
+    \setlength{\parskip}{6pt}
+
+    In the last lecture, we saw that heads put their unused weight on an
+    \myalert{attention sink}, typically the first token. With a sliding
+    window, the first token eventually leaves the cache and generation
+    degrades. StreamingLLM keeps the first four tokens:
+
+    \centering
+    \input{assets/images/transformers/sink_cache.tex}
+    \par\vspace{-0.3em}
+    \justifying
+
+    With this, several models generate stably for up to 4M tokens. A simpler
+    solution (used in gpt-oss) is a learned logit $b_h$ for each head, which
+    acts as a sink token with no value, so the weights can sum to less than one:
+    \[
+        a_{t,t'}=\frac{\exp(s_{t,t'})}{\exp(\textcolor{draworange}{b_h})+\sum_{t''}\exp(s_{t,t''})} \,.
+    \]
+
+    \SlideSource{\href{https://arxiv.org/abs/2309.17453}{Xiao et al., StreamingLLM (2024)}, ICLR; \href{https://arxiv.org/abs/2508.10925}{OpenAI, gpt-oss model card (2025)}.}
+
+\end{frame}
+
 \end{document}

@@ -1,0 +1,22 @@
+% Written by Claude (2026-11-14): five sliding-window layers for each global
+% layer (as in Gemma 3 and Inkling 2 Small), in the style of the first deck's
+% RoPE/NoPE figure.
+\begin{tikzpicture}[x=1cm, y=1cm,
+        ll/.style={tfblk, minimum width=1.2cm, minimum height=1.05cm, align=center, font=\footnotesize},
+        gl/.style={tfnorm, minimum width=1.2cm, minimum height=1.05cm, align=center, font=\footnotesize}]
+    \node[font=\small] (in) at (-0.3,0) {$\vc{X}$};
+    \foreach \i/\kind in {0/l,1/l,2/l,3/l,4/l,5/g,6/l} {
+            \if\kind l
+                \node[ll] (b\i) at ({1.1+\i*1.5},0) {Local\\$w$};
+            \else
+                \node[gl] (b\i) at ({1.1+\i*1.5},0) {Global};
+            \fi
+        }
+    \draw[tfarr] (in) -- (b0);
+    \foreach \i [evaluate=\i as \j using int(\i+1)] in {0,...,5}
+    \draw[tfarr] (b\i) -- (b\j);
+    \draw[tfarr] (b6) -- ++(1,0) node[right, font=\small] {$\cdots$};
+    \draw[decorate, decoration={brace, amplitude=5pt, mirror}, drawgray]
+    ([yshift=-4pt]b0.south west) -- ([yshift=-4pt]b5.south east)
+    node[midway, below=6pt, tflab] {repeated through the stack};
+\end{tikzpicture}

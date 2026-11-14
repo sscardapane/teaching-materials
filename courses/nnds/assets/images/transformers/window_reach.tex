@@ -1,0 +1,32 @@
+% Written by Claude (2026-11-14): how far the last token can see after three
+% layers of sliding-window attention with w = 3 (reach 3(w-1) = 6 tokens).
+\begin{tikzpicture}[x=0.95cm, y=0.72cm,
+        tok/.style={circle, draw=drawgray!80, fill=white, minimum size=0.42cm, inner sep=0pt},
+        hot/.style={tok, draw=drawblue, fill=drawblue_l!80},
+        edge/.style={drawblue!70, line width=0.5pt},
+        rlab/.style={font=\scriptsize, text=black!60, anchor=east},
+    ]
+    % Row r (0 = input, 3 = last layer): token i is highlighted if i >= 9 - 2(3 - r).
+    \foreach \r/\name in {0/input, 1/layer 1, 2/layer 2, 3/layer 3} {
+            \node[rlab] at (-0.5,\r) {\name};
+            \foreach \i in {0,...,9} {
+                    \pgfmathtruncatemacro{\lo}{9-2*(3-\r)}
+                    \ifnum\i<\lo
+                        \node[tok] (n\r-\i) at (\i,\r) {};
+                    \else
+                        \node[hot] (n\r-\i) at (\i,\r) {};
+                    \fi
+                }
+        }
+    % Edges from each highlighted token to the w = 3 tokens it attends to.
+    \foreach \r in {1,2,3} {
+            \pgfmathtruncatemacro{\lo}{9-2*(3-\r)}
+            \pgfmathtruncatemacro{\b}{\r-1}
+            \foreach \i in {\lo,...,9} \foreach \d in {0,1,2} {
+                    \pgfmathtruncatemacro{\j}{\i-\d}
+                    \draw[edge] (n\r-\i) -- (n\b-\j);
+                }
+        }
+    \draw[decorate, decoration={brace, amplitude=5pt, mirror}, drawgray]
+    (2.8,-0.4) -- (9.2,-0.4) node[midway, below=6pt, font=\scriptsize, text=black!70] {$3(w-1)=6$ tokens in the past};
+\end{tikzpicture}

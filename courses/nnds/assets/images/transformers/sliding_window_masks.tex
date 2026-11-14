@@ -1,0 +1,25 @@
+% Written by Claude (2026-11-14): causal mask versus sliding-window mask
+% (w = 3) for T = 6 tokens, in the style of "Visualizing the causal mask".
+\begin{tikzpicture}[x=0.42cm, y=0.42cm,
+        cell/.style={draw=drawgray!70, line width=0.4pt},
+        mlab/.style={font=\small},
+        alab/.style={font=\scriptsize, text=black!60},
+    ]
+    \foreach \px/\w/\lab in {0/6/{Causal}, 10/3/{Sliding window, $w=3$}} {
+            \foreach \r in {0,...,5} \foreach \c in {0,...,5} {
+                    \pgfmathtruncatemacro{\d}{\r-\c}
+                    \ifnum\d<0
+                        \draw[cell, fill=drawred!12] ({\px+\c},-\r) rectangle ++(1,-1);
+                    \else\ifnum\d<\w
+                            \draw[cell, fill=drawblue_l!80] ({\px+\c},-\r) rectangle ++(1,-1);
+                        \else
+                            \draw[cell, fill=drawred!12] ({\px+\c},-\r) rectangle ++(1,-1);
+                        \fi\fi
+                }
+            \node[mlab] at ({\px+3},-7) {\lab};
+            \node[alab, anchor=south] at ({\px+3},0.05) {keys $t'$};
+            \node[alab, rotate=90, anchor=south] at ({\px-0.05},-3) {queries $t$};
+        }
+    \node[alab, anchor=west] at (17,-1.2) {\tikz\draw[cell, fill=drawblue_l!80] (0,0) rectangle (0.3,0.3); attended};
+    \node[alab, anchor=west] at (17,-2.4) {\tikz\draw[cell, fill=drawred!12] (0,0) rectangle (0.3,0.3); masked ($-\infty$)};
+\end{tikzpicture}

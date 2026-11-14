@@ -1,0 +1,19 @@
+% Written by Claude (2026-11-14): the cache of a sliding-window layer in
+% StreamingLLM: the first tokens (sinks) are kept together with the window.
+\begin{tikzpicture}[x=0.62cm, y=0.62cm,
+        sink/.style={draw=kcolor, fill=draworange!25, line width=0.5pt},
+        gone/.style={draw=drawgray!70, dashed, fill=white, line width=0.5pt},
+        win/.style={draw=drawblue, fill=drawblue_l!80, line width=0.5pt},
+        blab/.style={font=\scriptsize, text=black!70},
+    ]
+    \foreach \i in {0,...,3} \draw[sink] (\i,0) rectangle ++(0.85,0.85);
+    \foreach \i in {4,...,11} \draw[gone] (\i,0) rectangle ++(0.85,0.85);
+    \foreach \i in {12,...,17} \draw[win] (\i,0) rectangle ++(0.85,0.85);
+    \draw[decorate, decoration={brace, amplitude=5pt}, drawgray]
+    (0,1.05) -- (3.85,1.05) node[midway, above=5pt, blab] {first tokens (kept)};
+    \draw[decorate, decoration={brace, amplitude=5pt}, drawgray]
+    (4,1.05) -- (11.85,1.05) node[midway, above=5pt, blab] {removed from the cache};
+    \draw[decorate, decoration={brace, amplitude=5pt}, drawgray]
+    (12,1.05) -- (17.85,1.05) node[midway, above=5pt, blab] {last $w$ tokens};
+    \draw[tfarr] (18.3,0.425) -- (19.5,0.425) node[right, blab] {new token};
+\end{tikzpicture}
