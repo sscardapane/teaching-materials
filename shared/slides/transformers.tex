@@ -1093,13 +1093,13 @@
 
     \begin{python}[gobble=8,aboveskip=4pt,belowskip=4pt]
         def rope(x, base=10000.0):                     # x: (..., T, D_k)
-        T, D = x.shape[-2:]
-        w = base ** (-torch.arange(0, D, 2) / D)   # (D_k/2,) frequencies
-        ang = torch.arange(T)[:, None] * w         # (T, D_k/2) angles
-        cos, sin = ang.cos(), ang.sin()
-        x1, x2 = x[..., 0::2], x[..., 1::2]        # the pairs
-        return torch.stack([x1 * cos - x2 * sin,
-                x1 * sin + x2 * cos], -1).flatten(-2)
+            T, D = x.shape[-2:]
+            w = base ** (-torch.arange(0, D, 2) / D)   # (D_k/2,) frequencies
+            ang = torch.arange(T)[:, None] * w         # (T, D_k/2) angles
+            cos, sin = ang.cos(), ang.sin()
+            x1, x2 = x[..., 0::2], x[..., 1::2]        # the pairs
+            return torch.stack([x1 * cos - x2 * sin,
+                    x1 * sin + x2 * cos], -1).flatten(-2)
 
         scores = rope(q) @ rope(k).transpose(-2, -1) / D_k ** 0.5
     \end{python}
