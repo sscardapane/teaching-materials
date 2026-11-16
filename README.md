@@ -11,7 +11,8 @@ Shared sources for Neural Networks (NN), Neural Networks for Data Science
 
 ## One source, course-specific presentation
 
-Linear models and MLPs use shared lecture sources in `shared/slides/`. Course
+Linear models, MLPs, text embeddings and the first transformer lecture use
+shared lecture sources in `shared/slides/`. Course
 wrappers under `courses/nn/` and `courses/nnds/` preserve the original templates,
 authorship, notation and spacing. The NN-only ReLU geometry material and the two
 courses' distinct activation discussions remain explicit course choices. Course

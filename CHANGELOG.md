@@ -1,5 +1,25 @@
 # Changelog
 
+## 2026-11-16
+
+> [!note] Written by Claude (2026-11-16)
+
+- Add the NN deck `NN2627_Transformers` (tokens, embeddings and transformers),
+  not yet exported. Its slides are shared with NNDS: `shared/slides/text-embeddings.tex`
+  (the text pipeline frames of the CNN deck) and `shared/slides/transformers.tex`
+  (the body of `Lecture_transformers`). `\NNDSorNN{NNDS text}{NN text}`, defined
+  by each course, holds the few sentences that differ. NN uses conventional
+  subscripts for `\idx` and the real equation annotations.
+- Move the transformer colors and diagram styles and `\shape` into
+  `shared/style/content.tex`, and the transformer figures and the four text
+  figures into `shared/assets/images/`. All NNDS and existing NN decks render
+  pixel-identical to their previous builds.
+- NN26 theme: skip the section-page progress bar on the first pass, when the
+  total frame count is still unknown; decks longer than about 46 frames
+  overflowed the length and failed to build.
+- `scripts/verify.py` skips decks added after the migration (no reference PDF)
+  instead of stopping at the first one.
+
 ## 2026-11-06
 
 > [!note] Written by Claude (2026-11-06)

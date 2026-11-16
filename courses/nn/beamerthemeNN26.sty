@@ -229,7 +229,13 @@
 \newlength{\progsectpagelinewidth}
 \setlength{\progsectpagelinewidth}{0.4pt}
 \AtBeginSection[] {
-\setlength{\progsectpage}{.9\linewidth * \ratio{\insertframenumber pt}{\inserttotalframenumber pt}}
+% The total frame count is unknown (1) on the first pass; skip the bar then,
+% since long decks would overflow the length (Claude, 2026-11-16).
+\ifnum\inserttotalframenumber<\insertframenumber\relax
+  \setlength{\progsectpage}{0pt}%
+\else
+  \setlength{\progsectpage}{.9\linewidth * \ratio{\insertframenumber pt}{\inserttotalframenumber pt}}
+\fi
   \begin{frame}[plain]
     \frametitle{}
 		\begin{center}

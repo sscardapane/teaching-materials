@@ -103,6 +103,10 @@ def main():
         for course, names in DECKS.items():
             for name in names:
                 key = f'{course}/{name}'
+                if not (ROOT / 'verification' / 'reference' / f'{name}.pdf').exists():
+                    # Decks added after the October 1 migration have no reference.
+                    print(key, 'skipped: no migration reference', flush=True)
+                    continue
                 report['courses'][key] = compare(course, name, args.dpi, Path(folder))
                 print(key, {k: v for k, v in report['courses'][key].items() if k != 'page_results'}, flush=True)
     report['passed'] = all(all(result[key] for key in

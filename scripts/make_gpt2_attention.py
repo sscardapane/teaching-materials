@@ -9,7 +9,7 @@ sentences and on a random token sequence repeated twice, and writes:
   (lower triangle, row by row, in percent), three per-head scores (previous
   token, first token, induction) and the per-token loss on the repeated
   sequence;
-- courses/nnds/assets/images/transformers/gpt2_heads.tex, the TikZ cells of
+- shared/assets/images/transformers/gpt2_heads.tex, the TikZ cells of
   three heads drawn on the slide "Attention in a trained model".
 
 Weights: the public safetensors file of openai-community/gpt2, cached in
@@ -30,7 +30,7 @@ import torch
 
 ROOT = Path(__file__).resolve().parents[1]
 OUT_JSON = ROOT / 'html' / 'data' / 'gpt2_attention.json'
-OUT_TEX = ROOT / 'courses' / 'nnds' / 'assets' / 'images' / 'transformers' / 'gpt2_heads.tex'
+OUT_TEX = ROOT / 'shared' / 'assets' / 'images' / 'transformers' / 'gpt2_heads.tex'
 URL = 'https://huggingface.co/openai-community/gpt2/resolve/main/model.safetensors'
 CACHE = Path.home() / '.cache' / 'gpt2' / 'model.safetensors'
 SENTENCES = [

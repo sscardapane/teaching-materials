@@ -1,5 +1,5 @@
 % Editable embedding lookup: the IDs of "Check this out" select rows of
-% E ~ (V,D), which become the rows of X ~ (T,D), the input of a 1D CNN.
+% E ~ (V,D), which become the rows of X ~ (T,D), the input of a 1D CNN (NNDS) or a transformer (NN).
 % Written by Claude (2026-10-30), replacing the old embedding figure.
 \begingroup
 \begin{tikzpicture}[x=1cm,y=1cm,
@@ -43,7 +43,7 @@
     \draw[edge,draw=drawviolet] (2.1,0.52) to[out=0,in=180] (4.1,0.04);
     % Next layer.
     \node[lab,draw=drawblue,fill=drawblue_l!25!white,rounded corners=2pt,
-        inner sep=5pt] (cnn) at (10.7,0.4) {1D CNN};
+        inner sep=5pt] (cnn) at (10.7,0.4) {\NNDSorNN{1D CNN}{Transformer}};
     \draw[drawblue,line width=1pt] (4.2,0.94) rectangle (6.2,-0.14);
     \draw[edge] (8.75,0.4) -- (cnn.west);
 \end{tikzpicture}

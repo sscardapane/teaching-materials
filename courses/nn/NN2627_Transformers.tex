@@ -1,0 +1,26 @@
+% Written by Claude (2026-11-16): NN lecture on text and transformers. The
+% slides are shared with NNDS (text-embeddings.tex from the CNN deck,
+% transformers.tex from Lecture_transformers.tex); \NNDSorNN in those files
+% holds the NN wording.
+\documentclass[xcolor=x11names,compress,10pt,unknownkeysallowed,aspectratio=169]{beamer}
+\usetheme{NN26}
+\input{nn-content.tex}
+\usetikzlibrary{decorations.pathreplacing}
+% Real equation annotations instead of the NN stubs in nn-content.tex.
+\let\eqnmarkbox\undefined
+\let\annotate\undefined
+\usepackage{annotate-equations}
+\title{Tokens, embeddings and transformers}
+\author[D. Comminiello \& S. Scardapane]{Danilo Comminiello and Simone Scardapane}
+\date{}
+\graphicspath{{assets/}{../../shared/assets/}}
+\begin{document}
+{\usebackgroundtemplate{
+    \vbox to \paperheight{\hbox to \paperwidth{\hfil\includegraphics[keepaspectratio,width=\textwidth]{cover.jpg}\hfil}\vfil}}
+\frame[plain]{\titlepage}}
+
+\section{From text to embeddings}
+\input{../../shared/slides/text-embeddings.tex}
+
+\input{../../shared/slides/transformers.tex}
+\end{document}

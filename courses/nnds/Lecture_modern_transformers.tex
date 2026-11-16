@@ -12,8 +12,6 @@
 % in the vault's NNDS Slide Refresh Log, 2026-11-12). Built block by block;
 % this file starts with the first block, the modern transformer block.
 
-\input{transformers-settings.tex}
-
 \begin{document}
 
 {\usebackgroundtemplate{\tikz\node[opacity=0.4,inner sep=0]{\includegraphics[width=\paperwidth,height=\paperheight]{images/header}};}%
@@ -414,7 +412,7 @@
 
     \vspace{0.3em}
     \centering
-    \input{assets/images/transformers/kv_heads.tex}
+    \input{../../shared/assets/images/transformers/kv_heads.tex}
 
     \SlideSource{\href{https://arxiv.org/abs/1911.02150}{Shazeer (2019)}; \href{https://arxiv.org/abs/2305.13245}{Ainslie et al., GQA (2023)}, EMNLP.}
 
@@ -483,7 +481,7 @@
     each token only attends to the $w$ most recent tokens (itself included).
 
     \centering
-    \input{assets/images/transformers/sliding_window_masks.tex}
+    \input{../../shared/assets/images/transformers/sliding_window_masks.tex}
     \par\vspace{-0.8em}
     \justifying
 
@@ -504,7 +502,7 @@
     convolutions grows with depth:
 
     \centering
-    \input{assets/images/transformers/window_reach.tex}
+    \input{../../shared/assets/images/transformers/window_reach.tex}
     \par\vspace{-0.8em}
     \justifying
 
@@ -521,7 +519,7 @@
 
     \centering
     \vspace{0.2em}
-    \input{assets/images/transformers/local_global.tex}
+    \input{../../shared/assets/images/transformers/local_global.tex}
     \par\vspace{-0.4em}
     \justifying
 
@@ -550,7 +548,7 @@
     degrades. StreamingLLM keeps the first four tokens:
 
     \centering
-    \input{assets/images/transformers/sink_cache.tex}
+    \input{../../shared/assets/images/transformers/sink_cache.tex}
     \par\vspace{-0.3em}
     \justifying
 

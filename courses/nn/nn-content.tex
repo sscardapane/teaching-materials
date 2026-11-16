@@ -10,3 +10,11 @@
 
 % Slide sources: bottom of the content area (the footline holds course details).
 \providecommand{\SlideSource}[1]{\par\vfill{\scriptsize\color{drawgray}#1\par}}
+
+% Shared transformer and text slides (Claude, 2026-11-16). NN text of the
+% course switch, conventional subscripts for \idx, and code blocks in the NN26
+% listings style (at the NNDS code size).
+\newcommand{\NNDSorNN}[2]{#2}
+\newcommand{\idx}[2]{{#1}_{#2}}
+\lstnewenvironment{python}[1][]{\lstset{basicstyle=\ttfamily\footnotesize,columns=fullflexible,#1}}{}
+\newcommand\pythoninline[1]{\lstinline[basicstyle=\ttfamily]!#1!}

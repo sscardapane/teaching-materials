@@ -86,17 +86,11 @@
 \definecolor{deepred}{rgb}{0.6,0,0}
 \definecolor{deepgreen}{rgb}{0,0.5,0}
 
-% Matrix size
-\usepackage{stackengine}
-\stackMath
-\def\sss{\scriptstyle \color{gray}}
-\setstackgap{L}{12pt}
-\def\stacktype{L}
-
 % Mathematical commands
 \newcommand{\pr}[1]{{#1\,}'}
 \newcommand{\idx}[2]{{\color{darkpastelblue}[}#1{\color{darkpastelblue}]_{#2}}}
-\newcommand{\shape}[2]{\stackunder{#1}{\sss #2}}
+% Course switch for shared slides: \NNDSorNN{NNDS text}{NN text}.
+\newcommand{\NNDSorNN}[2]{#1}
 
 % Style commands
 \newcommand{\myalert}[1]{{\color{darkred}\textbf{#1}}}

@@ -19,7 +19,7 @@ inside its own axes (x = layer 1..12, y = distance in pixels). The slide uses
 the SWAG model; the ImageNet-only file is kept for comparison (its layer 1 is
 already global, and local heads appear in layers 3-5).
 
-    .venv/bin/python courses/nnds/assets/images/transformers/attention_distance.py
+    .venv/bin/python shared/assets/images/transformers/attention_distance.py
 """
 import tarfile
 import urllib.request

@@ -2,7 +2,8 @@
   "nn": [
     "NN2627_01_Intro",
     "NN2627_Linear_models",
-    "NN2627_MLPs"
+    "NN2627_MLPs",
+    "NN2627_Transformers"
   ],
   "nnds": [
     "Lecture_0_about_the_course",
