@@ -15,6 +15,8 @@
 % course switch, conventional subscripts for \idx, and code blocks in the NN26
 % listings style (at the NNDS code size).
 \newcommand{\NNDSorNN}[2]{#2}
+% Whole frames that differ: \ifNNcourse NN frames \else NNDS frames \fi.
+\newif\ifNNcourse\NNcoursetrue
 \newcommand{\idx}[2]{{#1}_{#2}}
 \lstnewenvironment{python}[1][]{\lstset{basicstyle=\ttfamily\footnotesize,columns=fullflexible,#1}}{}
 \newcommand\pythoninline[1]{\lstinline[basicstyle=\ttfamily]!#1!}

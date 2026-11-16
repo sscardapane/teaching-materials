@@ -1,6 +1,9 @@
 % Transformer lecture shared by NN and NNDS. Moved from the NNDS deck
 % Lecture_transformers.tex by Claude (2026-11-16) for the NN transformer deck.
-% \NNDSorNN{NNDS text}{NN text} holds the few course-specific sentences.
+% \NNDSorNN{NNDS text}{NN text} holds the few course-specific sentences, and
+% \ifNNcourse ... \else ... \fi the frames that differ. NN students arrive from
+% recurrent models, NNDS students from the CNN lecture (1D and causal
+% convolutions), so the NN frames motivate attention from recurrence.
 
 % Token rows for the "Three ways to weight a neighbor" figure.
 \def\tokdx{0.85}
@@ -21,7 +24,7 @@
 
 
 \section{Designing the transformer}
-\subsection{From convolutions to attention}
+\subsection{\NNDSorNN{From convolutions to attention}{From recurrence to attention}}
 
 \begin{frame}{Transformers}
     \setlength{\parskip}{4pt}
@@ -54,6 +57,32 @@
 
 \end{frame}
 
+\ifNNcourse
+\begin{frame}{Beyond recurrence}
+    \setlength{\parskip}{6pt}
+
+    A recurrent model reads the tokens one at a time and summarizes the past
+    in a state of fixed size, $\vc{h}_t=f(\vc{h}_{t-1},\vc{x}_t)$. This has
+    two drawbacks:
+    \begin{itemize}
+        \item \textbf{Long-range dependencies:} information from token $t-k$
+              reaches token $t$ only through $k$ state updates, and the
+              gradients through many updates tend to vanish or explode.
+        \item \textbf{Sequential computation:} $\vc{h}_t$ needs
+              $\vc{h}_{t-1}$, so even with teacher forcing we cannot process
+              the positions of a sequence in parallel.
+    \end{itemize}
+    Compare:
+    \begin{itemize}
+        \item \textit{the {\color{darkcerulean}\textbf{cat}} is on the {\color{darkgreen}\textbf{table}}};
+        \item \textit{the {\color{darkcerulean}\textbf{cat}}, which belonged to my mother, is on the {\color{darkgreen}\textbf{table}}}.
+    \end{itemize}
+    The relation between the two words is the same, but their distance is not.
+    We want a layer where every output reads every token directly, and all
+    outputs are computed in parallel.
+
+\end{frame}
+\else
 \begin{frame}{Beyond locality}
     \setlength{\parskip}{6pt}
 
@@ -73,6 +102,7 @@
     what the two tokens contain.
 
 \end{frame}
+\fi
 
 \begin{frame}{Convolutions as a sum over offsets}
     \setlength{\parskip}{6pt}
@@ -81,8 +111,10 @@
     transformers come from NLP, we call each row a \myalert{token} and $D$ the
     \myalert{embedding dimension}.
 
-    Ignoring padding and the activation, a 1D convolution with kernel size
-    $s=2k+1$ is:
+    \NNDSorNN{Ignoring padding and the activation, a 1D convolution with kernel size
+    $s=2k+1$ is:}{A 1D convolution, the sequence version of the image
+    convolutions of the CNN lecture, processes all tokens in parallel. Ignoring
+    padding and the activation, with kernel size $s=2k+1$:}
     \[
         \vc{h}_t=\sum_{j=-k}^{k}\eqnmarkbox[drawblue]{wconv}{\idx{\vc{W}}{j+k,:,:}}\,\vc{x}_{t+j}\,,
         \qquad \vc{W}\sim(s,D,D).
@@ -90,10 +122,15 @@
     \annotate[yshift=-0.8em]{below,right}{wconv}{one matrix per offset}
     \vspace{0.6em}
 
-    \NNDSorNN{This is the layer of the CNN lecture, with the kernel reshaped into one}{This is a 1D convolutional layer, with the kernel written as one}
+    \NNDSorNN{This is the layer of the CNN lecture, with the kernel reshaped into one
     $D\times D$ matrix for each offset $j$, stored at position $j+k$. Its parameters grow linearly with
     $s$. We want to remove the locality assumption while keeping the number of
-    parameters independent of the length $T$.
+    parameters independent of the length $T$.}{The kernel has one $D\times D$
+    matrix for each offset $j$, so its parameters grow linearly with $s$. Each
+    output sees only a window of $s$ tokens (\myalert{locality}), and the
+    weight of a neighbor depends only on its offset, never on what the two
+    tokens contain. We want to remove both limits while keeping the number of
+    parameters independent of the length $T$.}
 
 \end{frame}
 
@@ -673,8 +710,8 @@
 
     The design of the block was mostly based on empirical considerations.
     Roughly speaking, steps (1)--(2) correspond to a \myalert{token mixing}
-    operation, while steps (3)--(4) are a per-token update which is akin to a
-    $1\times1$ convolution.
+    operation, while steps (3)--(4) are a per-token update\NNDSorNN{ which is akin to a
+    $1\times1$ convolution}{, with the same MLP applied to every token}.
 
     \begin{columns}[T,onlytextwidth]
         \begin{column}{0.49\textwidth}
@@ -694,8 +731,8 @@
     \end{columns}
 
     \medskip
-    The block is similar in spirit to a depthwise separable convolution\NNDSorNN{
-    (spatial mixing and channel mixing in the CNN lecture)}{}. The intermediate
+    \NNDSorNN{The block is similar in spirit to a depthwise separable convolution
+    (spatial mixing and channel mixing in the CNN lecture). }{}The intermediate
     MLP has two layers, with hidden dimension an integer multiple of $D$
     ($4D$ in the original model).
 
@@ -1573,18 +1610,22 @@
     {\small After $L$ convolutions with kernel size $s$, an output sees
         $L(s-1)+1$ tokens, and two distant tokens interact only after
         $\mathcal{O}(T/s)$ layers. A single attention layer connects every
-        pair of tokens directly, at the price of computing all $T^2$ weights.\par}
+        pair of tokens directly, at the price of computing all $T^2$ weights.\NNDSorNN{}{
+        In a recurrent model, two tokens at distance $k$ interact through $k$
+        sequential state updates.}\par}
 
 \end{frame}
 
 \begin{frame}{Computational cost}
     \setlength{\parskip}{6pt}
 
-    Consider a single layer on $\vc{X}\sim(T,D)$, counting multiply-adds:
+    Consider a single layer on $\vc{X}\sim(T,D)$, counting multiply-adds\NNDSorNN{}{. The recurrent
+    layer is $\vc{h}_t=\phi(\vc{W}_h\vc{h}_{t-1}+\vc{W}_x\vc{x}_t)$, the convolution has kernel size $s$}:
 
     \vspace{0.2em}
     \centering
     \renewcommand{\arraystretch}{1.35}
+    \NNDSorNN{%
     \begin{tabular}{@{}p{0.26\textwidth}p{0.3\textwidth}p{0.34\textwidth}@{}}
         & \textbf{Convolution} (kernel $s$) & \textbf{Multi-head attention} \\
         \hline
@@ -1592,7 +1633,19 @@
         Time & $\mathcal{O}(TsD^2)$ & $\mathcal{O}(TD^2)+\mathcal{O}(T^2D)$ \\
         Receptive field & $s$ tokens & $T$ tokens \\
         Extra memory & none & $\vc{A}\sim(T,T)$ per head \\
-    \end{tabular}
+    \end{tabular}%
+    }{%
+    \renewcommand{\arraystretch}{1.2}%
+    \begin{tabular}{@{}p{0.2\textwidth}p{0.22\textwidth}p{0.2\textwidth}p{0.3\textwidth}@{}}
+        & \textbf{Recurrent} & \textbf{Convolution} & \textbf{Multi-head attention} \\
+        \hline
+        Parameters & $2D^2$ & $sD^2$ & $4D^2$ \\
+        Time & $\mathcal{O}(TD^2)$ & $\mathcal{O}(TsD^2)$ & $\mathcal{O}(TD^2)+\mathcal{O}(T^2D)$ \\
+        Sequential steps & $T$ & $1$ & $1$ \\
+        Receptive field & all past tokens & $s$ tokens & $T$ tokens \\
+        Extra memory & none & none & $\vc{A}\sim(T,T)$ per head \\
+    \end{tabular}%
+    }
     \par\vspace{0.6em}
     \justifying
 

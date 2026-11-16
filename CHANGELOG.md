@@ -26,6 +26,14 @@
   (their three figures move to `shared/assets/images/text/`). The NN wording
   says explicitly that this repeats the time-series autoregression of the
   recurrent lectures for text. The NNDS CNN deck renders pixel-identical.
+- NN transformer flow: NN students arrive from recurrent models, not from the
+  NNDS sequence-convolution slides. A new `\ifNNcourse` switch (both courses)
+  selects whole frames. In NN, *Beyond recurrence* (long paths through the
+  state, sequential computation) replaces *Beyond locality*; the 1D convolution
+  is introduced from the image convolutions and defines locality; the block
+  design no longer assumes 1×1 or depthwise-separable convolutions; the
+  computational comparison adds a recurrent layer. NNDS decks render
+  pixel-identical.
 
 ## 2026-11-06
 
