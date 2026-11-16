@@ -814,25 +814,7 @@
 
 \end{frame}
 
-% Figure: assets/images/cnn/next_token_examples.tex (Claude, 2026-11-05).
-\begin{whiteframe}{Next-token prediction}
-    \setlength{\parskip}{4pt}
-    \setlength{\abovedisplayskip}{4pt}
-    \setlength{\belowdisplayskip}{4pt}
-
-    A token-level task of special interest is \myalert{next-token prediction}:
-    at each position, a vocabulary classifier
-    $\vc{p}_t=\operatorname{softmax}(g(\idx{\vc{Y}}{t,:}))\sim(V)$ predicts
-    the following token $z_{t+1}$.
-
-    The targets come from the text itself, without human labels: the task is
-    \myalert{self-supervised}, and a text of $T+1$ tokens gives $T$ examples:
-
-    \begin{center}
-        \input{assets/images/cnn/next_token_examples.tex}
-    \end{center}
-
-\end{whiteframe}
+\input{../../shared/slides/next-token-prediction.tex}
 
 \begin{whiteframe}{Causal convolutions}
     \setlength{\parskip}{3pt}
@@ -902,121 +884,7 @@
 
 \end{whiteframe}
 
-\begin{frame}{Training a next-token predictor}
-    \setlength{\parskip}{3pt}
-    \setlength{\abovedisplayskip}{4pt}
-    \setlength{\belowdisplayskip}{4pt}
-
-    We train on a \myalert{shifted target}: the input is $z_0,\ldots,z_{T-1}$
-    and the target is the same text moved by one position, $z_1,\ldots,z_T$.
-    Each prediction $\vc{p}_t$ is compared with the next ID, averaging the
-    cross-entropy over the $T$ input positions:
-    \[
-        \mathcal{L}=-\frac{1}{T}\sum_{t=0}^{T-1}
-        \log\idx{\vc{p}_t}{z_{t+1}}.
-    \]
-
-    During training we feed the true tokens (\myalert{teacher forcing}), so a
-    causal CNN computes all predictions in parallel without seeing future targets.
-
-\end{frame}
-
-\begin{frame}{A probabilistic view}
-    \setlength{\parskip}{4pt}
-    \setlength{\abovedisplayskip}{6pt}
-    \setlength{\belowdisplayskip}{6pt}
-
-    Consider the probability $p(\vc{z})$ of a whole sequence. By the product
-    rule of probability, we can always write it as
-    \[
-        p(\vc{z})=\prod_{t=0}^{T-1}p(z_{t+1}\mid z_0,\ldots,z_t),
-    \]
-    where $z_0$ is a fixed start token, so it needs no factor. A causal model estimates every factor
-    with the same network, $p(z_{t+1}\mid z_0,\ldots,z_t)\approx\idx{\vc{p}_t}{z_{t+1}}$.
-
-    Our loss is then $\mathcal{L}=-\frac{1}{T}\log p(\vc{z})$: training
-    maximizes the likelihood of the training texts. A model of $p(\vc{z})$
-    over text is a \myalert{language model}. Since we can sample new sequences
-    from it, it is also a \myalert{generative model}.
-
-    \SlideSource{Section 8.4 of the book.}
-
-\end{frame}
-
-\begin{frame}{Autoregressive models}
-    \setlength{\parskip}{4pt}
-    \setlength{\abovedisplayskip}{6pt}
-    \setlength{\belowdisplayskip}{6pt}
-
-    The same next-token predictor can generate text in an
-    \myalert{autoregressive} way.
-
-    We prompt it with the beginning of the sequence and sample the next token
-    from the predicted distribution. We concatenate its ID to the input and
-    call the model again, continuing one token at a time. For example:
-    \[
-        \texttt{Check}
-        \quad\longrightarrow\quad
-        \texttt{Check this}
-        \quad\longrightarrow\quad
-        \texttt{Check this out}\quad\ldots
-    \]
-
-    The input now includes the model's own sampled tokens. As in the linear
-    models lecture, we can sample with a \myalert{temperature} $\tau$: a small
-    $\tau$ gives predictable text, a large $\tau$ more varied text.
-
-    Training can compute many next-token predictions in parallel. Generation
-    must wait for each sampled token before predicting the following one.
-
-\end{frame}
-
-\begin{whiteframe}{Autoregressive generation}
-    \setlength{\abovecaptionskip}{5pt}
-    \setlength{\parskip}{4pt}
-
-    \begin{figure}
-        \centering
-        \includegraphics[width=0.95\textwidth,height=0.42\textheight,keepaspectratio]{images/cnn/sequences/autoregressive_generation.pdf}
-        \caption{The hat marks a generated value: $\hat{x}_{t+1}$ is the model's prediction
-            for position $t+1$, which is fed back as the next input. For text, we feed back
-            sampled token IDs. Gray circles mark unused positions.}
-    \end{figure}
-
-\end{whiteframe}
-
-\begin{frame}{Decoding strategies}
-    \setlength{\parskip}{4pt}
-
-    The rule we use to pick each token from $\vc{p}_t$ is called
-    \myalert{decoding}:
-    \begin{itemize}
-        \item \textbf{Greedy decoding} always takes the most probable token.
-              Since $p(\vc{z})$ is a product of many factors, a likely token now
-              can lead to an unlikely sequence later.
-        \item \textbf{Sampling} draws the token from $\vc{p}_t$, with a
-              temperature $\tau$ ($\tau\to0$ recovers greedy). Top-$k$ and
-              top-$p$ sampling first discard the unlikely tail.
-        \item \textbf{Beam search} keeps the $k$ partial sequences with the
-              highest $\log p$, extends each of them, and keeps the best $k$
-              again.
-    \end{itemize}
-
-    \SlideSource{Holtzman et al. (2020), \href{https://arxiv.org/abs/1904.09751}{\textit{The Curious Case of Neural Text Degeneration}}, ICLR.}
-
-\end{frame}
-
-% Figure: assets/images/cnn/decoding_tree.tex (Claude, 2026-11-05).
-\begin{whiteframe}{Greedy decoding and beam search}
-
-    \begin{center}
-        \input{assets/images/cnn/decoding_tree.tex}
-    \end{center}
-
-    \vspace{0.6em}
-    Keeping \texttt{dog} lets beam search find a more likely sequence.
-
-\end{whiteframe}
+\input{../../shared/slides/language-models.tex}
 
 \begin{frame}{What comes next}
     \setlength{\parskip}{6pt}

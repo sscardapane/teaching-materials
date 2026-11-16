@@ -111,7 +111,7 @@
     {
       "original_deck": "7_CNN_Beyond_Images/Lecture_7_CNNs_beyond_images.tex",
       "original_export": "Book figures/forecasting-Pagina-3.pdf",
-      "export": "courses/nnds/assets/images/cnn/sequences/autoregressive_generation.pdf",
+      "export": "shared/assets/images/text/autoregressive_generation.pdf",
       "native_sources": [
         "courses/nnds/assets/images/cnn/sequences/forecasting.drawio"
       ],

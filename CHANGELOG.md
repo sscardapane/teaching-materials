@@ -19,6 +19,13 @@
   overflowed the length and failed to build.
 - `scripts/verify.py` skips decks added after the migration (no reference PDF)
   instead of stopping at the first one.
+- Add a *Language models* section to `NN2627_Transformers`, after the text
+  pipeline: the CNN deck's next-token prediction, training, probabilistic view,
+  autoregressive generation and decoding frames, now shared as
+  `shared/slides/next-token-prediction.tex` and `shared/slides/language-models.tex`
+  (their three figures move to `shared/assets/images/text/`). The NN wording
+  says explicitly that this repeats the time-series autoregression of the
+  recurrent lectures for text. The NNDS CNN deck renders pixel-identical.
 
 ## 2026-11-06
 

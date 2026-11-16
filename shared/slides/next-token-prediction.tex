@@ -1,0 +1,25 @@
+% Next-token prediction, shared by the NNDS CNN deck and the NN transformer
+% deck. Moved from Lecture_CNNs.tex by Claude (2026-11-16).
+
+% Figure: shared/assets/images/text/next_token_examples.tex (Claude, 2026-11-05).
+\begin{whiteframe}{Next-token prediction}
+    \setlength{\parskip}{4pt}
+    \setlength{\abovedisplayskip}{4pt}
+    \setlength{\belowdisplayskip}{4pt}
+
+    \NNDSorNN{A token-level task of special interest is \myalert{next-token prediction}:
+    at each position,}{The recurrent lectures predicted the next value of a
+    time series from its history. We now repeat this for text
+    (\myalert{next-token prediction}): a sequence model (e.g., an RNN) maps
+    $\vc{X}$ to $\vc{Y}\sim(T,C')$, and at each position} a vocabulary classifier
+    $\vc{p}_t=\operatorname{softmax}(g(\idx{\vc{Y}}{t,:}))\sim(V)$ predicts
+    the following token $z_{t+1}$.
+
+    The targets come from the text itself, without human labels: the task is
+    \myalert{self-supervised}, and a text of $T+1$ tokens gives $T$ examples:
+
+    \begin{center}
+        \input{../../shared/assets/images/text/next_token_examples.tex}
+    \end{center}
+
+\end{whiteframe}
