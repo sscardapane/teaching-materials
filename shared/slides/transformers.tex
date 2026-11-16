@@ -30,8 +30,8 @@
     \setlength{\parskip}{4pt}
 
     The \myalert{transformer} was proposed in 2017 for machine translation. \NNDSorNN{Like the convolutional models of the
-    last lecture,}{Like the recurrent models of the
-    previous lectures,} the backbone maps a sequence of embeddings $\vc{X} \sim(T,D)$ to another sequence followed by a task-specific head, e.g.:
+        last lecture,}{Like the recurrent models of the
+        previous lectures,} the backbone maps a sequence of embeddings $\vc{X} \sim(T,D)$ to another sequence followed by a task-specific head, e.g.:
 
     \vspace{0.2em}
     \begin{columns}[T,onlytextwidth]
@@ -58,50 +58,50 @@
 \end{frame}
 
 \ifNNcourse
-\begin{frame}{Beyond recurrence}
-    \setlength{\parskip}{6pt}
+    \begin{frame}{Beyond recurrence}
+        \setlength{\parskip}{6pt}
 
-    A recurrent model reads the tokens one at a time and summarizes the past
-    in a state of fixed size, $\vc{h}_t=f(\vc{h}_{t-1},\vc{x}_t)$. This has
-    two drawbacks:
-    \begin{itemize}
-        \item \textbf{Long-range dependencies:} information from token $t-k$
-              reaches token $t$ only through $k$ state updates, and the
-              gradients through many updates tend to vanish or explode.
-        \item \textbf{Sequential computation:} $\vc{h}_t$ needs
-              $\vc{h}_{t-1}$, so even with teacher forcing we cannot process
-              the positions of a sequence in parallel.
-    \end{itemize}
-    Compare:
-    \begin{itemize}
-        \item \textit{the {\color{darkcerulean}\textbf{cat}} is on the {\color{darkgreen}\textbf{table}}};
-        \item \textit{the {\color{darkcerulean}\textbf{cat}}, which belonged to my mother, is on the {\color{darkgreen}\textbf{table}}}.
-    \end{itemize}
-    The relation between the two words is the same, but their distance is not.
-    We want a layer where every output reads every token directly, and all
-    outputs are computed in parallel.
+        A recurrent model reads the tokens one at a time and summarizes the past
+        in a state of fixed size, $\vc{h}_t=f(\vc{h}_{t-1},\vc{x}_t)$. This has
+        two drawbacks:
+        \begin{itemize}
+            \item \textbf{Long-range dependencies:} information from token $t-k$
+                  reaches token $t$ through $k$ state updates, and the
+                  gradients through many updates tend to vanish or explode.
+            \item \textbf{Sequential computation:} $\vc{h}_t$ needs
+                  $\vc{h}_{t-1}$, so even with teacher forcing we cannot process
+                  the positions of a sequence in parallel.
+        \end{itemize}
+        Compare:
+        \begin{itemize}
+            \item \textit{the {\color{darkcerulean}\textbf{cat}} is on the {\color{darkgreen}\textbf{table}}};
+            \item \textit{the {\color{darkcerulean}\textbf{cat}}, which belonged to my mother, is on the {\color{darkgreen}\textbf{table}}}.
+        \end{itemize}
+        The relation between the two words is the same, but their distance is not.
+        We want a layer where every output reads every token directly, and all
+        outputs are computed in parallel.
 
-\end{frame}
+    \end{frame}
 \else
-\begin{frame}{Beyond locality}
-    \setlength{\parskip}{6pt}
+    \begin{frame}{Beyond locality}
+        \setlength{\parskip}{6pt}
 
-    A convolution assumes \myalert{locality}: each output mixes a fixed window
-    of neighbors. In text, audio or graphs, dependencies can instead be
-    \myalert{long-range}, \myalert{sparse} and \myalert{dynamic}.
+        A convolution assumes \myalert{locality}: each output mixes a fixed window
+        of neighbors. In text, audio or graphs, dependencies can instead be
+        \myalert{long-range}, \myalert{sparse} and \myalert{dynamic}.
 
-    Compare:
-    \begin{itemize}
-        \item \textit{the {\color{darkcerulean}\textbf{cat}} is on the {\color{darkgreen}\textbf{table}}};
-        \item \textit{the {\color{darkcerulean}\textbf{cat}}, which belonged to my mother, is on the {\color{darkgreen}\textbf{table}}}.
-    \end{itemize}
-    The relation between the two words is the same, but their distance is not.
+        Compare:
+        \begin{itemize}
+            \item \textit{the {\color{darkcerulean}\textbf{cat}} is on the {\color{darkgreen}\textbf{table}}};
+            \item \textit{the {\color{darkcerulean}\textbf{cat}}, which belonged to my mother, is on the {\color{darkgreen}\textbf{table}}}.
+        \end{itemize}
+        The relation between the two words is the same, but their distance is not.
 
-    Stacking layers (or dilating them) grows the receptive field. However, the
-    weight given to a neighbor still depends only on its \textit{offset}, never on
-    what the two tokens contain.
+        Stacking layers (or dilating them) grows the receptive field. However, the
+        weight given to a neighbor still depends only on its \textit{offset}, never on
+        what the two tokens contain.
 
-\end{frame}
+    \end{frame}
 \fi
 
 \begin{frame}{Convolutions as a sum over offsets}
@@ -112,9 +112,9 @@
     \myalert{embedding dimension}.
 
     \NNDSorNN{Ignoring padding and the activation, a 1D convolution with kernel size
-    $s=2k+1$ is:}{A 1D convolution, the sequence version of the image
-    convolutions of the CNN lecture, processes all tokens in parallel. Ignoring
-    padding and the activation, with kernel size $s=2k+1$:}
+        $s=2k+1$ is:}{A 1D convolution, the sequence version of the image
+        convolutions of the CNN lecture, processes all tokens in parallel. Ignoring
+        padding and the activation, with kernel size $s=2k+1$:}
     \[
         \vc{h}_t=\sum_{j=-k}^{k}\eqnmarkbox[drawblue]{wconv}{\idx{\vc{W}}{j+k,:,:}}\,\vc{x}_{t+j}\,,
         \qquad \vc{W}\sim(s,D,D).
@@ -123,14 +123,14 @@
     \vspace{0.6em}
 
     \NNDSorNN{This is the layer of the CNN lecture, with the kernel reshaped into one
-    $D\times D$ matrix for each offset $j$, stored at position $j+k$. Its parameters grow linearly with
-    $s$. We want to remove the locality assumption while keeping the number of
-    parameters independent of the length $T$.}{The kernel has one $D\times D$
-    matrix for each offset $j$, so its parameters grow linearly with $s$. Each
-    output sees only a window of $s$ tokens (\myalert{locality}), and the
-    weight of a neighbor depends only on its offset, never on what the two
-    tokens contain. We want to remove both limits while keeping the number of
-    parameters independent of the length $T$.}
+        $D\times D$ matrix for each offset $j$, stored at position $j+k$. Its parameters grow linearly with
+        $s$. We want to remove the locality assumption while keeping the number of
+        parameters independent of the length $T$.}{The kernel has one $D\times D$
+        matrix for each offset $j$, so its parameters grow linearly with $s$. Each
+        output sees only a window of $s$ tokens (\myalert{locality}), and the
+        weight of a neighbor depends only on its offset, never on what the two
+        tokens contain. We want to remove both limits while keeping the number of
+        parameters independent of the length $T$.}
 
 \end{frame}
 
@@ -619,24 +619,24 @@
         \node[slab] at (3,-6.1) {$(T,D)$};
         % Heads: attention matrices and outputs
         \foreach \hy/\hname/\pat/\shade in {
-                6/1/{{60,15,15,10},{25,55,10,10},{10,20,55,15},{10,10,20,60}}/12,
-                0/2/{{70,10,10,10},{60,15,15,10},{55,15,15,15},{60,10,15,15}}/30,
-                -6/3/{{25,25,25,25},{30,25,20,25},{20,30,25,25},{25,25,25,25}}/50} {
-                \begin{scope}[yshift=\hy*0.31cm]
-                    \foreach \row [count=\r from 0] in \pat {
-                        \foreach \v [count=\c from 0] in \row {
-                            \draw[cell, fill=black!\v] ({10+\c},-\r) rectangle ++(1,-1);
-                        }
-                    }
-                    \node[slab] at (12,0.7) {head \hname: $\vc{A}_{\hname}$};
-                    \foreach \r in {0,...,3} \foreach \c in {0,1}
-                    \draw[cell, fill=vcolor!\shade] ({16+\c},-\r) rectangle ++(1,-1);
-                    \node[slab] at (17,0.7) {$\vc{H}_{\hname}$};
-                    \draw[arr] (14.3,-2) -- (15.7,-2);
-                \end{scope}
-                \draw[arr] (6.3,-2) -- (7.6,{\hy-2});
-                \draw[arr] (18.3,{\hy-2}) -- (20.2,-2);
+        6/1/{{60,15,15,10},{25,55,10,10},{10,20,55,15},{10,10,20,60}}/12,
+        0/2/{{70,10,10,10},{60,15,15,10},{55,15,15,15},{60,10,15,15}}/30,
+        -6/3/{{25,25,25,25},{30,25,20,25},{20,30,25,25},{25,25,25,25}}/50} {
+        \begin{scope}[yshift=\hy*0.31cm]
+            \foreach \row [count=\r from 0] in \pat {
+                \foreach \v [count=\c from 0] in \row {
+                    \draw[cell, fill=black!\v] ({10+\c},-\r) rectangle ++(1,-1);
+                }
             }
+            \node[slab] at (12,0.7) {head \hname: $\vc{A}_{\hname}$};
+            \foreach \r in {0,...,3} \foreach \c in {0,1}
+            \draw[cell, fill=vcolor!\shade] ({16+\c},-\r) rectangle ++(1,-1);
+            \node[slab] at (17,0.7) {$\vc{H}_{\hname}$};
+            \draw[arr] (14.3,-2) -- (15.7,-2);
+        \end{scope}
+        \draw[arr] (6.3,-2) -- (7.6,{\hy-2});
+        \draw[arr] (18.3,{\hy-2}) -- (20.2,-2);
+        }
         % Concatenation
         \foreach \c/\shade in {0/12,1/12,2/30,3/30,4/50,5/50}
         \foreach \r in {0,...,3}
@@ -665,11 +665,11 @@
         def mha(x, Wq, Wk, Wv, Wo, h):                    # x: (B, T, D)
             B, T, D = x.shape
             q, k, v = ((x @ W).view(B, T, h, D // h).transpose(1, 2)
-                       for W in (Wq, Wk, Wv))             # (B, h, T, D/h)
-            s = q @ k.transpose(-2, -1) / (D // h) ** 0.5 # (B, h, T, T)
-            mask = torch.ones(T, T, dtype=torch.bool).triu(1)
-            a = s.masked_fill(mask, float('-inf')).softmax(-1)
-            out = (a @ v).transpose(1, 2).reshape(B, T, D) # concat heads
+            for W in (Wq, Wk, Wv))             # (B, h, T, D/h)
+                s = q @ k.transpose(-2, -1) / (D // h) ** 0.5 # (B, h, T, T)
+                mask = torch.ones(T, T, dtype=torch.bool).triu(1)
+                a = s.masked_fill(mask, float('-inf')).softmax(-1)
+                out = (a @ v).transpose(1, 2).reshape(B, T, D) # concat heads
             return out @ Wo
     \end{python}
 
@@ -711,7 +711,7 @@
     The design of the block was mostly based on empirical considerations.
     Roughly speaking, steps (1)--(2) correspond to a \myalert{token mixing}
     operation, while steps (3)--(4) are a per-token update\NNDSorNN{ which is akin to a
-    $1\times1$ convolution}{, with the same MLP applied to every token}.
+        $1\times1$ convolution}{, with the same MLP applied to every token}.
 
     \begin{columns}[T,onlytextwidth]
         \begin{column}{0.49\textwidth}
@@ -732,7 +732,7 @@
 
     \medskip
     \NNDSorNN{The block is similar in spirit to a depthwise separable convolution
-    (spatial mixing and channel mixing in the CNN lecture). }{}The intermediate
+        (spatial mixing and channel mixing in the CNN lecture). }{}The intermediate
     MLP has two layers, with hidden dimension an integer multiple of $D$
     ($4D$ in the original model).
 
@@ -864,9 +864,9 @@
     \end{figure}
 
     {\small Permuting the input rows permutes the output rows in the same way.
-        Each output depends on which tokens are present, not on their order: without
-        positions, ``dog'' gets the same vector in ``the dog bit the man'' and
-        ``the man bit the dog''.\par}
+    Each output depends on which tokens are present, not on their order: without
+    positions, ``dog'' gets the same vector in ``the dog bit the man'' and
+    ``the man bit the dog''.\par}
 
 \end{whiteframe}
 
@@ -886,7 +886,7 @@
         \includegraphics[width=0.5\columnwidth]{images/transformers/book/positional_embeddings}
     \end{figure}
     {\small The same token at two different positions is now represented by
-        different vectors.\par}
+    different vectors.\par}
 
 \end{frame}
 
@@ -1038,8 +1038,8 @@
     \centering
     \vspace{0.5em}
     \begin{tikzpicture}[scale=1.15,
-            vec/.style={-{Stealth[length=5pt]}, line width=1.1pt},
-            lab/.style={font=\small},
+        vec/.style={-{Stealth[length=5pt]}, line width=1.1pt},
+        lab/.style={font=\small},
         ]
         \foreach \x/\t/\tp/\qa/\ka in {0/1/3/35/115, 5/4/6/110/190} {
                 \begin{scope}[xshift=\x cm]
@@ -1092,13 +1092,13 @@
 
     \begin{python}[gobble=8,aboveskip=4pt,belowskip=4pt]
         def rope(x, base=10000.0):                     # x: (..., T, D_k)
-            T, D = x.shape[-2:]
-            w = base ** (-torch.arange(0, D, 2) / D)   # (D_k/2,) frequencies
-            ang = torch.arange(T)[:, None] * w         # (T, D_k/2) angles
-            cos, sin = ang.cos(), ang.sin()
-            x1, x2 = x[..., 0::2], x[..., 1::2]        # the pairs
-            return torch.stack([x1 * cos - x2 * sin,
-                                x1 * sin + x2 * cos], -1).flatten(-2)
+        T, D = x.shape[-2:]
+        w = base ** (-torch.arange(0, D, 2) / D)   # (D_k/2,) frequencies
+        ang = torch.arange(T)[:, None] * w         # (T, D_k/2) angles
+        cos, sin = ang.cos(), ang.sin()
+        x1, x2 = x[..., 0::2], x[..., 1::2]        # the pairs
+        return torch.stack([x1 * cos - x2 * sin,
+                x1 * sin + x2 * cos], -1).flatten(-2)
 
         scores = rope(q) @ rope(k).transpose(-2, -1) / D_k ** 0.5
     \end{python}
@@ -1154,17 +1154,17 @@
         \node[mlab] at (2.5,-6) {bias $/\,m_i$};
         % Two heads
         \foreach \x/\m/\rows in {
-                8.5/{m_i=1}/{{85},{23,62},{8,21,57},{3,7,20,55},{1,3,7,20,54}},
-                16/{m_i=1/4}/{{85},{37,48},{22,28,36},{14,18,23,30},{10,12,16,21,26}}} {
-                \foreach \r in {0,...,4} \foreach \c in {0,...,4}
-                \draw[cell, fill=white] ({\x+\c},-\r) rectangle ++(1,-1);
-                \foreach \row [count=\r from 0] in \rows {
-                    \foreach \v [count=\c from 0] in \row {
-                        \draw[cell, fill=black!\v] ({\x+\c},-\r) rectangle ++(1,-1);
-                    }
-                }
-                \node[mlab] at ({\x+2.5},-6) {$\vc{A}$, $\m$};
+        8.5/{m_i=1}/{{85},{23,62},{8,21,57},{3,7,20,55},{1,3,7,20,54}},
+        16/{m_i=1/4}/{{85},{37,48},{22,28,36},{14,18,23,30},{10,12,16,21,26}}} {
+        \foreach \r in {0,...,4} \foreach \c in {0,...,4}
+        \draw[cell, fill=white] ({\x+\c},-\r) rectangle ++(1,-1);
+        \foreach \row [count=\r from 0] in \rows {
+            \foreach \v [count=\c from 0] in \row {
+                \draw[cell, fill=black!\v] ({\x+\c},-\r) rectangle ++(1,-1);
             }
+        }
+        \node[mlab] at ({\x+2.5},-6) {$\vc{A}$, $\m$};
+        }
         \draw[-{Stealth[length=5pt]}, drawgray, line width=0.6pt] (5.4,-2.5) -- (8.1,-2.5)
         node[midway, above=1pt, font=\small] {softmax};
     \end{tikzpicture}
@@ -1241,13 +1241,13 @@
     \small
     \renewcommand{\arraystretch}{1.35}
     \begin{tabular}{@{}p{0.17\textwidth}p{0.2\textwidth}p{0.11\textwidth}p{0.2\textwidth}p{0.24\textwidth}@{}}
-        \textbf{Method} & \textbf{Position enters} & \textbf{Trained} & \textbf{Longer sequences} & \textbf{Used in} \\
+        \textbf{Method} & \textbf{Position enters}                 & \textbf{Trained} & \textbf{Longer sequences} & \textbf{Used in}      \\
         \hline
-        Learned       & added to $\vc{X}$            & yes & no                         & BERT, GPT-2, ViT \\
-        Sinusoidal    & added to $\vc{X}$            & no  & only in theory  & original transformer \\
-        ALiBi         & bias on the scores           & no  & yes                        & BLOOM, MPT \\
-        RoPE          & rotation of $\qc{\vc{q}}$, $\kc{\vc{k}}$ & no & degrades & most current LLMs \\
-        NoPE          & causal mask only             & no  & better than RoPE           & interleaved with RoPE \\
+        Learned         & added to $\vc{X}$                        & yes              & no                        & BERT, GPT-2, ViT      \\
+        Sinusoidal      & added to $\vc{X}$                        & no               & only in theory            & original transformer  \\
+        ALiBi           & bias on the scores                       & no               & yes                       & BLOOM, MPT            \\
+        RoPE            & rotation of $\qc{\vc{q}}$, $\kc{\vc{k}}$ & no               & degrades                  & most current LLMs     \\
+        NoPE            & causal mask only                         & no               & better than RoPE          & interleaved with RoPE \\
     \end{tabular}
 
 \end{frame}
@@ -1388,17 +1388,17 @@
             ttl/.style={font=\small},
         ]
         \foreach \name/\x/\title in {previous/0/{(a) previous token}, first/16/{(b) first token}, it/32/{(c) ``it'' $\rightarrow$ ``cat''}} {
-                \begin{scope}[xshift=\x*0.25cm]
-                    \foreach \r in {0,...,11} \foreach \c in {0,...,11}
-                    \draw[drawgray!25, line width=0.2pt] (\c,-\r) rectangle ++(1,-1);
-                    \csname gptcells\name\endcsname
-                    \draw[drawgray!70, line width=0.4pt] (0,0) rectangle (12,-12);
-                    \node[ttl] at (6,1.6) {\title};
-                    \node[lab] at (6,0.6) {\csname gpthead\name\endcsname};
-                    \foreach \t [count=\i from 0] in \gpttokens
-                    \node[lab, anchor=east, rotate=60] at ({\i+0.5},-12.2) {\t};
-                \end{scope}
-            }
+        \begin{scope}[xshift=\x*0.25cm]
+            \foreach \r in {0,...,11} \foreach \c in {0,...,11}
+            \draw[drawgray!25, line width=0.2pt] (\c,-\r) rectangle ++(1,-1);
+            \csname gptcells\name\endcsname
+            \draw[drawgray!70, line width=0.4pt] (0,0) rectangle (12,-12);
+            \node[ttl] at (6,1.6) {\title};
+            \node[lab] at (6,0.6) {\csname gpthead\name\endcsname};
+            \foreach \t [count=\i from 0] in \gpttokens
+            \node[lab, anchor=east, rotate=60] at ({\i+0.5},-12.2) {\t};
+        \end{scope}
+        }
         \foreach \t [count=\i from 0] in \gpttokens
         \node[lab, anchor=east] at (-0.15,{-\i-0.5}) {\t};
     \end{tikzpicture}
@@ -1611,8 +1611,8 @@
         $L(s-1)+1$ tokens, and two distant tokens interact only after
         $\mathcal{O}(T/s)$ layers. A single attention layer connects every
         pair of tokens directly, at the price of computing all $T^2$ weights.\NNDSorNN{}{
-        In a recurrent model, two tokens at distance $k$ interact through $k$
-        sequential state updates.}\par}
+            In a recurrent model, two tokens at distance $k$ interact through $k$
+            sequential state updates.}\par}
 
 \end{frame}
 
@@ -1620,31 +1620,31 @@
     \setlength{\parskip}{6pt}
 
     Consider a single layer on $\vc{X}\sim(T,D)$, counting multiply-adds\NNDSorNN{}{. The recurrent
-    layer is $\vc{h}_t=\phi(\vc{W}_h\vc{h}_{t-1}+\vc{W}_x\vc{x}_t)$, the convolution has kernel size $s$}:
+        layer is $\vc{h}_t=\phi(\vc{W}_h\vc{h}_{t-1}+\vc{W}_x\vc{x}_t)$, the convolution has kernel size $s$}:
 
     \vspace{0.2em}
     \centering
     \renewcommand{\arraystretch}{1.35}
     \NNDSorNN{%
-    \begin{tabular}{@{}p{0.26\textwidth}p{0.3\textwidth}p{0.34\textwidth}@{}}
-        & \textbf{Convolution} (kernel $s$) & \textbf{Multi-head attention} \\
-        \hline
-        Parameters & $sD^2$ & $4D^2$ \\
-        Time & $\mathcal{O}(TsD^2)$ & $\mathcal{O}(TD^2)+\mathcal{O}(T^2D)$ \\
-        Receptive field & $s$ tokens & $T$ tokens \\
-        Extra memory & none & $\vc{A}\sim(T,T)$ per head \\
-    \end{tabular}%
+        \begin{tabular}{@{}p{0.26\textwidth}p{0.3\textwidth}p{0.34\textwidth}@{}}
+                            & \textbf{Convolution} (kernel $s$) & \textbf{Multi-head attention}         \\
+            \hline
+            Parameters      & $sD^2$                            & $4D^2$                                \\
+            Time            & $\mathcal{O}(TsD^2)$              & $\mathcal{O}(TD^2)+\mathcal{O}(T^2D)$ \\
+            Receptive field & $s$ tokens                        & $T$ tokens                            \\
+            Extra memory    & none                              & $\vc{A}\sim(T,T)$ per head            \\
+        \end{tabular}%
     }{%
-    \renewcommand{\arraystretch}{1.2}%
-    \begin{tabular}{@{}p{0.2\textwidth}p{0.22\textwidth}p{0.2\textwidth}p{0.3\textwidth}@{}}
-        & \textbf{Recurrent} & \textbf{Convolution} & \textbf{Multi-head attention} \\
-        \hline
-        Parameters & $2D^2$ & $sD^2$ & $4D^2$ \\
-        Time & $\mathcal{O}(TD^2)$ & $\mathcal{O}(TsD^2)$ & $\mathcal{O}(TD^2)+\mathcal{O}(T^2D)$ \\
-        Sequential steps & $T$ & $1$ & $1$ \\
-        Receptive field & all past tokens & $s$ tokens & $T$ tokens \\
-        Extra memory & none & none & $\vc{A}\sim(T,T)$ per head \\
-    \end{tabular}%
+        \renewcommand{\arraystretch}{1.2}%
+        \begin{tabular}{@{}p{0.2\textwidth}p{0.22\textwidth}p{0.2\textwidth}p{0.3\textwidth}@{}}
+                             & \textbf{Recurrent}  & \textbf{Convolution} & \textbf{Multi-head attention}         \\
+            \hline
+            Parameters       & $2D^2$              & $sD^2$               & $4D^2$                                \\
+            Time             & $\mathcal{O}(TD^2)$ & $\mathcal{O}(TsD^2)$ & $\mathcal{O}(TD^2)+\mathcal{O}(T^2D)$ \\
+            Sequential steps & $T$                 & $1$                  & $1$                                   \\
+            Receptive field  & all past tokens     & $s$ tokens           & $T$ tokens                            \\
+            Extra memory     & none                & none                 & $\vc{A}\sim(T,T)$ per head            \\
+        \end{tabular}%
     }
     \par\vspace{0.6em}
     \justifying
@@ -1695,7 +1695,7 @@
     only at the end. During generation, the keys and values of past tokens
     are stored in a \myalert{KV cache} instead of being recomputed.\NNDSorNN{
 
-    Both are the starting point of the next lecture.}{}
+        Both are the starting point of the next lecture.}{}
 
 \end{frame}
 
@@ -1809,8 +1809,8 @@
     \end{figure}
 
     {\small The Vision Transformer (ViT) is a standard transformer encoder
-        applied on top of image patches, with a class token and trainable
-        positional embeddings.\par}
+    applied on top of image patches, with a class token and trainable
+    positional embeddings.\par}
 
     \SlideSource{Dosovitskiy et al. (2021), \textit{An image is worth 16x16 words: Transformers for image recognition at scale}, ICLR.}
 
@@ -1935,9 +1935,9 @@
     \end{figure}
 
     {\small Transformers also simplify \myalert{multimodal} models by projecting
-        tokens of different modalities in a single embedding space. In most
-        vision-language models, the image tokens come from a pre-trained ViT
-        (e.g., SigLIP), followed by a small projection.\par}
+    tokens of different modalities in a single embedding space. In most
+    vision-language models, the image tokens come from a pre-trained ViT
+    (e.g., SigLIP), followed by a small projection.\par}
 
 \end{whiteframe}
 
@@ -1951,8 +1951,8 @@
         \item \href{https://transformer-circuits.pub/2021/framework/index.html}{A Mathematical Framework for Transformer Circuits}, for the residual stream view.
     \end{itemize}\NNDSorNN{
 
-    In the next lecture, we go from the 2017 block to a modern language model:
-    normalization and MLP variants, the KV cache and how to make it smaller,
-    restricted attention, mixtures of experts, and efficient inference.}{}
+        In the next lecture, we go from the 2017 block to a modern language model:
+        normalization and MLP variants, the KV cache and how to make it smaller,
+        restricted attention, mixtures of experts, and efficient inference.}{}
 
 \end{frame}
