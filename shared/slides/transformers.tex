@@ -24,14 +24,94 @@
 
 
 \section{Designing the transformer}
-\subsection{\NNDSorNN{From convolutions to attention}{From recurrence to attention}}
+\subsection{Sequence-to-sequence models}
+
+\begin{frame}{Sequence to sequence}
+    \setlength{\parskip}{5pt}
+
+    In \myalert{machine translation}, the input and the output are two sequences
+    of different lengths, and the $t$-th output token has no fixed relation to
+    the $t$-th input token. Around 2014, this was called a
+    \myalert{sequence-to-sequence} (seq2seq) task. We can already solve it with
+    the models we have seen:
+
+    \centering
+    \begin{tikzpicture}[x=1cm, y=0.8cm,
+            tok/.style={draw=drawgray!70, minimum width=0.95cm, minimum height=0.42cm,
+                    inner sep=1pt, font=\scriptsize},
+            sub/.style={tfblk, minimum width=3.3cm, minimum height=0.5cm},
+        ]
+        % Encoder
+        \foreach \w [count=\i from 0] in {the, cat, sleeps}
+        \node[tok, fill=drawblue_l] (x\i) at ({\i*1.1},0) {\w};
+        \node[sub] (enc) at (1.1,1) {Encoder};
+        \foreach \i in {0,...,2} {
+                \node[tok, fill=drawblue!45, minimum width=0.5cm] (h\i) at ({\i*1.1},2) {};
+                \draw[tfarr] (x\i) -- (x\i |- enc.south);
+                \draw[tfarr] (h\i |- enc.north) -- (h\i);
+            }
+        \node[tflab, anchor=east] at (-0.6,2) {$\vc{H}$};
+        % Pooling
+        \node[tok, fill=draworange!35, minimum width=0.5cm] (c) at (3.9,2) {};
+        \node[tflab, above=1pt] at (c.north) {$\vc{c}$};
+        \draw[tfarr] (h2) -- node[tflab, above] {pooling} (c);
+        % Decoder
+        \foreach \w [count=\i from 0] in {<s>, il, gatto}
+        \node[tok, fill=drawgreen_l] (y\i) at ({5.6+\i*1.1},0) {\w};
+        \node[sub] (dec) at (6.7,1) {Causal decoder};
+        \foreach \w [count=\i from 0] in {il, gatto, dorme} {
+                \node[tok, fill=drawgreen!45] (o\i) at ({5.6+\i*1.1},2) {\w};
+                \draw[tfarr] (y\i) -- (y\i |- dec.south);
+                \draw[tfarr] (o\i |- dec.north) -- (o\i);
+            }
+        \draw[tfarr] (c) |- (dec.west);
+    \end{tikzpicture}
+    \par\raggedright
+
+    An \myalert{encoder} (\NNDSorNN{e.g., a 1D CNN}{e.g., an RNN or a 1D CNN})
+    processes the source sentence, and \myalert{pooling} summarizes it in a single
+    vector $\vc{c}$. A causal \myalert{decoder} generates the translation
+    autoregressively, receiving $\vc{c}$ at every step (e.g., concatenated to each
+    input embedding).
+
+    \SlideSource{Sutskever et al. (2014), \href{https://arxiv.org/abs/1409.3215}{\textit{Sequence to sequence learning with neural networks}}, NeurIPS; Cho et al. (2014), \href{https://arxiv.org/abs/1406.1078}{\textit{Learning phrase representations using RNN encoder-decoder for statistical machine translation}}, EMNLP.}
+
+\end{frame}
+
+\begin{frame}{From pooling to attention}
+    \setlength{\parskip}{6pt}
+
+    The whole source sentence must fit in a vector $\vc{c}$ of fixed size, and
+    the translations got worse on long sentences.
+    Bahdanau et al. (2015) let the decoder compute a different summary at every
+    step $t$:
+    \[
+        \vc{c}_t=\sum_{i}\eqnmarkbox[drawblue]{alpha}{\alpha_{t,i}}\,\vc{h}_i\,,
+        \qquad
+        \alpha_{t,i}=\operatorname{softmax}_i\bigl(a(\vc{s}_t,\vc{h}_i)\bigr)\,,
+    \]
+    \annotate[yshift=-0.8em]{below,left}{alpha}{weight of source token $i$ at step $t$}
+    \vspace{0.6em}
+
+    where $\vc{s}_t$ is the decoder's hidden vector at step $t$ and $a$ is a small
+    MLP. With $\alpha_{t,i}=1/T'$ we recover average pooling, but in general the
+    weights depend on what the decoder is generating and on the content of each
+    source token. This was the first \myalert{attention} layer: the model learned
+    to align the words of the two languages without supervision.
+
+    \SlideSource{Bahdanau et al. (2015), \href{https://arxiv.org/abs/1409.0473}{\textit{Neural machine translation by jointly learning to align and translate}}, ICLR.}
+
+\end{frame}
 
 \begin{frame}{Transformers}
     \setlength{\parskip}{4pt}
 
-    The \myalert{transformer} was proposed in 2017 for machine translation. \NNDSorNN{Like the convolutional models of the
-        last lecture,}{Like the recurrent models of the
-        previous lectures,} the backbone maps a sequence of embeddings $\vc{X} \sim(T,D)$ to another sequence followed by a task-specific head, e.g.:
+    In 2017, Vaswani et al.\ kept this encoder-decoder design, but replaced the
+    recurrent and convolutional layers with attention as well, hence the
+    title \textit{Attention is all you need}: this is the \myalert{transformer}.
+    Its backbone maps a sequence of embeddings $\vc{X} \sim(T,D)$ to another
+    sequence. Encoder and decoder are also used on their own, followed by a
+    task-specific head:
 
     \vspace{0.2em}
     \begin{columns}[T,onlytextwidth]
@@ -51,11 +131,37 @@
     \end{columns}
 
     \vspace{0.6em}
-    As we will see, the original 2017 paper combined both.
+    At the end of this section we will see how the original model combines both.
 
     \SlideSource{Vaswani et al. (2017), \href{https://arxiv.org/abs/1706.03762}{\textit{Attention is all you need}}, NeurIPS.}
 
 \end{frame}
+
+\begin{frame}{Sequence to sequence today}
+    \setlength{\parskip}{6pt}
+
+    GPT-3 showed that a large decoder alone can solve many sequence-to-sequence
+    tasks: we write the input in the \myalert{prompt}, and the model continues it
+    autoregressively.
+
+    \begin{tcolorbox}[nndsblue]
+        \ttfamily\small Translate English to Italian:\par
+        the cat sleeps => {\color{darkgreen}\bfseries il gatto dorme}
+    \end{tcolorbox}
+
+    Translation, summarization or question answering all become next-token
+    prediction on a single sequence, with no separate encoder.
+
+    Something of the encoder remains: the prompt is known in advance, so the
+    model processes all its tokens in a single parallel pass (the
+    \myalert{prefill} stage\NNDSorNN{, next lecture}{}), and only the output is
+    generated one token at a time.
+
+    \SlideSource{Brown et al. (2020), \href{https://arxiv.org/abs/2005.14165}{\textit{Language models are few-shot learners}}, NeurIPS.}
+
+\end{frame}
+
+\subsection{\NNDSorNN{From convolutions to attention}{From recurrence to attention}}
 
 \ifNNcourse
     \begin{frame}{Beyond recurrence}
@@ -1563,9 +1669,10 @@
     \par\vspace{0.6em}
     \raggedright\setlength{\parskip}{5pt}
 
-    The original transformer was defined for \myalert{sequence to sequence}
-    tasks, such as machine translation: every decoder block reads the encoder
-    output with cross-attention. Today: T5, Whisper, image generators.
+    This is the original transformer, a \myalert{sequence-to-sequence} model as
+    in the start of the lecture: every decoder block reads the encoder output
+    with cross-attention, in place of the attention of Bahdanau et al. Today:
+    T5, Whisper, image generators.
 
     \SlideSource{Vaswani et al. (2017), \textit{Attention is all you need}, NeurIPS.}
 
