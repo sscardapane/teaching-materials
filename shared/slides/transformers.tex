@@ -106,32 +106,27 @@
 \begin{frame}{Transformers}
     \setlength{\parskip}{4pt}
 
-    In 2017, Vaswani et al.\ kept this encoder-decoder design, but replaced the
-    recurrent and convolutional layers with attention as well, hence the
-    title \textit{Attention is all you need}: this is the \myalert{transformer}.
-    Its backbone maps a sequence of embeddings $\vc{X} \sim(T,D)$ to another
-    sequence. Encoder and decoder are also used on their own, followed by a
-    task-specific head:
+    In 2017, Vaswani et al.\ kept this encoder-decoder design but built it only
+    from attention layers, hence the title \textit{Attention is all you need}:
+    this is the \myalert{transformer}. Today the two halves are also used on
+    their own, with a task-specific head:
 
     \vspace{0.2em}
     \begin{columns}[T,onlytextwidth]
         \begin{column}{0.48\textwidth}
             \begin{tcolorbox}[nndsblue,courseheight={families}{}]
                 \textbf{Sequence classification}\par
-                Each output can depend on the whole sequence: we call it an
-                \myalert{encoder} transformer (e.g. BERT, ViT).
+                An \myalert{encoder}: each output depends on the whole
+                sequence (e.g. BERT, ViT).
             \end{tcolorbox}
         \end{column}
         \begin{column}{0.48\textwidth}
             \begin{tcolorbox}[nndsred,courseheight={families}{}]
                 \textbf{Next-token prediction}\par
-                The model must be causal, \NNDSorNN{as with causal convolutions}{as in a recurrent model}: we call it a \myalert{decoder} transformer (e.g. GPT).
+                A \myalert{decoder}: causal, \NNDSorNN{as with causal convolutions}{as in a recurrent model} (e.g. GPT).
             \end{tcolorbox}
         \end{column}
     \end{columns}
-
-    \vspace{0.6em}
-    At the end of this section we will see how the original model combines both.
 
     \SlideSource{Vaswani et al. (2017), \href{https://arxiv.org/abs/1706.03762}{\textit{Attention is all you need}}, NeurIPS.}
 
