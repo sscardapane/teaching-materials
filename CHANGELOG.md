@@ -1,5 +1,18 @@
 # Changelog
 
+## 2026-11-19
+
+> [!note] Written by Claude (2026-11-19)
+
+- Transformer decks (NN and NNDS, `shared/slides/transformers.tex`): new opening
+  subsection *Sequence-to-sequence models*, from Simone's blackboard
+  introduction. *Sequence to sequence* (machine translation with an encoder,
+  pooling and a causal decoder, with a new TikZ figure), *From pooling to
+  attention* (Bahdanau et al.), *Transformers* reworded to explain the title
+  and the encoder/decoder names, and *Sequence to sequence today* (GPT-3
+  prompting, prefill as what remains of the encoder). *Encoder-decoder models*
+  now points back to the opening. Not exported.
+
 ## 2026-11-16
 
 > [!note] Written by Claude (2026-11-16)
