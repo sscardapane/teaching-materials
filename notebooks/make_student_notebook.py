@@ -1,24 +1,50 @@
-"""Build the shared student notebooks (PT01 to PT04) from their instructor sources.
+"""Build the student and solutions notebooks (PT01 to PT05) from the instructor sources.
 
-Use --check to verify that the committed student sources match the generators.
+The instructor notebooks in `instructor/` are the only files to edit:
+
+- cells tagged `reference` are instructor-only and never reach students;
+- cells tagged `reference` and `solution` form the solutions notebook;
+- code cells tagged `exercise` are the stubs students complete. Every stub must be
+  redefined, with the same signatures, by a solution code cell that follows it.
+
+The student notebook is the instructor notebook without reference cells. The
+solutions notebook repeats the lab's headings above each solution, so it has the
+same outline as the lab. It is written only for labs listed in RELEASED.
+
+Use --check to verify that the committed notebooks match their instructor sources.
 """
 
 import argparse
+import ast
 import json
 from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parent
-SOLUTIONS = ROOT / "PT02_Logistic_regression_solutions.ipynb"
-STUDENT = ROOT / "PT02_Logistic_regression.ipynb"
+INSTRUCTOR = ROOT / "instructor"
+LABS = [
+    "PT01_Introduction_to_PyTorch",
+    "PT02_Logistic_regression",
+    "PT03_Automatic_differentiation",
+    "PT04_Convolutional_neural_networks",
+    "PT05_Training_deeper_networks",
+]
+# Solutions are published after the lab has taken place. On November 20, 2026:
+# NNDS held PT01, PT02, PT04 and PT05 (the two parts of the old PT04), NN held PT03.
+RELEASED = set(LABS)
+COLAB = "https://colab.research.google.com/github/sscardapane/teaching-materials/blob/main/notebooks/"
 
 
 def lines(text):
     return text.splitlines(keepends=True)
 
 
-def cell_by_id(notebook, cell_id):
-    return next(cell for cell in notebook["cells"] if cell.get("id") == cell_id)
+def tags(cell):
+    return cell.get("metadata", {}).get("tags", [])
+
+
+def source(cell):
+    return "".join(cell["source"])
 
 
 def clear_execution(notebook):
@@ -30,205 +56,120 @@ def clear_execution(notebook):
     return notebook
 
 
-def build_pt01():
-    notebook = json.loads((ROOT / "PT01_Introduction_to_PyTorch_solutions.ipynb").read_text())
-    notebook["cells"] = [cell for cell in notebook["cells"]
-                         if "reference" not in cell.get("metadata", {}).get("tags", [])]
-    notebook["cells"][0]["source"][0] = "# PT01: Introduction to PyTorch\n"
-    notebook["cells"][0]["source"] += lines(
-        "\nThis is the student version: answers to the check and to the optional "
-        "exercises are not included.\n")
+def load_instructor(stem):
+    return json.loads((INSTRUCTOR / f"{stem}.ipynb").read_text())
+
+
+def build_student(stem):
+    notebook = load_instructor(stem)
+    notebook["cells"] = [cell for cell in notebook["cells"] if "reference" not in tags(cell)]
     return clear_execution(notebook)
 
 
-def build_pt02():
-    notebook = json.loads(SOLUTIONS.read_text())
+def definitions(code):
+    """Top-level functions and classes with their argument lists (methods for classes)."""
+    found = {}
+    for node in ast.parse(code).body:
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            found[node.name] = ast.unparse(node.args)
+        elif isinstance(node, ast.ClassDef):
+            found[node.name] = {item.name: ast.unparse(item.args) for item in node.body
+                                if isinstance(item, (ast.FunctionDef, ast.AsyncFunctionDef))}
+    return found
 
-    reference_ids = {
-        cell["id"]
-        for cell in notebook["cells"]
-        if "reference" in cell.get("metadata", {}).get("tags", [])
-    }
-    expected_reference_ids = {
-        "d4bcbb0d", "f90a471e", "7b7b80ce", "21fe67f8", "per-example-instructor",
-        "image-reference-intro", "image-reference-model", "image-reference-results",
-        "image-reference-discussion", "mlp-reference-text", "mlp-reference",
-        "900865a5", "suspect-reference-plot", "lr-activity-reference",
-        "minibatch-activity-reference",
-    }
-    if reference_ids != expected_reference_ids:
-        raise RuntimeError(
-            "The set of reference cells changed; review the student export before rebuilding."
-        )
-    notebook["cells"] = [
-        cell for cell in notebook["cells"] if cell.get("id") not in reference_ids
-    ]
 
-    cell_by_id(notebook, "b8ce2774")["source"] = lines(
-        """# PT02: Logistic regression in PyTorch
+def match_exercises(notebook):
+    """Map every exercise cell to the solution cell that completes it."""
+    matches, pending = {}, []
+    for cell in notebook["cells"]:
+        if cell["cell_type"] != "code":
+            continue
+        if "exercise" in tags(cell):
+            stub = definitions(source(cell))
+            if not stub:
+                raise RuntimeError(f"Exercise cell {cell['id']} defines no function or class")
+            pending.append((cell["id"], stub))
+        elif "solution" in tags(cell):
+            solved = definitions(source(cell))
+            for exercise_id, stub in list(pending):
+                if not set(stub) <= set(solved):
+                    continue
+                for name, signature in stub.items():
+                    actual = solved[name]
+                    if isinstance(signature, dict):
+                        if not isinstance(actual, dict) or any(actual.get(m) != a for m, a in signature.items()):
+                            raise RuntimeError(f"{cell['id']}: class {name} differs from the stub in {exercise_id}")
+                    elif actual != signature:
+                        raise RuntimeError(f"{cell['id']}: {name}({actual}) differs from the stub ({signature})")
+                matches[exercise_id] = cell["id"]
+                pending.remove((exercise_id, stub))
+    if pending:
+        raise RuntimeError(f"Exercises without a solution: {[exercise for exercise, _ in pending]}")
+    return matches
 
-Given a few measurements of a penguin, can we predict its species? In this lab we build a linear classifier, train it with gradient descent and evaluate it.
 
-You should be comfortable with PT01 up to its short check: tensor operations, `backward()` and parameter updates. Data loading and plotting are provided. There are six activities. In the first three you write the forward pass, the loss and the training step. Then you investigate why the largest learning rate wins on this data, diagnose a faulty training step, and check when a mini-batch update equals a full-batch one. Along the way we switch to PyTorch's standard components and train on mini-batches. After the MLP lecture, Section 9 replaces the linear model with an MLP, keeping the rest of the code. Exercises are rated from 1 to 3 stars based on expected difficulty.
-
-Two optional sections close the notebook. The first uses per-example gradients to look inside the trained classifier. The second is an exercise for after the MLP lecture, where we reuse the same training loop with an MLP to fit an image.
-
-Complete each activity before moving on: if you run a later cell first, you get an error that names the missing activity. Solutions are not included in this version.
-
-> Try to solve these exercises without AI coding assistants."""
-    )
-
-    cell_by_id(notebook, "81f5c4d5")["source"] = lines(
-        '''def linear_logits(X: Float[torch.Tensor, "batch features"], W: Float[torch.Tensor, "classes features"], b: Float[torch.Tensor, "classes"]) -> Optional[Float[torch.Tensor, "batch classes"]]:
-    # Replace None with your batched computation.
-    return None
-
-def forward_logits(X: Float[torch.Tensor, "batch features"], W: Float[torch.Tensor, "classes features"], b: Float[torch.Tensor, "classes"]) -> Float[torch.Tensor, "batch classes"]:
-    result = linear_logits(X, W, b)
-    if result is None:
-        raise NotImplementedError("Complete Activity 1 before continuing.")
-    return result'''
-    )
-
-    cell_by_id(notebook, "c36491ad")["source"] = lines(
-        '''small_X = torch.tensor([[1., 2.], [3., 4.]])
-small_W = torch.tensor([[1., 0.], [0., 1.], [-1., 1.]])
-small_b = torch.tensor([0.5, -0.5, 1.])
-expected = torch.tensor([[1.5, 1.5, 2.], [3.5, 3.5, 2.]])
-torch.testing.assert_close(forward_logits(small_X, small_W, small_b), expected)
-print("Forward-pass check passed.")'''
-    )
-
-    cell_by_id(notebook, "97278cda")["source"] = lines(
-        '''def student_cross_entropy(logits: Float[torch.Tensor, "batch classes"], targets: Int[torch.Tensor, "batch"]) -> Optional[Float[torch.Tensor, ""]]:
-    # Replace None with the batched loss.
-    return None
-
-def cross_entropy(logits: Float[torch.Tensor, "batch classes"], targets: Int[torch.Tensor, "batch"]) -> Float[torch.Tensor, ""]:
-    result = student_cross_entropy(logits, targets)
-    if result is None:
-        raise NotImplementedError("Complete Activity 2 before continuing.")
-    return result'''
-    )
-
-    cell_by_id(notebook, "fefd076e")["source"] = lines(
-        '''def accuracy(logits: Float[torch.Tensor, "batch classes"], targets: Int[torch.Tensor, "batch"]) -> Float[torch.Tensor, ""]:
-    return (logits.argmax(dim=1) == targets).float().mean()
-
-logits = model(Xtrain)
-print("Initial loss:", cross_entropy(logits, ytrain).item())
-print("Initial accuracy:", accuracy(logits, ytrain).item())
-# Zero logits give uniform probabilities and loss log(C).
-torch.testing.assert_close(cross_entropy(logits, ytrain), torch.tensor(float(np.log(3))))
-print("Initial-loss check passed.")'''
-    )
-
-    cell_by_id(notebook, "05b55ab1")["source"] = lines(
-        '''def training_step(model: torch.nn.Module, X: Float[torch.Tensor, "batch features"], y: Int[torch.Tensor, "batch"], lr: float) -> Optional[float]:
-    # Replace None with your training step.
-    return None
-
-def run_step(model: torch.nn.Module, X: Float[torch.Tensor, "batch features"], y: Int[torch.Tensor, "batch"], lr: float) -> float:
-    result = training_step(model, X, y, lr)
-    if result is None:
-        raise NotImplementedError("Complete Activity 3 before continuing.")
-    if not isinstance(result, float):
-        raise TypeError("Return loss.item(), not a tensor.")
-    return result
-
-@torch.no_grad()
-def evaluate(model, X, y):
-    model.eval()
-    logits = model(X)
-    return cross_entropy(logits, y).item(), accuracy(logits, y).item()'''
-    )
-
-    cell_by_id(notebook, "e0e04805")["source"] = lines(
-        '''# Compare two consecutive updates: the second detects uncleared gradients.
-check_model = LogisticRegression(4, 3)
-first_loss = run_step(check_model, Xtrain[:16], ytrain[:16], 0.1)
-before_second = [parameter.detach().clone() for parameter in check_model.parameters()]
-expected_second_loss = cross_entropy(check_model(Xtrain[:16]), ytrain[:16])
-expected_second_gradients = torch.autograd.grad(expected_second_loss, tuple(check_model.parameters()))
-second_loss = run_step(check_model, Xtrain[:16], ytrain[:16], 0.1)
-assert abs(second_loss - expected_second_loss.item()) < 1e-6
-for parameter, before, expected_gradient in zip(check_model.parameters(), before_second, expected_second_gradients):
-    torch.testing.assert_close(parameter.grad, expected_gradient)
-    torch.testing.assert_close(parameter, before - 0.1 * expected_gradient)
-print("Both updates passed the checks.")'''
-    )
-
+def build_solutions(stem):
+    notebook = load_instructor(stem)
+    match_exercises(notebook)
+    title = source(notebook["cells"][0]).splitlines()[0].lstrip("# ").strip()
+    number = stem.split("_")[0]
+    cells = [{"cell_type": "markdown", "id": "solutions-intro", "metadata": {}, "source": lines(
+        f"# {title}: solutions\n\n"
+        f"The solutions to the exercises of [{number}]({COLAB}{stem}.ipynb). Each solution "
+        "comes under the heading it has in the lab, with a short explanation followed by "
+        "the code. If you fall behind during the lab, copy the solution cell into your "
+        "notebook in place of your version and continue from there.")}]
+    path, emitted = {}, {}
+    for cell in notebook["cells"]:
+        if cell["cell_type"] == "markdown" and "reference" not in tags(cell):
+            for line in source(cell).splitlines():
+                level = len(line) - len(line.lstrip("#"))
+                if level in (2, 3) and line[level:level + 1] == " ":
+                    path[level] = line[level:].strip()
+                    if level == 2:
+                        path.pop(3, None)
+        if "solution" not in tags(cell):
+            continue
+        for level in (2, 3):
+            if path.get(level) and (path.get(level) != emitted.get(level)
+                                    or (level == 3 and path.get(2) != emitted.get(2))):
+                cells.append({"cell_type": "markdown", "id": f"heading-{len(cells)}", "metadata": {},
+                              "source": lines("#" * level + " " + path[level])})
+        emitted = dict(path)
+        copied = json.loads(json.dumps(cell))
+        copied["metadata"] = {}
+        cells.append(copied)
+    notebook["cells"] = cells
     return clear_execution(notebook)
 
 
-def build_autodiff():
-    notebook = json.loads((ROOT / "PT03_Automatic_differentiation_solutions.ipynb").read_text())
-    reference_ids = {cell["id"] for cell in notebook["cells"]
-                     if "reference" in cell.get("metadata", {}).get("tags", [])}
-    expected = {"ad-shape-answer", "ad-local-reference-text", "ad-local-reference",
-                "ad-nonlinear-reference",
-                "ad-backward-reference-text", "ad-backward-reference",
-                "ad-step-reference-text", "ad-step-reference", "ad-core-answers",
-                "ad-mlp-reference", "ad-grad-reference", "ad-jacobian-reference",
-                "ad-jacobian-answer"}
-    if reference_ids != expected:
-        raise RuntimeError("The autodiff reference cells changed; review the student export.")
-    notebook["cells"] = [cell for cell in notebook["cells"] if cell["id"] not in reference_ids]
-    intro = cell_by_id(notebook, "ad-intro")
-    source = "".join(intro["source"])
-    source = source.replace(" (instructor version)", "")
-    # The student intro ends with the prerequisites (Simone's October 8 revision):
-    # drop the instructor paragraph and the provenance note that follow them.
-    instructor_tail = source.index("\n\nThis instructor version includes executable solutions")
-    source = source[:instructor_tail]
-    intro["source"] = lines(source)
-    return clear_execution(notebook)
+def outputs():
+    for stem in LABS:
+        yield ROOT / f"{stem}.ipynb", build_student(stem)
+        if stem in RELEASED:
+            yield ROOT / f"{stem}_solutions.ipynb", build_solutions(stem)
 
 
-PT04_REFERENCE_IDS = {
-    "cnn-conv2d-answer", "cnn-conv-reference", "cnn-pool-reference", "cnn-pool-grad-answer",
-    "cnn-depthwise-reference", "cnn-separable-answer", "cnn-model-reference",
-    "cnn-equivariance-reference", "cnn-equivariance-answer-code", "cnn-equivariance-answers",
-    "cnn-shift-accuracy-answer", "cnn-occlusion-reference", "cnn-test-answer",
-    "cnn-bn-reference", "cnn-fuse-reference", "cnn-fuse-answer", "cnn-detective-reference",
-    "cnn-detective-answers", "cnn-residual-reference", "cnn-depth-answer",
-    "cnn-dropout-reference", "cnn-dropout-answer", "cnn-summary-answers",
-    "cnn-opt-local-reference", "cnn-opt-strided-reference", "cnn-opt-strided-answer",
-    "cnn-opt-rf-reference", "cnn-opt-rf-answer", "cnn-opt-causal-reference",
-    "cnn-opt-causal-answer", "cnn-opt-mixup-reference", "cnn-opt-mixup-answer",
-}
-
-
-def build_pt04():
-    notebook = json.loads((ROOT / "PT04_Convolutional_neural_networks_solutions.ipynb").read_text())
-    reference_ids = {cell["id"] for cell in notebook["cells"]
-                     if "reference" in cell.get("metadata", {}).get("tags", [])}
-    if reference_ids != PT04_REFERENCE_IDS:
-        raise RuntimeError("The PT04 reference cells changed; review the student export.")
-    notebook["cells"] = [cell for cell in notebook["cells"] if cell["id"] not in reference_ids]
-    intro = cell_by_id(notebook, "cnn-intro")
-    source = "".join(intro["source"]).replace(" (instructor version)", "")
-    source = source[:source.index("\n\nThis instructor version includes executable solutions")]
-    intro["source"] = lines(source)
-    return clear_execution(notebook)
+def write(path, notebook):
+    path.write_text(json.dumps(notebook, indent=1, ensure_ascii=False) + "\n")
 
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--check", action="store_true")
     args = parser.parse_args()
-    for path, notebook in [(ROOT / "PT01_Introduction_to_PyTorch.ipynb", build_pt01()),
-                           (STUDENT, build_pt02()),
-                           (ROOT / "PT03_Automatic_differentiation.ipynb", build_autodiff()),
-                           (ROOT / "PT04_Convolutional_neural_networks.ipynb", build_pt04())]:
+    for stem in LABS:
+        if stem not in RELEASED and (ROOT / f"{stem}_solutions.ipynb").exists():
+            raise SystemExit(f"{stem} is not released: remove its solutions notebook.")
+    for path, notebook in outputs():
         if args.check:
-            existing = clear_execution(json.loads(path.read_text()))
+            existing = clear_execution(json.loads(path.read_text())) if path.exists() else None
             if existing != notebook:
-                raise SystemExit(f"Rebuild {path.name}: the student source differs from its instructor source.")
-            print(f"PASS generated source: {path.name}")
+                raise SystemExit(f"Rebuild {path.name}: it differs from its instructor source.")
+            print(f"PASS generated: {path.name}")
         else:
-            path.write_text(json.dumps(notebook, indent=1, ensure_ascii=False) + "\n")
-            print(f"Wrote {path.name} without instructor answers or outputs.")
+            write(path, notebook)
+            print(f"Wrote {path.name}")
 
 
 if __name__ == "__main__":

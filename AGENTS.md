@@ -1,7 +1,7 @@
 # Teaching materials
 
 Read README.md before editing. This is the canonical source for the migrated NN
-and NNDS materials, including shared PT01/PT02 student and instructor notebooks.
+and NNDS materials, including the shared PT01–PT05 lab notebooks.
 The old course repositories are compatibility snapshots, not authoring targets.
 
 - Edit shared linear-model and MLP content in `shared/slides/`; keep course
@@ -16,9 +16,11 @@ The old course repositories are compatibility snapshots, not authoring targets.
 - Preserve joint NN authorship, NN-only additions and source attribution.
 - For NNDS narrative revisions, read `docs/NNDS_AUTHORING.md`. It describes
   instructor review, notation and visual checks; migration is not content approval.
-- Edit notebooks in `notebooks/`, starting with `_solutions.ipynb`. Run
-  `make_student_notebook.py --check` and `verify_notebooks.py` there; use
-  `--write-outputs` after intentional changes to regenerate previews and sources.
+- Edit notebooks in `notebooks/instructor/` only; the student and solutions
+  notebooks are generated. Run `make_student_notebook.py` and `verify_notebooks.py`
+  in `notebooks/`; use `--write-outputs` after intentional changes to refresh the
+  instructor outputs and HTML previews. A solutions notebook is published only
+  after its lab has taken place (`RELEASED` in `make_student_notebook.py`).
 - Build slides with `python3 scripts/build.py`; inspect changed full slides.
   `--export` updates tracked PDF downloads only after a reviewed revision.
 - Run `scripts/verify.py` with `requirements-verify.txt` for source refactors.

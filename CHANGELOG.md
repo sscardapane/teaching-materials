@@ -1,5 +1,26 @@
 # Changelog
 
+## 2026-11-20
+
+> [!note] Written by Claude (2026-11-20)
+
+- Lab notebooks redesigned for 2–3 hour sessions (Simone's plan of November 20):
+  a core of a few activities with one-line checks (`check_conv(MyConv2d)`), the
+  rest moved to optional sections, and a solutions-only notebook per lab
+  (heading, short explanation and code for each exercise).
+- The old PT04 Part 2 is now `PT05_Training_deeper_networks`. PT04 keeps the
+  creation of the convolution weights (stride 1, padding as a parameter; stride is
+  Optional A). PT05 keeps the full batch-normalization layer with running
+  statistics; its check accepts the biased or the unbiased running variance.
+- PT02: Activities 4–6 become Optional A–C, Section 9 becomes Optional D; the
+  fallback wrappers (`run_step`, `forward_logits`) are gone. PT03: `matmul_vjp`
+  handles two matrices; the `@` operation turns vectors into matrices.
+- Instructor sources moved to `notebooks/instructor/` (not copied to the Pages
+  site); `PTxx_*_solutions.ipynb` is now the generated solutions notebook.
+  `make_student_notebook.py` builds both notebooks for every lab from cell tags
+  (`reference`, `solution`, `exercise`); `verify_notebooks.py` and
+  `verify_regressions.py` replace `verify_autodiff.py` and `verify_cnn.py`.
+
 ## 2026-11-19
 
 > [!note] Written by Claude (2026-11-19)

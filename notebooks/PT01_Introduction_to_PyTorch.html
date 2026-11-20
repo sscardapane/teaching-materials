@@ -7803,9 +7803,8 @@ a.anchor-link {
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
 <h1 id="PT01:-Introduction-to-PyTorch">PT01: Introduction to PyTorch<a class="anchor-link" href="#PT01:-Introduction-to-PyTorch">¶</a></h1><p>This notebook covers the PyTorch we need for the first labs: tensors, batched linear models, gradients and parameter updates. If you have used PyTorch before, skim Sections 1 to 5 and try the short check at the end of Section 5. If you have not, read and run everything up to that check before PT02 (the <a href="https://docs.pytorch.org/docs/2.14/index.html">PyTorch documentation</a> is a good companion). Knowing NumPy helps, since most of the array syntax is the same.</p>
-<p>Everything after the check is optional: a few short tensor exercises, a closer look at autograd with some debugging cases, and how tensors are stored in memory. You can come back to these later. Exercises are rated from 1 to 3 stars based on expected difficulty.</p>
-<p>A good habit: before running a cell, predict its output, or at least its shape. If something surprises you, change the example and run it again.
-This is the student version: answers to the check and to the optional exercises are not included.</p>
+<p>Everything after the check is optional: a few short tensor exercises, a closer look at autograd with some debugging cases, and how tensors are stored in memory. You can come back to these later. Exercises are rated from 1 to 3 stars based on expected difficulty. The answers to the check and to the exercises are in a separate notebook, <a href="https://colab.research.google.com/github/sscardapane/teaching-materials/blob/main/notebooks/PT01_Introduction_to_PyTorch_solutions.ipynb">PT01 solutions</a>.</p>
+<p>A good habit: before running a cell, predict its output, or at least its shape. If something surprises you, change the example and run it again.</p>
 </div>
 </div>
 </div>
@@ -7850,6 +7849,56 @@ This is the student version: answers to the check and to the optional exercises 
 <span class="n">torch</span><span class="o">.</span><span class="n">manual_seed</span><span class="p">(</span><span class="mi">7</span><span class="p">)</span>
 <span class="n">torch</span><span class="o">.</span><span class="n">set_printoptions</span><span class="p">(</span><span class="n">precision</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">sci_mode</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">"PyTorch"</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">__version__</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=pt01-checks">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="cm-editor cm-s-jupyter">
+<div class="highlight hl-ipython3"><pre><span></span><span class="c1">#@title Checks for the optional exercises (run this cell; you do not need to read it)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_written</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">result</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Write </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> first."</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">result</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">check_sum_diagonals</span><span class="p">(</span><span class="n">sum_diagonals</span><span class="p">):</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">_written</span><span class="p">(</span><span class="n">sum_diagonals</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">2</span><span class="p">)),</span> <span class="s2">"sum_diagonals"</span><span class="p">):</span>
+        <span class="k">return</span>
+    <span class="c1"># A 3x3 matrix (the center is on both diagonals) and a 2x2 one whose diagonals differ.</span>
+    <span class="k">for</span> <span class="n">A</span><span class="p">,</span> <span class="n">expected</span> <span class="ow">in</span> <span class="p">[(</span><span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mf">1.</span><span class="p">,</span> <span class="mf">10.</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="mf">30.</span><span class="p">),</span> <span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([[</span><span class="mf">1.</span><span class="p">,</span> <span class="mf">2.</span><span class="p">],</span> <span class="p">[</span><span class="mf">3.</span><span class="p">,</span> <span class="mf">5.</span><span class="p">]]),</span> <span class="mf">11.</span><span class="p">)]:</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">sum_diagonals</span><span class="p">(</span><span class="n">A</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">torch</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">expected</span><span class="p">)),</span> <span class="sa">f</span><span class="s2">"For the matrix</span><span class="se">\n</span><span class="si">{</span><span class="n">A</span><span class="si">}</span><span class="se">\n</span><span class="s2">expected </span><span class="si">{</span><span class="n">expected</span><span class="si">}</span><span class="s2">, got </span><span class="si">{</span><span class="n">result</span><span class="si">}</span><span class="s2">."</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"sum_diagonals is correct."</span><span class="p">)</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">check_normalize_rows</span><span class="p">(</span><span class="n">normalize_rows</span><span class="p">):</span>
+    <span class="c1"># Square, so normalizing the wrong axis also runs; the second row is constant.</span>
+    <span class="n">A</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([[</span><span class="mf">1.</span><span class="p">,</span> <span class="mf">2.</span><span class="p">,</span> <span class="mf">4.</span><span class="p">],</span> <span class="p">[</span><span class="mf">4.</span><span class="p">,</span> <span class="mf">4.</span><span class="p">,</span> <span class="mf">4.</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">3.</span><span class="p">,</span> <span class="mf">12.</span><span class="p">]])</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">_written</span><span class="p">(</span><span class="n">normalize_rows</span><span class="p">(</span><span class="n">A</span><span class="p">),</span> <span class="s2">"normalize_rows"</span><span class="p">):</span>
+        <span class="k">return</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">normalize_rows</span><span class="p">(</span><span class="n">A</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="ow">not</span> <span class="n">torch</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">result</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">(),</span> <span class="s2">"The result contains nan: what happens to a constant row?"</span>
+    <span class="n">expected</span> <span class="o">=</span> <span class="p">(</span><span class="n">A</span> <span class="o">-</span> <span class="n">A</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">keepdim</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span> <span class="o">/</span> <span class="n">A</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">correction</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">keepdim</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">clamp_min</span><span class="p">(</span><span class="mf">1e-8</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
+        <span class="k">assert</span> <span class="n">torch</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">expected</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">atol</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">),</span> <span class="sa">f</span><span class="s2">"Row </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2"> should be </span><span class="si">{</span><span class="n">expected</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="si">}</span><span class="s2">, got </span><span class="si">{</span><span class="n">result</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="si">}</span><span class="s2">."</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"normalize_rows is correct."</span><span class="p">)</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">check_cosine_similarity</span><span class="p">(</span><span class="n">cosine_similarity</span><span class="p">):</span>
+    <span class="c1"># Two parallel rows, an orthogonal one and a zero row.</span>
+    <span class="n">A</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([[</span><span class="mf">3.</span><span class="p">,</span> <span class="mf">4.</span><span class="p">],</span> <span class="p">[</span><span class="mf">6.</span><span class="p">,</span> <span class="mf">8.</span><span class="p">],</span> <span class="p">[</span><span class="mf">4.</span><span class="p">,</span> <span class="o">-</span><span class="mf">3.</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">]])</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">_written</span><span class="p">(</span><span class="n">cosine_similarity</span><span class="p">(</span><span class="n">A</span><span class="p">),</span> <span class="s2">"cosine_similarity"</span><span class="p">):</span>
+        <span class="k">return</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">cosine_similarity</span><span class="p">(</span><span class="n">A</span><span class="p">)</span>
+    <span class="n">expected</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([[</span><span class="mf">1.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">],</span> <span class="p">[</span><span class="mf">1.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">]])</span>
+    <span class="k">assert</span> <span class="n">result</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="sa">f</span><span class="s2">"Expected shape (4, 4), got </span><span class="si">{</span><span class="nb">tuple</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span><span class="si">}</span><span class="s2">."</span>
+    <span class="k">assert</span> <span class="n">torch</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">expected</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">),</span> <span class="sa">f</span><span class="s2">"For the rows</span><span class="se">\n</span><span class="si">{</span><span class="n">A</span><span class="si">}</span><span class="se">\n</span><span class="s2">expected</span><span class="se">\n</span><span class="si">{</span><span class="n">expected</span><span class="si">}</span><span class="se">\n</span><span class="s2">got</span><span class="se">\n</span><span class="si">{</span><span class="n">result</span><span class="si">}</span><span class="s2">"</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"cosine_similarity is correct."</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -8677,12 +8726,12 @@ This is the student version: answers to the check and to the optional exercises 
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="Optional:-a-few-array-operations">Optional: a few array operations<a class="anchor-link" href="#Optional:-a-few-array-operations">¶</a></h2><p>Three short functions to write yourself. Each check cell tells you whether your version is still missing; write the function without loops over the elements, and pay attention to the edge cases the checks include.</p>
-<p>★ First, sum the main diagonal and the anti-diagonal of a square matrix. When the size is odd, the center element is on both diagonals, so it is counted twice.</p>
+<h2 id="Optional:-a-few-array-operations">Optional: a few array operations<a class="anchor-link" href="#Optional:-a-few-array-operations">¶</a></h2><p>Three short functions to write yourself, without loops over the elements. Each check cell tells you whether your version is still missing, and the checks include the edge cases mentioned below.</p>
+<h3 id="The-two-diagonals-%E2%98%85">The two diagonals ★<a class="anchor-link" href="#The-two-diagonals-%E2%98%85">¶</a></h3><p>Sum the main diagonal and the anti-diagonal of a square matrix. When the size is odd, the center element is on both diagonals, so it is counted twice.</p>
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=0202983b">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs celltag_exercise" id="cell-id=0202983b">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -8706,15 +8755,7 @@ This is the student version: answers to the check and to the optional exercises 
 <div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython3"><pre><span></span><span class="k">if</span> <span class="n">sum_diagonals</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">2</span><span class="p">))</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">"Write sum_diagonals first."</span><span class="p">)</span>
-<span class="k">else</span><span class="p">:</span>
-    <span class="n">torch</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_close</span><span class="p">(</span><span class="n">sum_diagonals</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mf">1.</span><span class="p">,</span> <span class="mf">10.</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">)),</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="mf">30.</span><span class="p">))</span>
-    <span class="n">torch</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_close</span><span class="p">(</span><span class="n">sum_diagonals</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mf">1.</span><span class="p">,</span> <span class="mf">17.</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">)),</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="mf">68.</span><span class="p">))</span>
-    <span class="n">torch</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_close</span><span class="p">(</span><span class="n">sum_diagonals</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([[</span><span class="mf">5.</span><span class="p">]])),</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="mf">10.</span><span class="p">))</span>
-    <span class="c1"># The two diagonals of the matrices above have equal sums; this one does not.</span>
-    <span class="n">torch</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_close</span><span class="p">(</span><span class="n">sum_diagonals</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([[</span><span class="mf">1.</span><span class="p">,</span> <span class="mf">2.</span><span class="p">],</span> <span class="p">[</span><span class="mf">3.</span><span class="p">,</span> <span class="mf">5.</span><span class="p">]])),</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="mf">11.</span><span class="p">))</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">"sum_diagonals passed: odd, even, 1x1 and asymmetric matrices."</span><span class="p">)</span>
+<div class="highlight hl-ipython3"><pre><span></span><span class="n">check_sum_diagonals</span><span class="p">(</span><span class="n">sum_diagonals</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -8727,11 +8768,11 @@ This is the student version: answers to the check and to the optional exercises 
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<p>★ Next, normalize each row to mean zero and variance one. Variance here is the average squared deviation (<code>correction=0</code>). A constant row cannot be rescaled to unit variance, so it must become all zeros, without producing <code>nan</code>.</p>
+<h3 id="Normalizing-the-rows-%E2%98%85">Normalizing the rows ★<a class="anchor-link" href="#Normalizing-the-rows-%E2%98%85">¶</a></h3><p>Normalize each row to mean zero and variance one. Variance here is the average squared deviation (<code>correction=0</code>). A constant row cannot be rescaled to unit variance, so it must become all zeros, without producing <code>nan</code>.</p>
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=52081f9c">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs celltag_exercise" id="cell-id=52081f9c">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -8755,18 +8796,7 @@ This is the student version: answers to the check and to the optional exercises 
 <div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython3"><pre><span></span><span class="n">A</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([[</span><span class="mf">1.</span><span class="p">,</span> <span class="mf">2.</span><span class="p">,</span> <span class="mf">4.</span><span class="p">],</span> <span class="p">[</span><span class="mf">4.</span><span class="p">,</span> <span class="mf">4.</span><span class="p">,</span> <span class="mf">4.</span><span class="p">]])</span>
-<span class="k">if</span> <span class="n">normalize_rows</span><span class="p">(</span><span class="n">A</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">"Write normalize_rows first."</span><span class="p">)</span>
-<span class="k">else</span><span class="p">:</span>
-    <span class="n">normalized</span> <span class="o">=</span> <span class="n">normalize_rows</span><span class="p">(</span><span class="n">A</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">normalized</span><span class="p">)</span>
-    <span class="n">torch</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_close</span><span class="p">(</span><span class="n">normalized</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span> <span class="n">atol</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">,</span> <span class="n">rtol</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-    <span class="n">torch</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_close</span><span class="p">(</span><span class="n">normalized</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">correction</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="mf">1.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">]))</span>
-    <span class="c1"># A square input catches normalization over the wrong axis.</span>
-    <span class="n">square</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([[</span><span class="mf">1.</span><span class="p">,</span> <span class="mf">3.</span><span class="p">],</span> <span class="p">[</span><span class="mf">2.</span><span class="p">,</span> <span class="mf">10.</span><span class="p">]])</span>
-    <span class="n">torch</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_close</span><span class="p">(</span><span class="n">normalize_rows</span><span class="p">(</span><span class="n">square</span><span class="p">),</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([[</span><span class="o">-</span><span class="mf">1.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">],</span> <span class="p">[</span><span class="o">-</span><span class="mf">1.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">]]))</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">"normalize_rows passed, including the constant row and a square input."</span><span class="p">)</span>
+<div class="highlight hl-ipython3"><pre><span></span><span class="n">check_normalize_rows</span><span class="p">(</span><span class="n">normalize_rows</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -8779,12 +8809,12 @@ This is the student version: answers to the check and to the optional exercises 
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<p>★★ Finally, compute the cosine similarity between every pair of rows. Hint: normalize each row to unit length first; then a single matrix product gives all the pairs. We will meet this operation again with attention layers.</p>
+<h3 id="Cosine-similarity-%E2%98%85%E2%98%85">Cosine similarity ★★<a class="anchor-link" href="#Cosine-similarity-%E2%98%85%E2%98%85">¶</a></h3><p>Compute the cosine similarity between every pair of rows. Hint: normalize each row to unit length first; then a single matrix product gives all the pairs. We will meet this operation again with attention layers.</p>
 <p>Cosine similarity is undefined for a zero vector. Following <code>F.normalize</code>, we leave zero vectors at zero, so their similarity with every row is zero.</p>
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=33514e05">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs celltag_exercise" id="cell-id=33514e05">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -8808,18 +8838,7 @@ This is the student version: answers to the check and to the optional exercises 
 <div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython3"><pre><span></span><span class="n">A</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([[</span><span class="mf">1.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">],</span> <span class="p">[</span><span class="o">-</span><span class="mf">1.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">]])</span>
-<span class="k">if</span> <span class="n">cosine_similarity</span><span class="p">(</span><span class="n">A</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">"Write cosine_similarity first."</span><span class="p">)</span>
-<span class="k">else</span><span class="p">:</span>
-    <span class="n">expected</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([[</span><span class="mf">1.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">],</span>
-                             <span class="p">[</span><span class="o">-</span><span class="mf">1.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">]])</span>
-    <span class="n">torch</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_close</span><span class="p">(</span><span class="n">cosine_similarity</span><span class="p">(</span><span class="n">A</span><span class="p">),</span> <span class="n">expected</span><span class="p">)</span>
-    <span class="c1"># Scaling a row must not change its similarities; the shape is (batch, batch).</span>
-    <span class="n">B</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([[</span><span class="mf">3.</span><span class="p">,</span> <span class="mf">4.</span><span class="p">],</span> <span class="p">[</span><span class="mf">6.</span><span class="p">,</span> <span class="mf">8.</span><span class="p">],</span> <span class="p">[</span><span class="mf">4.</span><span class="p">,</span> <span class="o">-</span><span class="mf">3.</span><span class="p">]])</span>
-    <span class="n">torch</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_close</span><span class="p">(</span><span class="n">cosine_similarity</span><span class="p">(</span><span class="n">B</span><span class="p">),</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([[</span><span class="mf">1.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">],</span> <span class="p">[</span><span class="mf">1.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">]]))</span>
-    <span class="k">assert</span> <span class="n">cosine_similarity</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">cosine_similarity</span><span class="p">(</span><span class="n">A</span><span class="p">))</span>
+<div class="highlight hl-ipython3"><pre><span></span><span class="n">check_cosine_similarity</span><span class="p">(</span><span class="n">cosine_similarity</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>

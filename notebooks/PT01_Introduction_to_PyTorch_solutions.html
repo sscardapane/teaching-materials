@@ -7796,598 +7796,24 @@ a.anchor-link {
 <!-- End of mermaid configuration --></head>
 <body class="jp-Notebook" data-jp-theme-light="true" data-jp-theme-name="JupyterLab Light">
 <main>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=8c75efd0">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=solutions-intro">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h1 id="PT01:-Introduction-to-PyTorch-(instructor-version)">PT01: Introduction to PyTorch (instructor version)<a class="anchor-link" href="#PT01:-Introduction-to-PyTorch-(instructor-version)">¶</a></h1><p>This notebook covers the PyTorch we need for the first labs: tensors, batched linear models, gradients and parameter updates. If you have used PyTorch before, skim Sections 1 to 5 and try the short check at the end of Section 5. If you have not, read and run everything up to that check before PT02 (the <a href="https://docs.pytorch.org/docs/2.14/index.html">PyTorch documentation</a> is a good companion). Knowing NumPy helps, since most of the array syntax is the same.</p>
-<p>Everything after the check is optional: a few short tensor exercises, a closer look at autograd with some debugging cases, and how tensors are stored in memory. You can come back to these later. Exercises are rated from 1 to 3 stars based on expected difficulty.</p>
-<p>A good habit: before running a cell, predict its output, or at least its shape. If something surprises you, change the example and run it again.</p>
+<h1 id="PT01:-Introduction-to-PyTorch:-solutions">PT01: Introduction to PyTorch: solutions<a class="anchor-link" href="#PT01:-Introduction-to-PyTorch:-solutions">¶</a></h1><p>The solutions to the exercises of <a href="https://colab.research.google.com/github/sscardapane/teaching-materials/blob/main/notebooks/PT01_Introduction_to_PyTorch.ipynb">PT01</a>. Each solution comes under the heading it has in the lab, with a short explanation followed by the code. If you fall behind during the lab, copy the solution cell into your notebook in place of your version and continue from there.</p>
 </div>
 </div>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=pt01-instructor-note">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput celltag_reference" data-mime-type="text/markdown">
-<p>This is the instructor notebook. The worked examples are shared with the student version; answers to the check and the exercises appear only here. Edit this file and rebuild the student notebook with <code>make_student_notebook.py</code>.</p>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=4c3764fd">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=heading-1">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<p>We annotate the shapes of function inputs and outputs with <code>jaxtyping</code>. For example, <code>Float[torch.Tensor, "batch features"]</code> is a floating-point tensor with two axes, named <code>batch</code> and <code>features</code>. The annotations are only documentation: nothing checks them when the code runs. The next cell installs the package, which you need on Colab.</p>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=ba307eda">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [1]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython3"><pre><span></span><span class="o">%</span><span class="k">pip</span> install jaxtyping
-</pre></div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
-</div>
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>Requirement already satisfied: jaxtyping in /Users/simonescardapane/Repositories/teaching-materials/build/nb-venv/lib/python3.12/site-packages (0.3.11)
-Requirement already satisfied: wadler-lindig&gt;=0.1.3 in /Users/simonescardapane/Repositories/teaching-materials/build/nb-venv/lib/python3.12/site-packages (from jaxtyping) (0.1.7)
-</pre>
-</div>
-</div>
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>
-<span class="ansi-bold">[</span><span class="ansi-blue-fg">notice</span><span class="ansi-bold">]</span> A new release of pip is available: <span class="ansi-red-fg">24.0</span> -&gt; <span class="ansi-green-fg">26.2.1</span>
-<span class="ansi-bold">[</span><span class="ansi-blue-fg">notice</span><span class="ansi-bold">]</span> To update, run: <span class="ansi-green-fg">/Users/simonescardapane/Repositories/teaching-materials/build/nb-venv/bin/python -m pip install --upgrade pip</span>
-</pre>
-</div>
-</div>
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>Note: you may need to restart the kernel to use updated packages.
-</pre>
-</div>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=ea38c149">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [2]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython3"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">jaxtyping</span><span class="w"> </span><span class="kn">import</span> <span class="n">Float</span><span class="p">,</span> <span class="n">Int</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">torch.nn.functional</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">F</span>
-
-<span class="n">torch</span><span class="o">.</span><span class="n">manual_seed</span><span class="p">(</span><span class="mi">7</span><span class="p">)</span>
-<span class="n">torch</span><span class="o">.</span><span class="n">set_printoptions</span><span class="p">(</span><span class="n">precision</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">sci_mode</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"PyTorch"</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">__version__</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
-</div>
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>PyTorch 2.14.1
-</pre>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=d03d63f5">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="1.-Tensors">1. Tensors<a class="anchor-link" href="#1.-Tensors">¶</a></h2><p>The basic data type is <code>torch.Tensor</code>, PyTorch's version of a NumPy array. We can build one from a list with <code>torch.tensor</code>, or with functions such as <code>torch.zeros</code> and <code>torch.randn</code>. In this course a batch of data has one example per row and one feature per column. Here $X \sim (B,D)$, with $B=3$ examples and $D=2$ features.</p>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=ddfaf252">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [3]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython3"><pre><span></span><span class="n">X</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([[</span><span class="mf">1.</span><span class="p">,</span> <span class="mf">2.</span><span class="p">],</span> <span class="p">[</span><span class="mf">3.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">],</span> <span class="p">[</span><span class="mf">2.</span><span class="p">,</span> <span class="mf">4.</span><span class="p">]])</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"Shape:"</span><span class="p">,</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"Dtype:"</span><span class="p">,</span> <span class="n">X</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"Device:"</span><span class="p">,</span> <span class="n">X</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
-</div>
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>tensor([[1., 2.],
-        [3., 1.],
-        [2., 4.]])
-Shape: torch.Size([3, 2])
-Dtype: torch.float32
-Device: cpu
-</pre>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=c234a57b">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<p>Every tensor also lives on a device (CPU or GPU). <code>X.to(...)</code> moves it to another one; we do not need this yet.</p>
-<p>Indexing works as in NumPy. Look at the last two lines: indexing a single column drops that axis, while slicing keeps it.</p>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=273d77c1">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [4]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython3"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">"Second example:"</span><span class="p">,</span> <span class="n">X</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"First two examples:</span><span class="se">\n</span><span class="s2">"</span><span class="p">,</span> <span class="n">X</span><span class="p">[:</span><span class="mi">2</span><span class="p">])</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"Last feature:"</span><span class="p">,</span> <span class="n">X</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">X</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"Last feature, keeping its axis:</span><span class="se">\n</span><span class="s2">"</span><span class="p">,</span> <span class="n">X</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">:],</span> <span class="n">X</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">:]</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
-</div>
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>Second example: tensor([3., 1.])
-First two examples:
- tensor([[1., 2.],
-        [3., 1.]])
-Last feature: tensor([2., 1., 4.]) torch.Size([3])
-Last feature, keeping its axis:
- tensor([[2.],
-        [1.],
-        [4.]]) torch.Size([3, 1])
-</pre>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=cc4bd8d7">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="2.-A-batch-of-linear-predictions">2. A batch of linear predictions<a class="anchor-link" href="#2.-A-batch-of-linear-predictions">¶</a></h2><p>For a single example $x$, a linear model with $C$ outputs computes $z=Wx+b$. With the examples stored as rows, we can process the whole batch at once:</p>
-<p>$$Z=XW^\top+b.$$</p>
-<p>Here $W\sim(C,D)$, $b\sim(C,)$ and $Z\sim(B,C)$. The bias is a single vector, and PyTorch <em>broadcasts</em> it: it is added to every row. <code>@</code> is matrix multiplication, while <code>*</code> is elementwise multiplication. The last line checks the first row of <code>Z</code> against the single-example formula.</p>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=6f1cb911">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [5]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython3"><pre><span></span><span class="n">W</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([[</span><span class="mf">1.</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">2.</span><span class="p">]])</span>  <span class="c1"># (C, D)</span>
-<span class="n">b</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="mf">0.2</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.3</span><span class="p">])</span>             <span class="c1"># (C,)</span>
-<span class="n">Z</span> <span class="o">=</span> <span class="n">X</span> <span class="o">@</span> <span class="n">W</span><span class="o">.</span><span class="n">T</span> <span class="o">+</span> <span class="n">b</span>                         <span class="c1"># (B, C)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">Z</span><span class="p">)</span>
-<span class="n">torch</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_close</span><span class="p">(</span><span class="n">Z</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">W</span> <span class="o">@</span> <span class="n">X</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">b</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
-</div>
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>tensor([[-0.800,  4.200],
-        [ 2.200,  3.200],
-        [-1.800,  8.700]])
-</pre>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=b68f56e2">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<p>Reductions such as <code>sum</code> and <code>mean</code> remove the axis they reduce over. With <code>keepdim=True</code> the axis stays, with size one, which is what we need when the result is broadcast back against the original tensor.</p>
-<p>For example, to center each feature we average over the examples (<code>dim=0</code>), not over the features. Change <code>dim=0</code> to <code>dim=1</code> below: what gets centered now?</p>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=5a34ba2b">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [6]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython3"><pre><span></span><span class="n">feature_mean</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">keepdim</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="n">centered</span> <span class="o">=</span> <span class="n">X</span> <span class="o">-</span> <span class="n">feature_mean</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"Mean shape:"</span><span class="p">,</span> <span class="n">feature_mean</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">centered</span><span class="p">)</span>
-<span class="n">torch</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_close</span><span class="p">(</span><span class="n">centered</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span> <span class="n">atol</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">,</span> <span class="n">rtol</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
-</div>
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>Mean shape: torch.Size([1, 2])
-tensor([[-1.000, -0.333],
-        [ 1.000, -1.333],
-        [ 0.000,  1.667]])
-</pre>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=863b7e11">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="3.-Computing-gradients">3. Computing gradients<a class="anchor-link" href="#3.-Computing-gradients">¶</a></h2><p>Take a regression model $\hat y=Xw+b$ with a mean squared error loss. We mark the tensors we want gradients for (the parameters) with <code>requires_grad=True</code>. Before running the next cell, predict the shapes of the loss, <code>w.grad</code> and <code>bias.grad</code>.</p>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=1a5181d3">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [7]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython3"><pre><span></span><span class="n">y</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="mf">1.</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.</span><span class="p">,</span> <span class="mf">2.</span><span class="p">])</span>
-<span class="n">w</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="mf">0.2</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.1</span><span class="p">],</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="n">bias</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="mf">0.</span><span class="p">,</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-
-<span class="n">prediction</span> <span class="o">=</span> <span class="n">X</span> <span class="o">@</span> <span class="n">w</span> <span class="o">+</span> <span class="n">bias</span>
-<span class="n">loss</span> <span class="o">=</span> <span class="p">((</span><span class="n">prediction</span> <span class="o">-</span> <span class="n">y</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"Loss:"</span><span class="p">,</span> <span class="n">loss</span><span class="o">.</span><span class="n">item</span><span class="p">(),</span> <span class="s2">"Shape:"</span><span class="p">,</span> <span class="n">loss</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"Parameter is a leaf:"</span><span class="p">,</span> <span class="n">w</span><span class="o">.</span><span class="n">is_leaf</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"Prediction is a leaf:"</span><span class="p">,</span> <span class="n">prediction</span><span class="o">.</span><span class="n">is_leaf</span><span class="p">)</span>
-<span class="n">loss</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"w.grad:"</span><span class="p">,</span> <span class="n">w</span><span class="o">.</span><span class="n">grad</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"bias.grad:"</span><span class="p">,</span> <span class="n">bias</span><span class="o">.</span><span class="n">grad</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
-</div>
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>Loss: 2.4166667461395264 Shape: torch.Size([])
-Parameter is a leaf: True
-Prediction is a leaf: False
-w.grad: tensor([-0.333, -5.667])
-bias.grad: tensor(-1.)
-</pre>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=e5d3e162">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<p>Calling <code>backward()</code> on the scalar loss computes its gradient with respect to the tensors we created with <code>requires_grad=True</code>, and stores it in their <code>.grad</code> field. These tensors are called <em>leaves</em>. Intermediate results such as <code>prediction</code> take part in the computation too, but their gradients are not stored.</p>
-<p>During the forward pass, PyTorch records the operations it runs; <code>backward()</code> goes back through this record. Afterwards most of the record is freed, so each new gradient needs a new forward pass. We will see how this works in detail when we study automatic differentiation.</p>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=3d4c998c">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="4.-Updating-the-parameters">4. Updating the parameters<a class="anchor-link" href="#4.-Updating-the-parameters">¶</a></h2><p>A gradient descent step is $\theta\leftarrow\theta-\eta\nabla L(\theta)$. We run it inside <code>torch.no_grad()</code>: the update is not part of the model, so autograd should not record it (and PyTorch refuses to modify a leaf that requires gradients in place outside such a block). Then we clear the gradients, because <code>backward()</code> <strong>adds</strong> to <code>.grad</code> instead of overwriting it.</p>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=763528a4">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [8]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython3"><pre><span></span><span class="n">lr</span> <span class="o">=</span> <span class="mf">0.01</span>
-<span class="n">before</span> <span class="o">=</span> <span class="n">loss</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
-<span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
-    <span class="n">w</span> <span class="o">-=</span> <span class="n">lr</span> <span class="o">*</span> <span class="n">w</span><span class="o">.</span><span class="n">grad</span>
-    <span class="n">bias</span> <span class="o">-=</span> <span class="n">lr</span> <span class="o">*</span> <span class="n">bias</span><span class="o">.</span><span class="n">grad</span>
-<span class="n">w</span><span class="o">.</span><span class="n">grad</span> <span class="o">=</span> <span class="kc">None</span>
-<span class="n">bias</span><span class="o">.</span><span class="n">grad</span> <span class="o">=</span> <span class="kc">None</span>
-
-<span class="n">after</span> <span class="o">=</span> <span class="p">((</span><span class="n">X</span> <span class="o">@</span> <span class="n">w</span> <span class="o">+</span> <span class="n">bias</span> <span class="o">-</span> <span class="n">y</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Loss before: </span><span class="si">{</span><span class="n">before</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">; after one update: </span><span class="si">{</span><span class="n">after</span><span class="o">.</span><span class="n">item</span><span class="p">()</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
-<span class="k">assert</span> <span class="n">after</span><span class="o">.</span><span class="n">item</span><span class="p">()</span> <span class="o">&lt;</span> <span class="n">before</span>  <span class="c1"># This example uses a sufficiently small step.</span>
-</pre></div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
-</div>
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>Loss before: 2.4167; after one update: 2.1115
-</pre>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=73515129">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<p>We can see this accumulation without training anything. Keep <code>a</code> fixed and differentiate the same function twice, with a new forward pass each time:</p>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=d8604392">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [9]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython3"><pre><span></span><span class="n">a</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="mf">1.</span><span class="p">,</span> <span class="mf">2.</span><span class="p">],</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="n">a</span><span class="o">.</span><span class="n">square</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
-<span class="n">first_gradient</span> <span class="o">=</span> <span class="n">a</span><span class="o">.</span><span class="n">grad</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span>
-<span class="n">a</span><span class="o">.</span><span class="n">square</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"First backward:"</span><span class="p">,</span> <span class="n">first_gradient</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"Second backward:"</span><span class="p">,</span> <span class="n">a</span><span class="o">.</span><span class="n">grad</span><span class="p">)</span>
-<span class="n">torch</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_close</span><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">grad</span><span class="p">,</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">first_gradient</span><span class="p">)</span>
-<span class="n">a</span><span class="o">.</span><span class="n">grad</span> <span class="o">=</span> <span class="kc">None</span>
-</pre></div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
-</div>
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>First backward: tensor([2., 4.])
-Second backward: tensor([4., 8.])
-</pre>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=8c22431b">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<p>To log values during training, use <code>loss.item()</code>, which returns a plain Python number. If you need to keep a tensor, <code>tensor.detach()</code> returns one that is cut off from the recorded computation.</p>
-<p><code>torch.autograd.grad</code> is a second way to call autograd: it returns the gradients instead of adding them to <code>.grad</code>. We will use it again when we study automatic differentiation.</p>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=fe808200">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [10]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython3"><pre><span></span><span class="n">a</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="mf">1.</span><span class="p">,</span> <span class="mf">2.</span><span class="p">],</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="p">(</span><span class="n">gradient</span><span class="p">,)</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">grad</span><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">square</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">(),</span> <span class="n">a</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">gradient</span><span class="p">)</span>
-<span class="k">assert</span> <span class="n">a</span><span class="o">.</span><span class="n">grad</span> <span class="ow">is</span> <span class="kc">None</span>
-</pre></div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
-</div>
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>tensor([2., 4.])
-</pre>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=b353a924">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="5.-Classification-uses-the-same-steps">5. Classification uses the same steps<a class="anchor-link" href="#5.-Classification-uses-the-same-steps">¶</a></h2><p>For classification with $C$ classes, the model outputs $Z\sim(B,C)$. These unnormalized scores are called <em>logits</em>. The targets $y\sim(B,)$ are integer class indices. A softmax over each row turns the logits into probabilities, which is useful when we want to look at them.</p>
-<p><code>F.cross_entropy</code> takes the <strong>logits</strong>, not the probabilities. It applies the softmax and the logarithm internally, in a numerically stable way.</p>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=fcec9a6a">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [11]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython3"><pre><span></span><span class="n">logits</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([[</span><span class="mf">2.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.</span><span class="p">],</span> <span class="p">[</span><span class="o">-</span><span class="mf">1.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">2.</span><span class="p">]],</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="n">labels</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">long</span><span class="p">)</span>
-<span class="n">classification_loss</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">cross_entropy</span><span class="p">(</span><span class="n">logits</span><span class="p">,</span> <span class="n">labels</span><span class="p">)</span>
-<span class="n">classification_loss</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"Probabilities:</span><span class="se">\n</span><span class="s2">"</span><span class="p">,</span> <span class="n">logits</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">softmax</span><span class="p">(</span><span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">))</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"Loss:"</span><span class="p">,</span> <span class="n">classification_loss</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"Gradient shape:"</span><span class="p">,</span> <span class="n">logits</span><span class="o">.</span><span class="n">grad</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
-</div>
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>Probabilities:
- tensor([[0.844, 0.114, 0.042],
-        [0.042, 0.114, 0.844]])
-Loss: 0.1698460429906845
-Gradient shape: torch.Size([2, 3])
-</pre>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=32fe2595">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<p>Every training step has the same structure: clear the gradients, compute the predictions and a scalar loss, call <code>backward()</code>, update the parameters. For evaluation we only need the predictions, so there is no reason to record anything.</p>
-<p>Two tools are easy to confuse here. <code>model.eval()</code> changes how some layers behave, such as dropout and batch normalization, which we will see later. <code>torch.no_grad()</code> turns off recording. In PT02 we use both when evaluating a model.</p>
-<p>This is the end of the required part. Before PT02, make sure you can explain how the bias is broadcast, what shape each gradient has, and what happens if we forget to clear the gradients.</p>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=c8c6288d">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="Before-PT02:-a-short-check">Before PT02: a short check<a class="anchor-link" href="#Before-PT02:-a-short-check">¶</a></h2><p>Answer these without running code first, then use the next cell to test your answers. The examples above contain the ideas, but not the answers.</p>
-<ol>
-<li>★ <code>A</code> has shape <code>(3, 2)</code> and we want to center each <strong>row</strong>. <code>A - A.mean(dim=1)</code> raises an error: why, and what is the fix? Now take <code>S = torch.tensor([[1., 3.], [5., 7.]])</code>. Does <code>S - S.mean(dim=1)</code> raise an error? If not, what does it compute, and how does it differ from the correctly centered rows?</li>
-<li>★★ <code>a = torch.tensor([1., 2.], requires_grad=True)</code>. We call <code>a.square().sum().backward()</code>, then <code>(3 * a).sum().backward()</code>, without clearing. What is <code>a.grad</code>, and of which function is it the gradient? We then update <code>a -= 0.1 * a.grad</code> inside <code>no_grad</code> and call <code>a.square().sum().backward()</code> once more, still without clearing. What are <code>a</code> and <code>a.grad</code> now, and what should <code>a.grad</code> have been?</li>
-<li>★★ For <code>X @ W.T + b</code> with shapes <code>(5, 4)</code>, <code>(3, 4)</code> and <code>(3,)</code>, what are the shapes of the logits, of the mean cross-entropy loss, and of the two parameter gradients? What happens if we call <code>backward()</code> on <code>F.cross_entropy(logits, y, reduction="none")</code> instead, and how can we get the same gradients as the mean loss from it?</li>
-</ol>
-<p>If one of these is unclear, go back to the corresponding example before PT02.</p>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=d8d66913">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [12]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython3"><pre><span></span><span class="c1"># Try your repairs and shape predictions here.</span>
-</pre></div>
-</div>
+<h2 id="Before-PT02:-a-short-check">Before PT02: a short check<a class="anchor-link" href="#Before-PT02:-a-short-check">¶</a></h2>
 </div>
 </div>
 </div>
@@ -8397,21 +7823,22 @@ Gradient shape: torch.Size([2, 3])
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput celltag_reference" data-mime-type="text/markdown">
-<h3 id="Check:-answers">Check: answers<a class="anchor-link" href="#Check:-answers">¶</a></h3><ol>
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<ol>
 <li>Reducing over <code>dim=1</code> gives shape <code>(3,)</code>, which does not broadcast against <code>(3, 2)</code>. Use <code>A.mean(dim=1, keepdim=True)</code>, with shape <code>(3, 1)</code>. With the square <code>S</code>, the row means <code>[2, 6]</code> have shape <code>(2,)</code> and broadcast as a <strong>row</strong>: the first mean is subtracted from the first column and the second from the second column. The result <code>[[-1, -3], [3, 1]]</code> has the right shape and no error, but the correct answer is <code>[[-1, 1], [-1, 1]]</code>. Square shapes hide axis mistakes.</li>
 <li><code>[2, 4] + [3, 3] = [5, 7]</code>, the gradient of <code>a.square().sum() + (3 * a).sum()</code>: <code>backward()</code> adds, so the stored gradient belongs to the sum of the two functions. After the update <code>a = [0.5, 1.3]</code>, and the third call adds <code>[1.0, 2.6]</code>, giving <code>[6.0, 9.6]</code> instead of <code>[1.0, 2.6]</code>. Set <code>a.grad = None</code> before each backward call whose gradient we want on its own.</li>
 <li>Logits <code>(5, 3)</code>; mean loss <code>()</code>; weight gradient <code>(3, 4)</code>; bias gradient <code>(3,)</code>. With <code>reduction="none"</code> the loss has shape <code>(5,)</code> and <code>backward()</code> raises an error, because it needs a scalar to start from. Calling <code>.mean()</code> first gives the same gradients as before.</li>
 </ol>
+<p>The code below checks the three answers.</p>
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell celltag_reference" id="cell-id=check-answers-code">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=check-answers-code">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [13]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
 <div class="highlight hl-ipython3"><pre><span></span><span class="c1"># Executable answers to the check.</span>
@@ -8451,189 +7878,45 @@ Gradient shape: torch.Size([2, 3])
 </div>
 </div>
 </div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
 </div>
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>Non-scalar backward: grad can be implicitly created only for scalar outputs
-</pre>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=tensor-challenges">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=heading-4">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="Optional:-tensor-semantics-challenges">Optional: tensor semantics challenges<a class="anchor-link" href="#Optional:-tensor-semantics-challenges">¶</a></h2><p>Three short exercises that only need Sections 1 and 2, plus the softmax from Section 5. Each contains an expression that runs without errors but does not compute what we want. You can do them now or come back to them during a lab.</p>
-<p>For each one, predict the shape and values of the result before running the cell. Then explain the mistake and fix it. Finally, write assertions on the shape and on values you computed by hand, and check that at least one of them fails on the original expression.</p>
+<h2 id="Optional:-tensor-semantics-challenges">Optional: tensor semantics challenges<a class="anchor-link" href="#Optional:-tensor-semantics-challenges">¶</a></h2>
 </div>
 </div>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=tensor-challenge-1">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=heading-5">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h3 id="1.-One-error-per-example-%E2%98%85">1. One error per example ★<a class="anchor-link" href="#1.-One-error-per-example-%E2%98%85">¶</a></h3><p>We have three predictions stored as a column, with shape <code>(3, 1)</code>, and three targets with shape <code>(3,)</code>. We want the three prediction errors and their mean squared value.</p>
-<p>What does each entry of <code>suspect_errors</code> compare? Fix the subtraction so that there is one error per example, in a tensor of shape <code>(3,)</code>. Would checking that the loss is a scalar catch this bug?</p>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=tensor-challenge-1-code">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [14]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython3"><pre><span></span><span class="n">predictions</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([[</span><span class="mf">1.</span><span class="p">],</span> <span class="p">[</span><span class="mf">2.</span><span class="p">],</span> <span class="p">[</span><span class="mf">4.</span><span class="p">]])</span>  <span class="c1"># (B, 1)</span>
-<span class="n">targets</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">2.</span><span class="p">,</span> <span class="mf">5.</span><span class="p">])</span>            <span class="c1"># (B,)</span>
-<span class="n">suspect_errors</span> <span class="o">=</span> <span class="n">predictions</span> <span class="o">-</span> <span class="n">targets</span>
-<span class="n">suspect_mse</span> <span class="o">=</span> <span class="n">suspect_errors</span><span class="o">.</span><span class="n">square</span><span class="p">()</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">suspect_errors</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">suspect_errors</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"MSE:"</span><span class="p">,</span> <span class="n">suspect_mse</span><span class="p">)</span>
-
-<span class="c1"># Write the corrected errors and MSE, then add your assertions.</span>
-</pre></div>
+<h3 id="1.-One-error-per-example-%E2%98%85">1. One error per example ★<a class="anchor-link" href="#1.-One-error-per-example-%E2%98%85">¶</a></h3>
 </div>
 </div>
 </div>
 </div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
-</div>
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>torch.Size([3, 3]) tensor([[ 1., -1., -4.],
-        [ 2.,  0., -3.],
-        [ 4.,  2., -1.]])
-MSE: tensor(5.778)
-</pre>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=tensor-challenge-2">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=tensor-challenge-solution-1">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h3 id="2.-Which-axis-contains-the-examples?-%E2%98%85%E2%98%85">2. Which axis contains the examples? ★★<a class="anchor-link" href="#2.-Which-axis-contains-the-examples?-%E2%98%85%E2%98%85">¶</a></h3><p>Each row of <code>batch</code> is an example with two features. The model predicts the first feature plus ten times the second, giving one prediction per row.</p>
-<p>The batch is square, so both <code>batch @ weights</code> and <code>batch.T @ weights</code> run. Predict <code>suspect_predictions</code>, then fix it and check your answer. Why can a shape assertion not catch this mistake? As a second test, add a third example <code>[5., 6.]</code> and predict what happens to each expression.</p>
+<p>Broadcasting <code>(3, 1)</code> against <code>(3,)</code> produces a <code>(3, 3)</code> matrix: entry <code>(i, j)</code> compares prediction <code>i</code> with target <code>j</code>. Its rows are <code>[1, -1, -4]</code>, <code>[2, 0, -3]</code> and <code>[4, 2, -1]</code>, and the mean of the nine squares is <code>52/9</code>. The intended errors are <code>[1, 0, -1]</code>, with MSE <code>2/3</code>. Both losses are scalars, so checking the shape of the loss does not catch the bug; checking the shape of the errors does. <code>squeeze(-1)</code> removes only the last axis, so a batch with a single example keeps its batch axis.</p>
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=tensor-challenge-2-code">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=tensor-challenge-solutions-code-1">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [15]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython3"><pre><span></span><span class="n">batch</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([[</span><span class="mf">1.</span><span class="p">,</span> <span class="mf">2.</span><span class="p">],</span> <span class="p">[</span><span class="mf">3.</span><span class="p">,</span> <span class="mf">4.</span><span class="p">]])</span>  <span class="c1"># (B, D)</span>
-<span class="n">weights</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="mf">1.</span><span class="p">,</span> <span class="mf">10.</span><span class="p">])</span>           <span class="c1"># (D,)</span>
-<span class="n">suspect_predictions</span> <span class="o">=</span> <span class="n">batch</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">weights</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">suspect_predictions</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">suspect_predictions</span><span class="p">)</span>
-
-<span class="c1"># Compute one prediction per row, then add your assertions.</span>
-<span class="c1"># Repeat with a third example.</span>
-</pre></div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
-</div>
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>torch.Size([2]) tensor([31., 42.])
-</pre>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=tensor-challenge-3">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h3 id="3.-One-distribution-per-example-%E2%98%85%E2%98%85">3. One distribution per example ★★<a class="anchor-link" href="#3.-One-distribution-per-example-%E2%98%85%E2%98%85">¶</a></h3><p><code>scores</code> contains logits for three examples (rows) and three classes (columns). We want, for each example, a probability distribution over the classes.</p>
-<p>Predict which sums of <code>suspect_probabilities</code> equal one: the rows or the columns? Fix it and check that each example's probabilities sum to one. Why can neither a shape check nor a check that "all entries are between 0 and 1" catch this? Does the bug change any predicted class?</p>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=tensor-challenge-3-code">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [16]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython3"><pre><span></span><span class="n">scores</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([[</span><span class="mf">3.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">],</span> <span class="p">[</span><span class="mf">4.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">]])</span>  <span class="c1"># (B, C)</span>
-<span class="n">suspect_probabilities</span> <span class="o">=</span> <span class="n">scores</span><span class="o">.</span><span class="n">softmax</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">suspect_probabilities</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">suspect_probabilities</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"Predicted classes:"</span><span class="p">,</span> <span class="n">suspect_probabilities</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
-
-<span class="c1"># Normalize over the classes, then add your assertions.</span>
-</pre></div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
-</div>
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>torch.Size([3, 3]) tensor([[0.265, 0.576, 0.212],
-        [0.013, 0.212, 0.576],
-        [0.721, 0.212, 0.212]])
-Predicted classes: tensor([1, 2, 0])
-</pre>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=tensor-challenge-solutions-text-1">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput celltag_reference" data-mime-type="text/markdown">
-<h3 id="Tensor-semantics:-solutions">Tensor semantics: solutions<a class="anchor-link" href="#Tensor-semantics:-solutions">¶</a></h3><p><strong>1. One error per example.</strong> Broadcasting produces a <code>(3, 3)</code> matrix: entry <code>(i, j)</code> compares prediction <code>i</code> with target <code>j</code>. Its rows are <code>[1, -1, -4]</code>, <code>[2, 0, -3]</code>, and <code>[4, 2, -1]</code>. Averaging all nine squared entries gives <code>52/9</code>, but the intended errors are <code>[1, 0, -1]</code>, with MSE <code>2/3</code>. Both losses are scalars.</p>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs celltag_reference" id="cell-id=tensor-challenge-solutions-code-1">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [17]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
 <div class="highlight hl-ipython3"><pre><span></span><span class="n">errors</span> <span class="o">=</span> <span class="n">predictions</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">-</span> <span class="n">targets</span>
@@ -8647,23 +7930,33 @@ Predicted classes: tensor([1, 2, 0])
 </div>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=tensor-challenge-solutions-text-2">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=heading-8">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput celltag_reference" data-mime-type="text/markdown">
-<p>The shape assertion rejects <code>suspect_errors</code>; the loss-value assertion rejects <code>suspect_mse</code>. <code>squeeze(-1)</code> removes only the last axis, so a batch of size one still has its batch axis.</p>
-<p><strong>2. Which axis contains the examples?</strong> The original computes <code>[31, 42]</code> by combining different examples. Its shape <code>(2,)</code> looks right. The intended predictions are <code>[21, 43]</code>.</p>
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h3 id="2.-Which-axis-contains-the-examples?-%E2%98%85%E2%98%85">2. Which axis contains the examples? ★★<a class="anchor-link" href="#2.-Which-axis-contains-the-examples?-%E2%98%85%E2%98%85">¶</a></h3>
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs celltag_reference" id="cell-id=tensor-challenge-solutions-code-2">
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=tensor-challenge-solution-2">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<p><code>batch.T @ weights</code> combines the first feature of every example with the first weight, and so on, which gives <code>[31, 42]</code>. The intended predictions are <code>[21, 43]</code>. The batch is square, so both results have shape <code>(2,)</code>: only a check on the values rejects the original. With three examples, <code>larger_batch.T</code> has shape <code>(2, 3)</code> and its product with <code>weights</code>, which has size two, raises a dimension mismatch.</p>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=tensor-challenge-solutions-code-2">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [18]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
 <div class="highlight hl-ipython3"><pre><span></span><span class="n">row_predictions</span> <span class="o">=</span> <span class="n">batch</span> <span class="o">@</span> <span class="n">weights</span>
@@ -8680,23 +7973,33 @@ Predicted classes: tensor([1, 2, 0])
 </div>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=tensor-challenge-solutions-text-3">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=heading-11">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput celltag_reference" data-mime-type="text/markdown">
-<p>The value assertion rejects <code>suspect_predictions</code>. With three examples, <code>larger_batch.T @ weights</code> raises a dimension mismatch: the last axis of the transposed batch has size three, while <code>weights</code> has size two.</p>
-<p><strong>3. One distribution per example.</strong> <code>softmax(dim=0)</code> normalizes each column, so the three examples compete for each class. The columns sum to one, while the rows sum to about <code>1.05</code>, <code>0.80</code> and <code>1.15</code>. Every entry is still between 0 and 1. The first example is predicted as class 1 (probability <code>0.58</code>) although its largest logit is class 0: normalizing over the classes gives <code>[0.84, 0.11, 0.04]</code>.</p>
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h3 id="3.-One-distribution-per-example-%E2%98%85%E2%98%85">3. One distribution per example ★★<a class="anchor-link" href="#3.-One-distribution-per-example-%E2%98%85%E2%98%85">¶</a></h3>
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs celltag_reference" id="cell-id=tensor-challenge-solutions-code-3">
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=tensor-challenge-solution-3">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<p><code>softmax(dim=0)</code> normalizes each column, so the three examples compete for each class. The columns sum to one, while the rows sum to about <code>1.05</code>, <code>0.80</code> and <code>1.15</code>, and every entry is still between 0 and 1. The first example is predicted as class 1 (probability <code>0.58</code>) although its largest logit is class 0: normalizing over the classes gives <code>[0.84, 0.11, 0.04]</code>. <code>dim=-1</code> names the class axis even if we later add more leading axes. For predictions alone the softmax is not needed: <code>scores.argmax(dim=-1)</code> gives the same classes.</p>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=tensor-challenge-solutions-code-3">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [19]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
 <div class="highlight hl-ipython3"><pre><span></span><span class="n">probabilities</span> <span class="o">=</span> <span class="n">scores</span><span class="o">.</span><span class="n">softmax</span><span class="p">(</span><span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
@@ -8710,448 +8013,44 @@ Predicted classes: tensor([1, 2, 0])
 </div>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=tensor-challenge-solutions-text-4">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput celltag_reference" data-mime-type="text/markdown">
-<p>The row-sum assertion rejects <code>suspect_probabilities</code>, and so does the comparison of predicted classes. <code>dim=-1</code> names the class axis even if we later add more leading axes. For predictions alone the softmax is unnecessary: <code>scores.argmax(dim=-1)</code> gives the same classes, which is why PT02 keeps logits and applies a softmax only when it needs probabilities.</p>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=autograd-tensor-fields">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=heading-14">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="Optional:-a-closer-look-at-autograd">Optional: a closer look at autograd<a class="anchor-link" href="#Optional:-a-closer-look-at-autograd">¶</a></h2><p>This section goes deeper into Sections 3 and 4: what autograd stores on each tensor, and how to cut a tensor off from the recorded computation. The autograd detective cases after it build on this material.</p>
-<h3 id="What-a-tensor-knows-about-autograd">What a tensor knows about autograd<a class="anchor-link" href="#What-a-tensor-knows-about-autograd">¶</a></h3><p>A few attributes tell us how autograd sees a tensor:</p>
-<table>
-<thead>
-<tr>
-<th>Attribute</th>
-<th>Meaning</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>requires_grad</code></td>
-<td>Autograd records the operations that use this tensor.</td>
-</tr>
-<tr>
-<td><code>is_leaf</code></td>
-<td>No recorded operation produced this tensor. Parameters we create ourselves are leaves. Tensors that do not require gradients are also leaves.</td>
-</tr>
-<tr>
-<td><code>grad_fn</code></td>
-<td>For a tensor produced by a recorded operation, the backward step of that operation. <code>None</code> for leaves. It is not a gradient.</td>
-</tr>
-<tr>
-<td><code>grad</code></td>
-<td>Where <code>backward()</code> stores the gradient. It starts as <code>None</code> and, by default, is filled only for leaves.</td>
-</tr>
-<tr>
-<td><code>retains_grad</code></td>
-<td>Whether an intermediate tensor was asked to keep its gradient with <code>retain_grad()</code>.</td>
-</tr>
-</tbody>
-</table>
-<p>Consider the small computation $x \rightarrow h = 3x \rightarrow o = \sum_i h_i^2$. Predict the attributes of the three tensors before running the cell. The exact name printed for <code>grad_fn</code> does not matter; what matters is whether it is <code>None</code>.</p>
-<p>References: <a href="https://docs.pytorch.org/docs/stable/generated/torch.Tensor.is_leaf.html">leaf tensors</a>, <a href="https://docs.pytorch.org/tutorials/beginner/understanding_leaf_vs_nonleaf_tutorial.html">leaf and non-leaf gradients</a>, <a href="https://docs.pytorch.org/docs/stable/notes/autograd.html">autograd mechanics</a>.</p>
+<h2 id="Optional:-autograd-detective">Optional: autograd detective<a class="anchor-link" href="#Optional:-autograd-detective">¶</a></h2>
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=autograd-tensor-forward">
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=heading-15">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h3 id="1.-Did-the-gradient-stop-at-the-intermediate-tensor?-%E2%98%85%E2%98%85">1. Did the gradient stop at the intermediate tensor? ★★<a class="anchor-link" href="#1.-Did-the-gradient-stop-at-the-intermediate-tensor?-%E2%98%85%E2%98%85">¶</a></h3>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=autograd-detective-solution-1">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<p>The gradient did pass through <code>hidden</code>. <code>leaf</code> is a leaf, with <code>grad_fn=None</code> and gradient <code>[18, 36]</code>. <code>hidden</code> is not a leaf and has a backward node: its gradient <code>[6, 12]</code> was computed along the way, but not stored, which is what the warning says. To keep it, call <code>retain_grad()</code> before <code>backward()</code>, on a fresh computation.</p>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=autograd-detective-solutions-code-1">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [20]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython3"><pre><span></span><span class="n">tensor_x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="mf">1.</span><span class="p">,</span> <span class="mf">2.</span><span class="p">],</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="n">tensor_h</span> <span class="o">=</span> <span class="mi">3</span> <span class="o">*</span> <span class="n">tensor_x</span>
-<span class="n">tensor_objective</span> <span class="o">=</span> <span class="n">tensor_h</span><span class="o">.</span><span class="n">square</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
-
-<span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">t</span> <span class="ow">in</span> <span class="p">[(</span><span class="s2">"x"</span><span class="p">,</span> <span class="n">tensor_x</span><span class="p">),</span> <span class="p">(</span><span class="s2">"h"</span><span class="p">,</span> <span class="n">tensor_h</span><span class="p">),</span> <span class="p">(</span><span class="s2">"objective"</span><span class="p">,</span> <span class="n">tensor_objective</span><span class="p">)]:</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="s2">"requires_grad:"</span><span class="p">,</span> <span class="n">t</span><span class="o">.</span><span class="n">requires_grad</span><span class="p">,</span> <span class="s2">"is_leaf:"</span><span class="p">,</span> <span class="n">t</span><span class="o">.</span><span class="n">is_leaf</span><span class="p">,</span>
-          <span class="s2">"grad_fn:"</span><span class="p">,</span> <span class="n">t</span><span class="o">.</span><span class="n">grad_fn</span><span class="p">,</span> <span class="s2">"retains_grad:"</span><span class="p">,</span> <span class="n">t</span><span class="o">.</span><span class="n">retains_grad</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"x.grad before backward:"</span><span class="p">,</span> <span class="n">tensor_x</span><span class="o">.</span><span class="n">grad</span><span class="p">)</span>
-<span class="k">assert</span> <span class="n">tensor_x</span><span class="o">.</span><span class="n">is_leaf</span> <span class="ow">and</span> <span class="n">tensor_x</span><span class="o">.</span><span class="n">grad_fn</span> <span class="ow">is</span> <span class="kc">None</span>
-<span class="k">assert</span> <span class="ow">not</span> <span class="n">tensor_h</span><span class="o">.</span><span class="n">is_leaf</span> <span class="ow">and</span> <span class="n">tensor_h</span><span class="o">.</span><span class="n">grad_fn</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
-<span class="k">assert</span> <span class="n">tensor_x</span><span class="o">.</span><span class="n">grad</span> <span class="ow">is</span> <span class="kc">None</span>
-</pre></div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
-</div>
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>x requires_grad: True is_leaf: True grad_fn: None retains_grad: False
-h requires_grad: True is_leaf: False grad_fn: &lt;MulBackward0 object at 0x11247bbe0&gt; retains_grad: False
-objective requires_grad: True is_leaf: False grad_fn: &lt;SumBackward0 object at 0x1117c3040&gt; retains_grad: False
-x.grad before backward: None
-</pre>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=autograd-tensor-backward-text">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<p>So far nothing has been differentiated, and <code>x.grad</code> is still <code>None</code>. Calling <code>backward()</code> starts from the objective, with derivative 1, and applies the chain rule back to <code>x</code>: here $\partial o/\partial h = 2h = [6, 12]$ and $\partial o/\partial x = 3 \cdot 2h = [18, 36]$.</p>
-<p>To see the gradient with respect to <code>h</code> as well, call <code>h.retain_grad()</code> <strong>before</strong> <code>backward()</code>. This only lets us look at it; the gradient that reaches <code>x</code> is the same either way.</p>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=autograd-tensor-backward">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [21]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython3"><pre><span></span><span class="n">tensor_h</span><span class="o">.</span><span class="n">retain_grad</span><span class="p">()</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"Before backward:"</span><span class="p">,</span> <span class="n">tensor_x</span><span class="o">.</span><span class="n">grad</span><span class="p">,</span> <span class="n">tensor_h</span><span class="o">.</span><span class="n">grad</span><span class="p">)</span>
-<span class="n">tensor_objective</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"After backward, x.grad:"</span><span class="p">,</span> <span class="n">tensor_x</span><span class="o">.</span><span class="n">grad</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"After backward, h.grad:"</span><span class="p">,</span> <span class="n">tensor_h</span><span class="o">.</span><span class="n">grad</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"h is still a non-leaf:"</span><span class="p">,</span> <span class="ow">not</span> <span class="n">tensor_h</span><span class="o">.</span><span class="n">is_leaf</span><span class="p">)</span>
-<span class="k">assert</span> <span class="n">tensor_h</span><span class="o">.</span><span class="n">retains_grad</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">tensor_x</span><span class="o">.</span><span class="n">retains_grad</span>
-<span class="n">torch</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_close</span><span class="p">(</span><span class="n">tensor_h</span><span class="o">.</span><span class="n">grad</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="mf">6.</span><span class="p">,</span> <span class="mf">12.</span><span class="p">]))</span>
-<span class="n">torch</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_close</span><span class="p">(</span><span class="n">tensor_x</span><span class="o">.</span><span class="n">grad</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="mf">18.</span><span class="p">,</span> <span class="mf">36.</span><span class="p">]))</span>
-</pre></div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
-</div>
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>Before backward: None None
-After backward, x.grad: tensor([18., 36.])
-After backward, h.grad: tensor([ 6., 12.])
-h is still a non-leaf: True
-</pre>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=autograd-tensor-lifetime">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<p>A <code>None</code> gradient is not a zero gradient. It means that <code>backward()</code> never reached the tensor, or that the tensor is an intermediate result whose gradient was not retained. A leaf that is reached always gets a tensor, possibly full of zeros.</p>
-<p>The stored gradients and the recorded computation are separate things. Setting <code>x.grad = None</code> clears the gradient and leaves the record alone. Each forward pass records new operations, and <code>backward()</code> normally frees what it needed from them (the tensor still shows a <code>grad_fn</code> afterwards).</p>
-<p>Do not confuse <code>h.retain_grad()</code> with <code>objective.backward(retain_graph=True)</code>. The first stores an intermediate gradient. The second keeps the record alive so that we can call <code>backward()</code> through it a second time, at the cost of memory; it does not clear or retain any <code>.grad</code>. In normal training we never need it, because each step runs a fresh forward pass. See <a href="https://docs.pytorch.org/docs/stable/generated/torch.Tensor.backward.html"><code>backward</code></a>.</p>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=autograd-disconnect-text">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h3 id="Cutting-a-connection">Cutting a connection<a class="anchor-link" href="#Cutting-a-connection">¶</a></h3><p>Three operations that look similar but do different things:</p>
-<ul>
-<li><code>clone()</code> copies the data, and the copy stays connected: gradients flow back through it to the original.</li>
-<li><code>detach()</code> returns a tensor with no connection to the recorded computation. It does not copy anything: the two tensors share memory. Use <code>detach().clone()</code> for an independent snapshot.</li>
-<li>Inside a <code>torch.no_grad()</code> block, new operations are not recorded. Tensors that already exist are unchanged.</li>
-</ul>
-<p>Calling <code>requires_grad_()</code> on a detached tensor makes it a new leaf; it does not restore the old connection. See <a href="https://docs.pytorch.org/docs/stable/generated/torch.Tensor.detach.html"><code>detach</code></a>.</p>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=autograd-disconnect-code">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [22]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython3"><pre><span></span><span class="n">source</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="mf">1.</span><span class="p">,</span> <span class="mf">2.</span><span class="p">],</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="n">connected_copy</span> <span class="o">=</span> <span class="n">source</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span>
-<span class="n">detached</span> <span class="o">=</span> <span class="n">source</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span>
-<span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
-    <span class="n">untracked</span> <span class="o">=</span> <span class="mi">3</span> <span class="o">*</span> <span class="n">source</span>
-
-<span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">t</span> <span class="ow">in</span> <span class="p">[(</span><span class="s2">"source"</span><span class="p">,</span> <span class="n">source</span><span class="p">),</span> <span class="p">(</span><span class="s2">"clone"</span><span class="p">,</span> <span class="n">connected_copy</span><span class="p">),</span>
-                <span class="p">(</span><span class="s2">"detach"</span><span class="p">,</span> <span class="n">detached</span><span class="p">),</span> <span class="p">(</span><span class="s2">"no_grad result"</span><span class="p">,</span> <span class="n">untracked</span><span class="p">)]:</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="s2">"requires_grad:"</span><span class="p">,</span> <span class="n">t</span><span class="o">.</span><span class="n">requires_grad</span><span class="p">,</span> <span class="s2">"is_leaf:"</span><span class="p">,</span> <span class="n">t</span><span class="o">.</span><span class="n">is_leaf</span><span class="p">,</span>
-          <span class="s2">"grad_fn:"</span><span class="p">,</span> <span class="n">t</span><span class="o">.</span><span class="n">grad_fn</span><span class="p">)</span>
-<span class="k">assert</span> <span class="n">source</span><span class="o">.</span><span class="n">requires_grad</span>
-<span class="k">assert</span> <span class="n">connected_copy</span><span class="o">.</span><span class="n">grad_fn</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
-<span class="k">assert</span> <span class="n">detached</span><span class="o">.</span><span class="n">grad_fn</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">detached</span><span class="o">.</span><span class="n">requires_grad</span>
-<span class="k">assert</span> <span class="n">untracked</span><span class="o">.</span><span class="n">grad_fn</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">untracked</span><span class="o">.</span><span class="n">requires_grad</span>
-<span class="n">connected_copy</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
-<span class="n">torch</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_close</span><span class="p">(</span><span class="n">source</span><span class="o">.</span><span class="n">grad</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="mi">2</span><span class="p">))</span>
-</pre></div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
-</div>
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>source requires_grad: True is_leaf: True grad_fn: None
-clone requires_grad: True is_leaf: False grad_fn: &lt;CloneBackward0 object at 0x111fd7b20&gt;
-detach requires_grad: False is_leaf: True grad_fn: None
-no_grad result requires_grad: False is_leaf: True grad_fn: None
-</pre>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=autograd-detective">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="Optional:-autograd-detective">Optional: autograd detective<a class="anchor-link" href="#Optional:-autograd-detective">¶</a></h2><p>Four short cases that use the previous section. For each one, predict what happens before running it: an error, a missing (<code>None</code>) gradient, or a number. Then decide whether that is what the author wanted. Not every case is a bug.</p>
-<p>If a fix is needed, make the smallest one and add an assertion on the gradient you expect. Each case creates its own tensors, so you can run it on its own. The last case catches its error, so that running the whole notebook does not stop there.</p>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=autograd-case-1-text">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h3 id="1.-Did-the-gradient-stop-at-the-intermediate-tensor?-%E2%98%85%E2%98%85">1. Did the gradient stop at the intermediate tensor? ★★<a class="anchor-link" href="#1.-Did-the-gradient-stop-at-the-intermediate-tensor?-%E2%98%85%E2%98%85">¶</a></h3><p>We want the gradient of <code>sum(hidden**2)</code> with respect to both <code>leaf</code> and <code>hidden</code>. After <code>backward()</code>, what are <code>grad_fn</code>, <code>is_leaf</code> and <code>.grad</code> for each of them? Does <code>hidden.grad is None</code> mean that the gradient did not flow through <code>hidden</code>? Rebuild the computation so that both gradients are available. PyTorch prints a warning when we read <code>hidden.grad</code>; the warning is part of the answer.</p>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=autograd-case-1">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [23]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython3"><pre><span></span><span class="n">leaf</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="mf">1.</span><span class="p">,</span> <span class="mf">2.</span><span class="p">],</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="n">hidden</span> <span class="o">=</span> <span class="mi">3</span> <span class="o">*</span> <span class="n">leaf</span>
-<span class="n">hidden</span><span class="o">.</span><span class="n">square</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"leaf:"</span><span class="p">,</span> <span class="n">leaf</span><span class="o">.</span><span class="n">is_leaf</span><span class="p">,</span> <span class="n">leaf</span><span class="o">.</span><span class="n">grad_fn</span><span class="p">,</span> <span class="n">leaf</span><span class="o">.</span><span class="n">grad</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"hidden:"</span><span class="p">,</span> <span class="n">hidden</span><span class="o">.</span><span class="n">is_leaf</span><span class="p">,</span> <span class="n">hidden</span><span class="o">.</span><span class="n">grad_fn</span><span class="p">,</span> <span class="n">hidden</span><span class="o">.</span><span class="n">grad</span><span class="p">)</span>
-
-<span class="c1"># Rebuild, retain the missing gradient, and check both values.</span>
-</pre></div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
-</div>
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>leaf: True None tensor([18., 36.])
-hidden: False &lt;MulBackward0 object at 0x110b46260&gt; None
-</pre>
-</div>
-</div>
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="application/vnd.jupyter.stderr" tabindex="0">
-<pre>/var/folders/w9/wt0x5nzx3jngfvpdt_2j15p00000gn/T/ipykernel_43124/1142738744.py:5: UserWarning: The .grad attribute of a Tensor that is not a leaf Tensor is being accessed. Its .grad attribute won't be populated during autograd.backward(). If you indeed want the .grad field to be populated for a non-leaf Tensor, use .retain_grad() on the non-leaf Tensor. If you access the non-leaf Tensor by mistake, make sure you access the leaf Tensor instead. See github.com/pytorch/pytorch/pull/30531 for more information. (Triggered internally at /Users/runner/work/pytorch/pytorch/build/aten/src/ATen/core/TensorBody.h:493.)
-  print("hidden:", hidden.is_leaf, hidden.grad_fn, hidden.grad)
-</pre>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=autograd-case-2-text">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h3 id="2.-Can-we-reconnect-a-detached-tensor?-%E2%98%85">2. Can we reconnect a detached tensor? ★<a class="anchor-link" href="#2.-Can-we-reconnect-a-detached-tensor?-%E2%98%85">¶</a></h3><p>We want the gradient with respect to <code>original</code>. Someone detached an intermediate result, then turned gradients back on. Will <code>backward()</code> fail? Which tensor receives a gradient? Fix the code so that the gradient reaches <code>original</code>.</p>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=autograd-case-2">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [24]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython3"><pre><span></span><span class="n">original</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="mf">1.</span><span class="p">,</span> <span class="mf">2.</span><span class="p">],</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="n">restart</span> <span class="o">=</span> <span class="p">(</span><span class="mi">3</span> <span class="o">*</span> <span class="n">original</span><span class="p">)</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">requires_grad_</span><span class="p">()</span>
-<span class="n">restart</span><span class="o">.</span><span class="n">square</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"restart:"</span><span class="p">,</span> <span class="n">restart</span><span class="o">.</span><span class="n">is_leaf</span><span class="p">,</span> <span class="n">restart</span><span class="o">.</span><span class="n">grad_fn</span><span class="p">,</span> <span class="n">restart</span><span class="o">.</span><span class="n">grad</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"original.grad:"</span><span class="p">,</span> <span class="n">original</span><span class="o">.</span><span class="n">grad</span><span class="p">)</span>
-
-<span class="c1"># Restore the intended differentiable path and check original.grad.</span>
-</pre></div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
-</div>
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>restart: True None tensor([ 6., 12.])
-original.grad: None
-</pre>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=autograd-case-3-text">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h3 id="3.-Is-accumulation-always-a-mistake?-%E2%98%85%E2%98%85">3. Is accumulation always a mistake? ★★<a class="anchor-link" href="#3.-Is-accumulation-always-a-mistake?-%E2%98%85%E2%98%85">¶</a></h3><p>We want the gradient of the mean squared error over <strong>all three examples</strong>, but we process them in two microbatches of different sizes. The parameter does not change between the two <code>backward()</code> calls.</p>
-<p>Predict <code>parameter.grad</code> after each call. Should we clear it between the microbatches? Compare with a single <code>backward()</code> on the full batch. Then replace the normalization with <code>errors.square().mean() / len(microbatches)</code>: why does the result change here?</p>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=autograd-case-3">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [25]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython3"><pre><span></span><span class="n">parameter</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="mf">1.</span><span class="p">,</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="n">microbatches</span> <span class="o">=</span> <span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="mf">1.</span><span class="p">,</span> <span class="mf">2.</span><span class="p">]),</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="mf">3.</span><span class="p">])]</span>
-<span class="n">num_examples</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">values</span><span class="p">)</span> <span class="k">for</span> <span class="n">values</span> <span class="ow">in</span> <span class="n">microbatches</span><span class="p">)</span>
-<span class="k">for</span> <span class="n">values</span> <span class="ow">in</span> <span class="n">microbatches</span><span class="p">:</span>
-    <span class="n">errors</span> <span class="o">=</span> <span class="n">parameter</span> <span class="o">*</span> <span class="n">values</span>  <span class="c1"># All targets are zero.</span>
-    <span class="p">(</span><span class="n">errors</span><span class="o">.</span><span class="n">square</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">/</span> <span class="n">num_examples</span><span class="p">)</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">"Accumulated gradient:"</span><span class="p">,</span> <span class="n">parameter</span><span class="o">.</span><span class="n">grad</span><span class="p">)</span>
-
-<span class="c1"># Compare with the gradient of a single full-batch mean loss.</span>
-</pre></div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
-</div>
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>Accumulated gradient: tensor(3.333)
-Accumulated gradient: tensor(9.333)
-</pre>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=autograd-case-4-text">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h3 id="4.-Is-every-in-place-change-safe-inside-no_grad?-%E2%98%85%E2%98%85%E2%98%85">4. Is every in-place change safe inside <code>no_grad</code>? ★★★<a class="anchor-link" href="#4.-Is-every-in-place-change-safe-inside-no_grad?-%E2%98%85%E2%98%85%E2%98%85">¶</a></h3><p>To differentiate a square, autograd needs the original value of <code>mutable</code>. What happens if we change that value before calling <code>backward()</code>, even inside <code>no_grad</code>? Reorder the code so that it takes one gradient step, with learning rate 0.1, from the original value.</p>
-<p>Then try modifying <code>mutable.detach()</code> in place before <code>backward()</code>. Does detaching protect the original data?</p>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=autograd-case-4">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [26]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython3"><pre><span></span><span class="n">mutable</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="mf">1.</span><span class="p">,</span> <span class="mf">2.</span><span class="p">],</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="n">stale_loss</span> <span class="o">=</span> <span class="n">mutable</span><span class="o">.</span><span class="n">square</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
-<span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
-    <span class="n">mutable</span><span class="o">.</span><span class="n">add_</span><span class="p">(</span><span class="mf">1.</span><span class="p">)</span>
-<span class="k">try</span><span class="p">:</span>
-    <span class="n">stale_loss</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
-<span class="k">except</span> <span class="ne">RuntimeError</span> <span class="k">as</span> <span class="n">error</span><span class="p">:</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">"Backward raised RuntimeError:"</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">error</span><span class="p">)</span><span class="o">.</span><span class="n">splitlines</span><span class="p">()[</span><span class="mi">0</span><span class="p">])</span>
-
-<span class="c1"># Rebuild from [1., 2.], differentiate, then update under no_grad.</span>
-</pre></div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
-</div>
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>Backward raised RuntimeError: one of the variables needed for gradient computation has been modified by an inplace operation: [torch.FloatTensor [2]] is at version 1; expected version 0 instead. Hint: enable anomaly detection to find the operation that failed to compute its gradient, with torch.autograd.set_detect_anomaly(True, check_nan=False).
-</pre>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=autograd-detective-solutions-text-1">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput celltag_reference" data-mime-type="text/markdown">
-<h3 id="Autograd-detective:-diagnoses-and-repairs">Autograd detective: diagnoses and repairs<a class="anchor-link" href="#Autograd-detective:-diagnoses-and-repairs">¶</a></h3><p><strong>1. The gradient did pass through <code>hidden</code>.</strong> <code>leaf</code> is a leaf, with <code>grad_fn=None</code> and gradient <code>[18, 36]</code>. <code>hidden</code> is not a leaf and has a backward node. Its gradient <code>[6, 12]</code> was computed along the way, but not stored. Call <code>retain_grad()</code> before backward, on a fresh computation.</p>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs celltag_reference" id="cell-id=autograd-detective-solutions-code-1">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [27]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
 <div class="highlight hl-ipython3"><pre><span></span><span class="n">leaf</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="mf">1.</span><span class="p">,</span> <span class="mf">2.</span><span class="p">],</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -9167,22 +8066,33 @@ Accumulated gradient: tensor(9.333)
 </div>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=autograd-detective-solutions-text-2">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=heading-18">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput celltag_reference" data-mime-type="text/markdown">
-<p><strong>2. Backward succeeds, on the wrong leaf.</strong> <code>restart.grad</code> is <code>[6, 12]</code>, while <code>original.grad</code> stays <code>None</code>. Turning gradients back on after <code>detach()</code> does not restore the operation that connected the two tensors. Keep that operation in the recorded computation.</p>
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h3 id="2.-Can-we-reconnect-a-detached-tensor?-%E2%98%85">2. Can we reconnect a detached tensor? ★<a class="anchor-link" href="#2.-Can-we-reconnect-a-detached-tensor?-%E2%98%85">¶</a></h3>
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs celltag_reference" id="cell-id=autograd-detective-solutions-code-2">
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=autograd-detective-solution-2">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<p><code>backward()</code> succeeds, but on the wrong leaf: <code>restart.grad</code> is <code>[6, 12]</code>, while <code>original.grad</code> stays <code>None</code>. Turning gradients back on after <code>detach()</code> creates a new leaf; it does not restore the operation that connected the two tensors. The fix keeps that operation in the recorded computation.</p>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=autograd-detective-solutions-code-2">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [28]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
 <div class="highlight hl-ipython3"><pre><span></span><span class="n">original</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="mf">1.</span><span class="p">,</span> <span class="mf">2.</span><span class="p">],</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -9195,22 +8105,33 @@ Accumulated gradient: tensor(9.333)
 </div>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=autograd-detective-solutions-text-3">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=heading-21">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput celltag_reference" data-mime-type="text/markdown">
-<p><strong>3. Here accumulation is intended.</strong> The gradient is <code>10/3</code> after the first call and <code>28/3</code> after the second. Each microbatch contributes its sum of squared errors divided by the total number of examples, so clearing between the calls would throw away the first contribution. Dividing each microbatch mean by two instead gives <code>11.5</code>: the microbatch with one example then counts as much as the one with two.</p>
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h3 id="3.-Is-accumulation-always-a-mistake?-%E2%98%85%E2%98%85">3. Is accumulation always a mistake? ★★<a class="anchor-link" href="#3.-Is-accumulation-always-a-mistake?-%E2%98%85%E2%98%85">¶</a></h3>
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs celltag_reference" id="cell-id=autograd-detective-solutions-code-3">
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=autograd-detective-solution-3">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<p>Here accumulation is intended. The gradient is <code>10/3</code> after the first call and <code>28/3</code> after the second, the same as one <code>backward()</code> on the full batch. Each microbatch contributes its sum of squared errors divided by the total number of examples, so clearing between the calls would throw away the first contribution. Dividing each microbatch mean by two instead gives <code>11.5</code>: the microbatch with one example then counts as much as the one with two.</p>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=autograd-detective-solutions-code-3">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [29]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
 <div class="highlight hl-ipython3"><pre><span></span><span class="n">full_parameter</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="mf">1.</span><span class="p">,</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -9224,22 +8145,33 @@ Accumulated gradient: tensor(9.333)
 </div>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=autograd-detective-solutions-text-4">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=heading-24">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput celltag_reference" data-mime-type="text/markdown">
-<p><strong>4. Backward raises an error.</strong> The in-place update changed a value that backward needs. Autograd detects this; <code>no_grad</code> only means the update itself is not recorded. Move the update after <code>backward()</code>. Modifying <code>mutable.detach()</code> in place would change the same memory and fail in the same way.</p>
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h3 id="4.-Is-every-in-place-change-safe-inside-no_grad?-%E2%98%85%E2%98%85%E2%98%85">4. Is every in-place change safe inside <code>no_grad</code>? ★★★<a class="anchor-link" href="#4.-Is-every-in-place-change-safe-inside-no_grad?-%E2%98%85%E2%98%85%E2%98%85">¶</a></h3>
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs celltag_reference" id="cell-id=autograd-detective-solutions-code-4">
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=autograd-detective-solution-4">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<p><code>backward()</code> raises an error. The in-place update changed a value that backward needs (the square needs the original <code>mutable</code>); <code>no_grad</code> only means that the update itself is not recorded. Move the update after <code>backward()</code>. Modifying <code>mutable.detach()</code> in place changes the same memory and fails in the same way.</p>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=autograd-detective-solutions-code-4">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [30]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
 <div class="highlight hl-ipython3"><pre><span></span><span class="n">mutable</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="mf">1.</span><span class="p">,</span> <span class="mf">2.</span><span class="p">],</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -9256,140 +8188,44 @@ Accumulated gradient: tensor(9.333)
 </div>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=50f301fe">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=heading-27">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="Optional:-views,-copies-and-in-place-operations">Optional: views, copies and in-place operations<a class="anchor-link" href="#Optional:-views,-copies-and-in-place-operations">¶</a></h2><p>Some indexing operations return a <em>view</em>, which shares memory with the original tensor; others return a copy. Slicing gives a view, while indexing with a list gives a copy:</p>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=b802e134">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [31]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython3"><pre><span></span><span class="n">A</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mf">6.</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
-<span class="n">view</span> <span class="o">=</span> <span class="n">A</span><span class="p">[:</span><span class="mi">2</span><span class="p">]</span>
-<span class="n">copy</span> <span class="o">=</span> <span class="n">A</span><span class="p">[[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]]</span>
-<span class="n">view</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mi">10</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"Original:</span><span class="se">\n</span><span class="s2">"</span><span class="p">,</span> <span class="n">A</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"Copy made before the update:</span><span class="se">\n</span><span class="s2">"</span><span class="p">,</span> <span class="n">copy</span><span class="p">)</span>
-<span class="k">assert</span> <span class="n">A</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">item</span><span class="p">()</span> <span class="o">==</span> <span class="o">-</span><span class="mi">10</span> <span class="ow">and</span> <span class="n">copy</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">item</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span>
-
-<span class="c1"># An underscore usually marks an in-place operation.</span>
-<span class="n">A</span><span class="o">.</span><span class="n">add_</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">A</span><span class="p">)</span>
-</pre></div>
+<h2 id="Optional:-a-few-array-operations">Optional: a few array operations<a class="anchor-link" href="#Optional:-a-few-array-operations">¶</a></h2>
 </div>
 </div>
 </div>
 </div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
-</div>
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>Original:
- tensor([[-10.,   1.],
-        [  2.,   3.],
-        [  4.,   5.]])
-Copy made before the update:
- tensor([[0., 1.],
-        [2., 3.]])
-tensor([[-9.,  2.],
-        [ 3.,  4.],
-        [ 5.,  6.]])
-</pre>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=fd1b5ba8">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=heading-28">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<p>In-place operations need care when autograd is involved: <code>backward()</code> may need a value that the operation overwrites (see case 4 of the autograd detective). The update in Section 4 is safe because it runs after <code>backward()</code>.</p>
-<p>A tensor is stored as a flat block of memory plus <em>strides</em>: how many elements to skip to move one step along each axis. A transpose swaps the strides without moving any data, so the result is no longer <em>contiguous</em>. <code>reshape</code> returns a view when it can and copies otherwise. We will come back to memory layout when we talk about performance.</p>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=e69666fd">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [32]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython3"><pre><span></span><span class="n">A</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mf">6.</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"A:"</span><span class="p">,</span> <span class="n">A</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">A</span><span class="o">.</span><span class="n">stride</span><span class="p">(),</span> <span class="n">A</span><span class="o">.</span><span class="n">is_contiguous</span><span class="p">())</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"A.T:"</span><span class="p">,</span> <span class="n">A</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">A</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">stride</span><span class="p">(),</span> <span class="n">A</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">is_contiguous</span><span class="p">())</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"Flattened transpose:"</span><span class="p">,</span> <span class="n">A</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span>
-</pre></div>
+<h3 id="The-two-diagonals-%E2%98%85">The two diagonals ★<a class="anchor-link" href="#The-two-diagonals-%E2%98%85">¶</a></h3>
 </div>
 </div>
 </div>
 </div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
-</div>
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>A: torch.Size([3, 2]) (2, 1) True
-A.T: torch.Size([2, 3]) (1, 2) False
-Flattened transpose: tensor([0., 2., 4., 1., 3., 5.])
-</pre>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=9c84aeec">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=0202983b-explanation">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="Optional:-a-few-array-operations">Optional: a few array operations<a class="anchor-link" href="#Optional:-a-few-array-operations">¶</a></h2><p>Three short functions to write yourself. Each check cell tells you whether your version is still missing; write the function without loops over the elements, and pay attention to the edge cases the checks include.</p>
-<p>★ First, sum the main diagonal and the anti-diagonal of a square matrix. When the size is odd, the center element is on both diagonals, so it is counted twice.</p>
+<p><code>A.diagonal()</code> returns the main diagonal. Flipping the columns with <code>A.flip(dims=[1])</code> turns the anti-diagonal into the main diagonal, so the same call returns it. For an odd size the center element appears in both sums, as required.</p>
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=0202983b">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=0202983b-reference">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [33]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython3"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">sum_diagonals</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="n">Float</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="s2">"n n"</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Float</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="s2">""</span><span class="p">]]:</span>
-    <span class="c1"># Replace None with your implementation.</span>
-    <span class="k">return</span> <span class="kc">None</span>
-</pre></div>
-</div>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs celltag_reference" id="cell-id=0202983b-reference">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [34]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
 <div class="highlight hl-ipython3"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">sum_diagonals</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="n">Float</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="s2">"n n"</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Float</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="s2">""</span><span class="p">]]:</span>
@@ -9399,74 +8235,34 @@ Flattened transpose: tensor([0., 2., 4., 1., 3., 5.])
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=0202983b-check">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [35]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython3"><pre><span></span><span class="k">if</span> <span class="n">sum_diagonals</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">2</span><span class="p">))</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">"Write sum_diagonals first."</span><span class="p">)</span>
-<span class="k">else</span><span class="p">:</span>
-    <span class="n">torch</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_close</span><span class="p">(</span><span class="n">sum_diagonals</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mf">1.</span><span class="p">,</span> <span class="mf">10.</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">)),</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="mf">30.</span><span class="p">))</span>
-    <span class="n">torch</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_close</span><span class="p">(</span><span class="n">sum_diagonals</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mf">1.</span><span class="p">,</span> <span class="mf">17.</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">)),</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="mf">68.</span><span class="p">))</span>
-    <span class="n">torch</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_close</span><span class="p">(</span><span class="n">sum_diagonals</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([[</span><span class="mf">5.</span><span class="p">]])),</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="mf">10.</span><span class="p">))</span>
-    <span class="c1"># The two diagonals of the matrices above have equal sums; this one does not.</span>
-    <span class="n">torch</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_close</span><span class="p">(</span><span class="n">sum_diagonals</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([[</span><span class="mf">1.</span><span class="p">,</span> <span class="mf">2.</span><span class="p">],</span> <span class="p">[</span><span class="mf">3.</span><span class="p">,</span> <span class="mf">5.</span><span class="p">]])),</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="mf">11.</span><span class="p">))</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">"sum_diagonals passed: odd, even, 1x1 and asymmetric matrices."</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
-</div>
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>sum_diagonals passed: odd, even, 1x1 and asymmetric matrices.
-</pre>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=aab7b1f3">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=heading-31">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<p>★ Next, normalize each row to mean zero and variance one. Variance here is the average squared deviation (<code>correction=0</code>). A constant row cannot be rescaled to unit variance, so it must become all zeros, without producing <code>nan</code>.</p>
+<h3 id="Normalizing-the-rows-%E2%98%85">Normalizing the rows ★<a class="anchor-link" href="#Normalizing-the-rows-%E2%98%85">¶</a></h3>
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=52081f9c">
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=52081f9c-explanation">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<p>We reduce over <code>dim=1</code>, the features of each row, with <code>keepdim=True</code>, so the means and standard deviations have shape <code>(batch, 1)</code> and broadcast against <code>A</code>. The standard deviation of a constant row is zero. <code>clamp_min(eps)</code> replaces it with <code>eps</code>, so the centered row, which is all zeros, stays zero instead of becoming <code>0/0 = nan</code>.</p>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=52081f9c-reference">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [36]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython3"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">normalize_rows</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="n">Float</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="s2">"batch features"</span><span class="p">],</span> <span class="n">eps</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-8</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Float</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="s2">"batch features"</span><span class="p">]]:</span>
-    <span class="c1"># Replace None with your implementation.</span>
-    <span class="k">return</span> <span class="kc">None</span>
-</pre></div>
-</div>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs celltag_reference" id="cell-id=52081f9c-reference">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [37]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
 <div class="highlight hl-ipython3"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">normalize_rows</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="n">Float</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="s2">"batch features"</span><span class="p">],</span> <span class="n">eps</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-8</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Float</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="s2">"batch features"</span><span class="p">]]:</span>
@@ -9478,80 +8274,34 @@ Flattened transpose: tensor([0., 2., 4., 1., 3., 5.])
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=52081f9c-check">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [38]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython3"><pre><span></span><span class="n">A</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([[</span><span class="mf">1.</span><span class="p">,</span> <span class="mf">2.</span><span class="p">,</span> <span class="mf">4.</span><span class="p">],</span> <span class="p">[</span><span class="mf">4.</span><span class="p">,</span> <span class="mf">4.</span><span class="p">,</span> <span class="mf">4.</span><span class="p">]])</span>
-<span class="k">if</span> <span class="n">normalize_rows</span><span class="p">(</span><span class="n">A</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">"Write normalize_rows first."</span><span class="p">)</span>
-<span class="k">else</span><span class="p">:</span>
-    <span class="n">normalized</span> <span class="o">=</span> <span class="n">normalize_rows</span><span class="p">(</span><span class="n">A</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">normalized</span><span class="p">)</span>
-    <span class="n">torch</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_close</span><span class="p">(</span><span class="n">normalized</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span> <span class="n">atol</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">,</span> <span class="n">rtol</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-    <span class="n">torch</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_close</span><span class="p">(</span><span class="n">normalized</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">correction</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="mf">1.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">]))</span>
-    <span class="c1"># A square input catches normalization over the wrong axis.</span>
-    <span class="n">square</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([[</span><span class="mf">1.</span><span class="p">,</span> <span class="mf">3.</span><span class="p">],</span> <span class="p">[</span><span class="mf">2.</span><span class="p">,</span> <span class="mf">10.</span><span class="p">]])</span>
-    <span class="n">torch</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_close</span><span class="p">(</span><span class="n">normalize_rows</span><span class="p">(</span><span class="n">square</span><span class="p">),</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([[</span><span class="o">-</span><span class="mf">1.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">],</span> <span class="p">[</span><span class="o">-</span><span class="mf">1.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">]]))</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">"normalize_rows passed, including the constant row and a square input."</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
-</div>
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>tensor([[-1.069, -0.267,  1.336],
-        [ 0.000,  0.000,  0.000]])
-normalize_rows passed, including the constant row and a square input.
-</pre>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=a0b71604">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=heading-34">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<p>★★ Finally, compute the cosine similarity between every pair of rows. Hint: normalize each row to unit length first; then a single matrix product gives all the pairs. We will meet this operation again with attention layers.</p>
-<p>Cosine similarity is undefined for a zero vector. Following <code>F.normalize</code>, we leave zero vectors at zero, so their similarity with every row is zero.</p>
+<h3 id="Cosine-similarity-%E2%98%85%E2%98%85">Cosine similarity ★★<a class="anchor-link" href="#Cosine-similarity-%E2%98%85%E2%98%85">¶</a></h3>
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=33514e05">
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=33514e05-explanation">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<p><code>F.normalize</code> divides each row by its Euclidean norm, so the dot product of two normalized rows is their cosine. <code>unit @ unit.T</code> computes all the pairs at once, with shape <code>(batch, batch)</code>. <code>F.normalize</code> divides by the larger of the norm and <code>eps</code>, so a zero row stays zero and all its similarities are zero.</p>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=33514e05-reference">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [39]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython3"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">cosine_similarity</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="n">Float</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="s2">"batch features"</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Float</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="s2">"batch batch"</span><span class="p">]]:</span>
-    <span class="c1"># Replace None with your implementation.</span>
-    <span class="k">return</span> <span class="kc">None</span>
-</pre></div>
-</div>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs celltag_reference" id="cell-id=33514e05-reference">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [40]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
 <div class="highlight hl-ipython3"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">cosine_similarity</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="n">Float</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="s2">"batch features"</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Float</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="s2">"batch batch"</span><span class="p">]]:</span>
@@ -9559,62 +8309,6 @@ normalize_rows passed, including the constant row and a square input.
     <span class="k">return</span> <span class="n">unit</span> <span class="o">@</span> <span class="n">unit</span><span class="o">.</span><span class="n">T</span>
 </pre></div>
 </div>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=33514e05-check">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [41]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython3"><pre><span></span><span class="n">A</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([[</span><span class="mf">1.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">],</span> <span class="p">[</span><span class="o">-</span><span class="mf">1.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">]])</span>
-<span class="k">if</span> <span class="n">cosine_similarity</span><span class="p">(</span><span class="n">A</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">"Write cosine_similarity first."</span><span class="p">)</span>
-<span class="k">else</span><span class="p">:</span>
-    <span class="n">expected</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([[</span><span class="mf">1.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">],</span>
-                             <span class="p">[</span><span class="o">-</span><span class="mf">1.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">]])</span>
-    <span class="n">torch</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_close</span><span class="p">(</span><span class="n">cosine_similarity</span><span class="p">(</span><span class="n">A</span><span class="p">),</span> <span class="n">expected</span><span class="p">)</span>
-    <span class="c1"># Scaling a row must not change its similarities; the shape is (batch, batch).</span>
-    <span class="n">B</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([[</span><span class="mf">3.</span><span class="p">,</span> <span class="mf">4.</span><span class="p">],</span> <span class="p">[</span><span class="mf">6.</span><span class="p">,</span> <span class="mf">8.</span><span class="p">],</span> <span class="p">[</span><span class="mf">4.</span><span class="p">,</span> <span class="o">-</span><span class="mf">3.</span><span class="p">]])</span>
-    <span class="n">torch</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_close</span><span class="p">(</span><span class="n">cosine_similarity</span><span class="p">(</span><span class="n">B</span><span class="p">),</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([[</span><span class="mf">1.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">],</span> <span class="p">[</span><span class="mf">1.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">]]))</span>
-    <span class="k">assert</span> <span class="n">cosine_similarity</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">cosine_similarity</span><span class="p">(</span><span class="n">A</span><span class="p">))</span>
-</pre></div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
-</div>
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>tensor([[ 1.,  0., -1.,  0.],
-        [ 0.,  1.,  0.,  0.],
-        [-1.,  0.,  1.,  0.],
-        [ 0.,  0.,  0.,  0.]])
-</pre>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=405c7398">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="Further-reading">Further reading<a class="anchor-link" href="#Further-reading">¶</a></h2><ul>
-<li><a href="https://docs.pytorch.org/tutorials/beginner/basics/tensorqs_tutorial.html">PyTorch tensor tutorial</a></li>
-<li><a href="https://docs.pytorch.org/docs/stable/notes/autograd.html">Autograd mechanics</a></li>
-<li><a href="https://docs.pytorch.org/docs/stable/tensor_view.html">Tensor views</a></li>
-</ul>
 </div>
 </div>
 </div>
