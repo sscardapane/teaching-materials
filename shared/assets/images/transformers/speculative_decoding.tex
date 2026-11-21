@@ -1,0 +1,45 @@
+% Speculative decoding: fast draft proposes 4 tokens, target verifies all in
+% one parallel pass, accepts prefix, corrects first mismatch, discards rest.
+\begin{tikzpicture}[x=1cm, y=0.84cm,
+        tok/.style={rounded corners=2pt, minimum width=0.92cm, minimum height=0.48cm, line width=0.6pt, font=\scriptsize},
+        ctx/.style={tok, draw=drawgray!70, fill=drawgray_l},
+        dft/.style={tok, draw=drawblue, fill=drawblue_l!70},
+        acc/.style={tok, draw=drawgreen, fill=drawgreen_l!80},
+        fix/.style={tok, draw=draworange, fill=draworange_l!85},
+        dis/.style={tok, draw=drawgray!55, dashed, fill=white, text=drawgray},
+        rlab/.style={font=\scriptsize\bfseries, text=black!75, anchor=east},
+    ]
+    % Row 1: Draft model proposes gamma = 4 tokens sequentially
+    \node[rlab] at (1.55,1.8) {1. Draft ($q$)};
+    \node[ctx] (c0) at (2.25,1.8) {prefix};
+    \foreach \i/\x in {1/3.5, 2/4.75, 3/6.0, 4/7.25} {
+        \node[dft] (d\i) at (\x,1.8) {$\hat{z}_{\i}$};
+    }
+    \draw[tfarr] (c0) -- (d1);
+    \draw[tfarr] (d1) -- (d2);
+    \draw[tfarr] (d2) -- (d3);
+    \draw[tfarr] (d3) -- (d4);
+    \node[font=\scriptsize, text=black!60, anchor=west] at (7.95,1.8) {$\gamma=4$ cheap steps};
+
+    % Row 2: Target model scores all positions in parallel
+    \node[rlab] at (1.55,0.9) {2. Target ($p$)};
+    \draw[draw=drawblue, fill=drawblue_l!30, rounded corners=2pt, line width=0.6pt]
+        (1.79,0.63) rectangle (7.71,1.17)
+        node[midway, font=\scriptsize, text=black!80] {one parallel forward pass (all $5$ positions)};
+    \foreach \x in {3.5, 4.75, 6.0, 7.25} {
+        \draw[tfarr] (\x,1.52) -- (\x,1.19);
+    }
+
+    % Row 3: Verify & accept / correct
+    \node[rlab] at (1.55,0.0) {3. Verify};
+    \node[ctx] (v0) at (2.25,0.0) {prefix};
+    \node[acc] (v1) at (3.5,0.0) {$\hat{z}_1$ \checkmark};
+    \node[acc] (v2) at (4.75,0.0) {$\hat{z}_2$ \checkmark};
+    \node[fix] (v3) at (6.0,0.0) {$z_3' \sim p'$};
+    \node[dis] (v4) at (7.25,0.0) {$\hat{z}_4$ $\times$};
+    \draw[tfarr, draw=drawgreen] (3.5,0.61) -- (v1.north);
+    \draw[tfarr, draw=drawgreen] (4.75,0.61) -- (v2.north);
+    \draw[tfarr, draw=draworange] (6.0,0.61) -- (v3.north);
+    \draw[tfarr, draw=drawgray!60, dashed] (7.25,0.61) -- (v4.north);
+    \node[font=\scriptsize, text=black!60, anchor=west] at (7.95,0.0) {3 tokens in 1 target pass};
+\end{tikzpicture}

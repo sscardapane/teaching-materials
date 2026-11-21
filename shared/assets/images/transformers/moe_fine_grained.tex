@@ -1,0 +1,33 @@
+% Coarse MoE (E=4, k=2) versus fine-grained MoE with a shared expert
+% (1 shared + E=8 half-size routed, k=2): same active compute, finer routing.
+\begin{tikzpicture}[x=1cm, y=0.84cm,
+        exp/.style={draw=drawblue, fill=drawblue_l!45, rounded corners=1.5pt, line width=0.5pt, font=\scriptsize},
+        act/.style={draw=drawgreen, fill=drawgreen_l!75, rounded corners=1.5pt, line width=0.7pt, font=\scriptsize},
+        shd/.style={draw=kcolor, fill=draworange!28, rounded corners=1.5pt, line width=0.7pt, font=\scriptsize},
+        ttl/.style={font=\footnotesize\bfseries, text=black!75},
+        sub/.style={font=\scriptsize, text=black!60},
+    ]
+    % Left panel: coarse MoE (E=4, k=2)
+    \begin{scope}
+        \node[ttl] at (2.1,1.9) {Coarse MoE ($E=4, k=2$)};
+        \foreach \i/\st in {0/exp, 1/act, 2/exp, 3/act} {
+            \pgfmathtruncatemacro{\eidx}{\i+1}
+            \node[\st, minimum width=0.92cm, minimum height=0.96cm] (c\i) at ({\i*1.1 + 0.45},0.9) {$f_{\eidx}$};
+        }
+        \node[sub] at (2.1,-0.05) {2 large experts active per token};
+    \end{scope}
+
+    % Right panel: shared + fine-grained (1 shared + E=8 half-size, k=2)
+    \begin{scope}[xshift=5.6cm]
+        \node[ttl] at (2.95,1.9) {Shared + fine-grained ($1 + 8$ half-size, $k=2$)};
+        \node[shd, minimum width=0.92cm, minimum height=0.96cm, align=center] (sh) at (0.45,0.9) {shared};
+        \foreach \i/\st in {0/exp, 1/act, 2/exp, 3/exp, 4/exp, 5/act, 6/exp, 7/exp} {
+            \pgfmathtruncatemacro{\col}{mod(\i,4)}
+            \pgfmathtruncatemacro{\row}{div(\i,4)}
+            \pgfmathtruncatemacro{\eidx}{\i+1}
+            \node[\st, minimum width=0.88cm, minimum height=0.42cm] (fg\i) at ({1.75 + \col*1.02},{1.20 - \row*0.60}) {$f_{\eidx}$};
+        }
+        \draw[drawgray!55, dashed] (1.12,0.3) -- (1.12,1.5);
+        \node[sub] at (2.95,-0.05) {1 shared + 2 small routed = same active FLOPs};
+    \end{scope}
+\end{tikzpicture}

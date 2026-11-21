@@ -1,0 +1,43 @@
+% Contiguous KV allocation (fragmentation) versus PagedAttention block table.
+\begin{tikzpicture}[x=1cm, y=0.86cm,
+        used/.style={draw=drawblue, fill=drawblue_l!80, line width=0.5pt, font=\scriptsize},
+        pref/.style={draw=drawgreen, fill=drawgreen_l!80, line width=0.5pt, font=\scriptsize},
+        waste/.style={draw=drawred!70, dashed, fill=drawred!10, line width=0.5pt, font=\scriptsize},
+        free/.style={draw=drawgray!50, fill=white, line width=0.45pt, font=\scriptsize},
+        ttl/.style={font=\footnotesize\bfseries, text=black!80},
+        lbl/.style={font=\scriptsize, text=black!65},
+    ]
+    % Top: contiguous pre-allocation
+    \node[ttl, anchor=west] at (0,2.75) {Contiguous pre-allocation (reserved up to $T_{\max}$)};
+    \draw[used] (0,2.0) rectangle (2.3,2.48) node[midway] {prompt + output};
+    \draw[waste] (2.3,2.0) rectangle (5.6,2.48) node[midway, text=drawred] {reserved, unused};
+    \draw[used] (5.6,2.0) rectangle (7.0,2.48) node[midway] {req.\ 2};
+    \draw[waste] (7.0,2.0) rectangle (11.2,2.48) node[midway, text=drawred] {reserved, unused};
+
+    % Bottom: PagedAttention
+    \node[ttl, anchor=west] at (0,1.42) {PagedAttention: logical KV blocks};
+    \node[ttl, anchor=west] at (5.05,1.42) {Physical GPU blocks (non-contiguous)};
+
+    % Request 1 logical
+    \node[lbl, anchor=east] at (0.95,0.68) {req.\ 1};
+    \node[pref, minimum width=0.92cm, minimum height=0.40cm] (r1p) at (1.5,0.68) {prefix};
+    \node[used, minimum width=0.92cm, minimum height=0.40cm] (r1b) at (2.52,0.68) {blk 1};
+    % Request 2 logical
+    \node[lbl, anchor=east] at (0.95,-0.02) {req.\ 2};
+    \node[pref, minimum width=0.92cm, minimum height=0.40cm] (r2p) at (1.5,-0.02) {prefix};
+    \node[used, minimum width=0.92cm, minimum height=0.40cm] (r2b) at (2.52,-0.02) {blk 1};
+
+    % Physical GPU memory blocks
+    \node[used, minimum width=0.92cm, minimum height=0.48cm] (p0) at (5.55,0.33) {1:b1};
+    \node[free, minimum width=0.92cm, minimum height=0.48cm] (p1) at (6.58,0.33) {free};
+    \node[pref, minimum width=0.92cm, minimum height=0.48cm] (p2) at (7.61,0.33) {shared};
+    \node[used, minimum width=0.92cm, minimum height=0.48cm] (p3) at (8.64,0.33) {2:b1};
+    \node[free, minimum width=0.92cm, minimum height=0.48cm] (p4) at (9.67,0.33) {free};
+    \node[free, minimum width=0.92cm, minimum height=0.48cm] (p5) at (10.70,0.33) {free};
+
+    % Arrows routed cleanly in the channels above/below blocks
+    \draw[tfarr, draw=drawgreen] (r1p.north) -- (1.5,1.06) -| (p2.north);
+    \draw[tfarr, draw=drawgreen] (r2p.south) -- (1.5,-0.52) -| (p2.south);
+    \draw[tfarr, draw=drawblue] (r1b.east) -- (3.85,0.68) |- (p0.west);
+    \draw[tfarr, draw=drawblue] (r2b.east) -- (3.85,-0.02) -- (3.85,-0.32) -| (p3.south);
+\end{tikzpicture}

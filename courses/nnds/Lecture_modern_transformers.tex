@@ -146,9 +146,9 @@
     \]
     We now have three matrices instead of two. To keep the $8D^2$ parameters
     of the original MLP, the hidden size is reduced from $4D$ to
-    $M=\tfrac{2}{3}\cdot 4D$, so that $3DM=8D^2$ (e.g., $D=4096$ and
-    $M=11008$ in Llama~2 7B). In this way, the block still has
-    \myalert{$12D^2$~parameters}.
+    $M\approx\tfrac{2}{3}\cdot 4D$, so that $3DM\approx 8D^2$ (e.g., $D=4096$
+    and $M=11008$ in Llama~2 7B, rounded to a multiple of $256$). In this
+    way, the block still has \myalert{$12D^2$~parameters}.
 
     \SlideSource{\href{https://arxiv.org/abs/2002.05202}{Shazeer (2020)}; \href{https://arxiv.org/abs/2302.13971}{Touvron et al., LLaMA (2023)}.}
 
@@ -357,13 +357,14 @@
                 \text{cache}=2\cdot N\cdot D\cdot T\cdot b \text{ bytes.}
             \]
             For example, Llama~2 7B ($N=32$, $D=4096$, $16$ bits) needs
-            $0.5$\,MB per token, or $2$\,GB for a sequence of $T=4096$ tokens.
+            $0.52$\,MB per token, or $2.15$\,GB for a sequence of $T=4096$
+            tokens.
         \end{column}
         \begin{column}{0.5\textwidth}
             \centering
             \begin{tikzpicture}
                 \begin{axis}[
-                        width=\linewidth, height=0.56\textheight,
+                        width=\linewidth, height=0.53\textheight,
                         ybar stacked, bar width=16pt, ymin=0, ymax=90,
                         symbolic x coords={1,4,16,32}, xtick=data,
                         xlabel={Sequences in the batch}, ylabel={Memory (GB)},
@@ -374,7 +375,7 @@
                         legend cell align=left,
                     ]
                     \addplot[fill=drawblue_l, draw=drawblue] coordinates {(1,13.5) (4,13.5) (16,13.5) (32,13.5)};
-                    \addplot[fill=draworange!70, draw=draworange] coordinates {(1,2.1) (4,8.6) (16,34.4) (32,68.7)};
+                    \addplot[fill=draworange!70, draw=draworange] coordinates {(1,2.15) (4,8.6) (16,34.4) (32,68.7)};
                     \legend{Weights, KV cache}
                     \draw[drawred, dashed, thick] (rel axis cs:0,0.889) -- (rel axis cs:1,0.889)
                         node[anchor=south east, font=\scriptsize, text=drawred] {80 GB GPU};
@@ -384,9 +385,10 @@
     \end{columns}
 
     \medskip
-    Since every decoding step reads the entire cache, its size limits how
-    many sequences we can serve at once. Next, we reduce it by sharing
-    \kc{keys} and \vcl{values} among heads.
+    Memory capacity limits how many sequences we can serve at once, and
+    reading the entire cache at every decoding step limits generation speed.
+    Next, we shrink the cache by sharing \kc{keys} and \vcl{values} among
+    heads.
 
     \SlideSource{\href{https://arxiv.org/abs/2307.09288}{Touvron et al., Llama 2 (2023)}; \href{https://arxiv.org/abs/2211.05102}{Pope et al., Efficiently scaling transformer inference (2023)}.}
 
@@ -426,8 +428,8 @@
     and to MQA in speed.
 
     For example, Llama~3 8B has the same $N=32$ and $D=4096$ as Llama~2 7B,
-    but $G=8$ key/value heads for $h=32$ query heads: $128$\,KB per token
-    instead of $512$\,KB.
+    but $G=8$ key/value heads for $h=32$ query heads: $131$\,KB per token
+    instead of $524$\,KB.
 
     In code, we only change the number of key and value heads:
     \begin{python}[gobble=8,aboveskip=2pt,belowskip=2pt]
@@ -446,7 +448,8 @@
 \end{frame}
 
 \begin{frame}{Multi-head latent attention (MLA)}
-    \setlength{\parskip}{6pt}
+    \setlength{\parskip}{4pt}
+    \setlength{\abovedisplayskip}{4pt}\setlength{\belowdisplayskip}{4pt}
 
     In MLA, each token stores instead a single compressed vector, from which
     every head reconstructs its key and value:
@@ -456,16 +459,18 @@
         \vcl{\vc{v}_{t,i}=\vc{W}_{v,i}\vc{c}_t} \,.
     \]
     \annotate[yshift=-0.5em]{below,left}{lat}{cached, size $d_c\ll 2hD_k$}
-    \vspace{0.6em}
+    \vspace{0.25em}
 
-    We never compute the keys explicitly, since $\qc{\vc{q}_{t,i}^{\top}}\vc{W}_{k,i}\vc{c}_{t'}=(\vc{W}_{k,i}^{\top}\qc{\vc{q}_{t,i}})^{\top}\vc{c}_{t'}$
-    and $\vc{W}_{k,i}$ can be merged into the query projection ($\vc{W}_{v,i}$
-    into the output one). RoPE would break this trick, so MLA adds a small
-    key with RoPE, shared by all heads.
-
-    In DeepSeek-V2 and V3, this is $512+64=576$ numbers per token and layer,
-    against $2hD_k=32{,}768$ for MHA (equivalent to GQA with $2.25$ groups),
-    with better quality than MHA in their experiments.
+    During decoding, we never materialize the keys explicitly, since
+    \[
+        \qc{\vc{q}_{t,i}^{\top}}\vc{W}_{k,i}\vc{c}_{t'}
+        = \big(\vc{W}_{k,i}^{\top}\qc{\vc{q}_{t,i}}\big)^{\top}\vc{c}_{t'} \,,
+    \]
+    so $\vc{W}_{k,i}$ merges into the query projection ($\vc{W}_{v,i}$ into
+    the output). RoPE breaks this trick, so MLA adds a small shared key with
+    RoPE. In DeepSeek-V2/V3 ($h=128$, $D_k=128$), this caches $512+64=576$
+    numbers per token and layer instead of $2hD_k=32{,}768$ ($2.25$ GQA
+    groups), with better quality than MHA.
 
     \SlideSource{\href{https://arxiv.org/abs/2405.04434}{DeepSeek-AI, DeepSeek-V2 (2024)}; \href{https://arxiv.org/abs/2412.19437}{DeepSeek-V3 (2024)}.}
 
@@ -497,9 +502,8 @@
     \setlength{\parskip}{6pt}
 
     Tokens outside the window can still influence the output through the
-    previous layers. After $N$ layers, a token depends on up to $N(w-1)$
-    tokens in the past, in the same way as the receptive field of a stack of
-    convolutions grows with depth:
+    previous layers. After $N$ layers, a token depends on up to $N(w-1)+1$
+    tokens, just like the receptive field of a stack of convolutions:
 
     \centering
     \input{../../shared/assets/images/transformers/window_reach.tex}
@@ -531,9 +535,9 @@
 
     Only the global layers have a cache that grows with $T$. For example,
     Inkling 2 Small has 40 local and 8 global layers, with $8$ key/value heads
-    of size $128$: $2\cdot 8\cdot 8\cdot 128\cdot 2$ bytes $=32$\,KB per
-    token, or about $34$\,GB for a context of 1M tokens. With 48 global layers,
-    this would be six times more.
+    of size $128$: $2\cdot 8\cdot 8\cdot 128\cdot 2$ bytes $\approx 33$\,KB
+    per token, or about $33$\,GB for a context of $10^6$ tokens. With 48
+    global layers, this would be six times more.
 
     \SlideSource{\href{https://arxiv.org/abs/2503.19786}{Gemma 3 (2025)}; \href{https://arxiv.org/abs/2508.10925}{OpenAI, gpt-oss model card (2025)}; \href{https://huggingface.co/thinkingmachines/Inkling-2-Small}{Thinking Machines, Inkling 2 Small (2026)}.}
 
@@ -560,6 +564,532 @@
     \]
 
     \SlideSource{\href{https://arxiv.org/abs/2309.17453}{Xiao et al., StreamingLLM (2024)}, ICLR; \href{https://arxiv.org/abs/2508.10925}{OpenAI, gpt-oss model card (2025)}.}
+
+\end{frame}
+
+\section{Mixtures of experts}
+\subsection{Scaling parameters without scaling compute}
+
+\begin{frame}{Sparse MoE in a transformer block}
+    \setlength{\parskip}{4pt}
+    \setlength{\abovedisplayskip}{4pt}\setlength{\belowdisplayskip}{4pt}
+
+    Recall the \myalert{sparse mixture of experts} (MoE) from the MLP lecture.
+    Inside a transformer block, we replace the SwiGLU MLP with $E$ parallel
+    SwiGLU experts $f_1,\ldots,f_E$ and a linear router
+    $\vc{r}_t=\vc{W}_r\vc{x}_t$:
+
+    \begin{columns}[c,onlytextwidth]
+        \begin{column}{0.56\textwidth}
+            \setlength{\parskip}{4pt}
+            For each token $\vc{x}_t$, we select the top-$k$ experts
+            $\mathcal{S}_t=\operatorname{TopK}(\vc{r}_t, k)$ and weight them
+            with a softmax:
+            \[
+                \operatorname{MoE}(\vc{x}_t)=\sum_{e\in\mathcal{S}_t} a_{t,e}\,f_e(\vc{x}_t) \,,
+            \]
+            \[
+                a_{t,e}=\frac{\exp(r_{t,e})}{\sum_{j\in\mathcal{S}_t}\exp(r_{t,j})} \,.
+            \]
+        \end{column}
+        \begin{column}{0.41\textwidth}
+            \centering
+            \scalebox{0.80}{\input{../../shared/assets/images/lecture_4/moe.tex}}
+        \end{column}
+    \end{columns}
+
+    \smallskip
+    This decouples \myalert{total parameters} (capacity) from \myalert{active
+    parameters} (FLOPs per token): e.g., Mixtral~8$\times$7B ($E=8$, $k=2$)
+    has $46.7$B total parameters but only $12.9$B active.
+
+    \SlideSource{\href{https://arxiv.org/abs/1701.06538}{Shazeer et al. (2017)}; \href{https://arxiv.org/abs/2101.03961}{Fedus et al., Switch Transformers (2022)}; \href{https://arxiv.org/abs/2401.04088}{Jiang et al., Mixtral (2024)}.}
+
+\end{frame}
+
+\begin{frame}{Fine-grained and shared experts}
+    \setlength{\parskip}{4pt}
+    \setlength{\abovedisplayskip}{3pt}\setlength{\belowdisplayskip}{4pt}
+
+    Recent models split coarse experts into many smaller ones and keep one or
+    more \myalert{shared experts} that run on every token:
+    \[
+        \operatorname{MoE}(\vc{x}_t)
+        = f_{\text{shared}}(\vc{x}_t)
+        + \sum_{e\in\mathcal{S}_t} a_{t,e}\,f_e(\vc{x}_t) \,.
+    \]
+
+    \centering
+    \input{../../shared/assets/images/transformers/moe_fine_grained.tex}
+    \par\vspace{-0.4em}
+    \justifying
+
+    Finer experts increase the combinations $\binom{E}{k}$ at the same active
+    FLOPs, while the shared expert holds common features (e.g., DeepSeek-V3:
+    $256$ routed with $k=8$ plus $1$ shared; $671$B total, $37$B active).
+
+    \SlideSource{\href{https://arxiv.org/abs/2401.06066}{Dai et al., DeepSeekMoE (2024)}; \href{https://arxiv.org/abs/2412.19437}{DeepSeek-V3 (2024)}; \href{https://arxiv.org/abs/2505.09388}{Qwen3 (2025)}.}
+
+\end{frame}
+
+\begin{frame}{Router collapse and load balancing}
+    \setlength{\parskip}{4pt}
+
+    Sparse routers suffer from \myalert{router collapse}: experts picked early
+    receive more updates, improve faster, and attract nearly all tokens.
+
+    \begin{columns}[T,onlytextwidth]
+        \begin{column}{0.48\textwidth}
+            \begin{tcolorbox}[nndsblue,courseheight={moe-bal}{0.32\textheight},boxsep=1mm,top=1.5mm,bottom=1.5mm]\footnotesize
+                \textbf{\color{darkcerulean}Auxiliary load-balancing loss}\par
+                We add $\mathcal{L}_{\text{aux}} = \alpha E \sum_{e=1}^{E} f_e\,P_e$
+                to the training loss, where $f_e$ is the fraction of tokens
+                routed to expert $e$ and $P_e$ its mean router probability
+                (minimized when both are $1/E$). A large $\alpha$ can hurt
+                language modeling.
+            \end{tcolorbox}
+        \end{column}
+        \begin{column}{0.48\textwidth}
+            \begin{tcolorbox}[nndsgreen,courseheight={moe-bal}{0.32\textheight},boxsep=1mm,top=1.5mm,bottom=1.5mm]\footnotesize
+                \textbf{\color{darkgreen}Auxiliary-loss-free balancing}\par
+                We add a per-expert scalar bias $b_e$ \emph{only} inside
+                $\operatorname{TopK}(r_{t,e}+b_e)$, not in the weight
+                $a_{t,e}$. After each step, we lower $b_e$ for overloaded
+                experts and raise it for underloaded ones, with no competing
+                gradient term.
+            \end{tcolorbox}
+        \end{column}
+    \end{columns}
+
+    \smallskip
+    When experts sit on different GPUs, each expert often has a fixed token
+    buffer (\myalert{capacity factor}), so skewed routing drops tokens or
+    stalls devices.
+
+    \SlideSource{\href{https://arxiv.org/abs/2101.03961}{Fedus et al., Switch Transformers (2022)}; \href{https://arxiv.org/abs/2412.19437}{DeepSeek-AI, DeepSeek-V3 (2024)}.}
+
+\end{frame}
+
+\begin{frame}{MoE at inference: compute versus memory}
+    \setlength{\parskip}{6pt}
+
+    A sparse MoE reduces FLOPs per token, but it does not reduce the size of
+    the model in memory:
+
+    \begin{columns}[T,onlytextwidth]
+        \begin{column}{0.48\textwidth}
+            \begin{tcolorbox}[nndsgreen,courseheight={moe-inf}{0.30\textheight}]\small
+                \textbf{\color{darkgreen}Compute per token}\par
+                Each token runs only $k$ experts, so FLOPs match a much
+                smaller dense model (e.g., $37$B active in DeepSeek-V3 instead
+                of $671$B).
+            \end{tcolorbox}
+        \end{column}
+        \begin{column}{0.48\textwidth}
+            \begin{tcolorbox}[nndsorange,courseheight={moe-inf}{0.30\textheight}]\small
+                \textbf{\color{draworange}Memory footprint}\par
+                We do not know which experts the next token will pick, so
+                \textbf{all $E$ experts} must sit in GPU memory ($671$B in
+                16-bit is $\approx 1.3$\,TB).
+            \end{tcolorbox}
+        \end{column}
+    \end{columns}
+
+    \medskip
+    For a single sequence, decoding only reads the active experts' weights
+    from GPU memory at each step, which is fast. With a large batch,
+    different tokens touch nearly all experts, so memory bandwidth and
+    cross-GPU communication become the bottleneck.
+
+    \SlideSource{\href{https://arxiv.org/abs/2101.03961}{Fedus et al. (2022)}; \href{https://arxiv.org/abs/2412.19437}{DeepSeek-AI, DeepSeek-V3 (2024)}.}
+
+\end{frame}
+
+\section{Efficient inference}
+\subsection{Memory-aware attention and serving}
+
+\begin{frame}{The bottlenecks of inference}
+    \setlength{\parskip}{5pt}
+
+    The two phases of generation stress GPU hardware in very different ways:
+
+    \centering
+    \renewcommand{\arraystretch}{1.2}
+    {\footnotesize
+    \begin{tabular}{@{}p{0.13\textwidth}p{0.31\textwidth}p{0.48\textwidth}@{}}
+        \textbf{Phase} & \textbf{Main operation} & \textbf{Primary bottleneck} \\
+        \hline
+        Prefill & Matrix--matrix products ($T_p$ tokens) & \leavevmode\myalert{Compute-bound}; quadratic attention memory $\vc{A}\sim(T,T)$ \\
+        Decode & Matrix--vector ($1$ token/seq) & \leavevmode\myalert{Memory-bandwidth-bound} (reads weights + KV cache every step); capacity limits batch size \\
+    \end{tabular}}
+    \par\vspace{0.6em}
+    \justifying
+
+    Each technique below targets one of these bottlenecks:
+    {\small
+    \begin{itemize}
+        \setlength{\itemsep}{2pt}
+        \item \myalert{FlashAttention}: avoids materializing $\vc{A}$ in GPU memory.
+        \item \myalert{PagedAttention}: removes KV-cache fragmentation in serving.
+        \item \myalert{Quantization}: shrinks the bytes read for weights and caches.
+        \item \myalert{Speculative decoding \& MTP}: uses idle compute during decode.
+    \end{itemize}}
+
+    \SlideSource{\href{https://arxiv.org/abs/2211.05102}{Pope et al. (2023)}; \href{https://arxiv.org/abs/2402.16363}{Yuan et al., LLM Inference Unveiled (2024)}.}
+
+\end{frame}
+
+\begin{frame}{GPU memory hierarchy: HBM versus SRAM}
+    \setlength{\parskip}{6pt}
+
+    In the last lecture, we saw that storing $\vc{A}\sim(T,T)$ alone takes
+    $69$\,GB at $T=32{,}768$. Even when it fits, standard attention writes
+    $\vc{S}=\qc{\vc{Q}}\kc{\vc{K}}^{\top}$ to main GPU memory, reads it back
+    for softmax, writes $\vc{A}$, and reads $\vc{A}$ again to multiply by
+    $\vcl{\vc{V}}$.
+
+    \begin{columns}[T,onlytextwidth]
+        \begin{column}{0.48\textwidth}
+            \begin{tcolorbox}[nndsorange,courseheight={mem-hier}{0.27\textheight}]\small
+                \textbf{\color{draworange}HBM (main GPU memory)}\par
+                Large ($40$--$80$\,GB on an A100/H100), relatively slow
+                ($\approx 1.5$--$2$\,TB/s on A100; $3.35$\,TB/s on H100).
+            \end{tcolorbox}
+        \end{column}
+        \begin{column}{0.48\textwidth}
+            \begin{tcolorbox}[nndsgreen,courseheight={mem-hier}{0.27\textheight}]\small
+                \textbf{\color{darkgreen}On-chip SRAM}\par
+                Tiny ($\approx 20$\,MB total on an A100), roughly $10\times$
+                faster ($\approx 19$\,TB/s).
+            \end{tcolorbox}
+        \end{column}
+    \end{columns}
+
+    \medskip
+    Standard attention is slow because of $\mathcal{O}(T^2)$ reads and writes
+    to HBM, not because of FLOPs. If we fuse the computation inside SRAM
+    without ever writing $\vc{A}$ to HBM, we get exact attention in
+    $\mathcal{O}(T)$ memory. The obstacle is normalizing the softmax across
+    all keys.
+
+    \SlideSource{\href{https://arxiv.org/abs/2205.14135}{Dao et al., FlashAttention (2022)}, NeurIPS.}
+
+\end{frame}
+
+\begin{frame}{Online (lazy) softmax}
+    \setlength{\parskip}{4pt}
+    \setlength{\abovedisplayskip}{4pt}\setlength{\belowdisplayskip}{4pt}
+
+    Safe softmax over $s_1,\ldots,s_T$ subtracts $m=\max_j s_j$ and divides by
+    $\ell=\sum_j e^{s_j-m}$. We can compute it---and the weighted
+    \vcl{values}---in chunks of keys.
+
+    Suppose previous blocks gave running max $m$, denominator $\ell$, and
+    unnormalized output $\tilde{\vc{o}}=\sum_j e^{s_j-m}\vcl{\vc{v}_j}$. When
+    a new block with local max $m_{\text{new}}$ arrives, we set
+    $m'=\max(m,m_{\text{new}})$ and rescale the old accumulators by
+    $\alpha=e^{m-m'}$:
+    \[
+        \ell' = \eqnmarkbox[draworange]{resc}{\alpha}\,\ell
+        + \sum_{j\in\text{block}} e^{s_j-m'} \,,
+        \qquad
+        \tilde{\vc{o}}' = \alpha\,\tilde{\vc{o}}
+        + \sum_{j\in\text{block}} e^{s_j-m'}\vcl{\vc{v}_j} \,.
+    \]
+    \annotate[yshift=-0.45em]{below,left}{resc}{rescale factor $e^{m-m'}\le 1$}
+    \vspace{0.3em}
+
+    After the last block, a single division $\vc{o}=\tilde{\vc{o}}/\ell$ gives
+    the \myalert{exact} attention output, without ever storing all $T$ scores
+    at once.
+
+    \SlideSource{\href{https://arxiv.org/abs/1805.02867}{Milakov and Gimelshein (2018)}; \href{https://arxiv.org/abs/2205.14135}{Dao et al., FlashAttention (2022)}, NeurIPS.}
+
+\end{frame}
+
+\begin{frame}{FlashAttention}
+    \setlength{\parskip}{4pt}
+
+    \myalert{FlashAttention} combines online softmax with tiling so that the
+    attention matrix never leaves on-chip SRAM:
+
+    \centering
+    \input{../../shared/assets/images/transformers/flash_tiling.tex}
+    \par\vspace{-0.2em}
+    \justifying
+
+    We split $\qc{\vc{Q}}$ into row tiles and $\kc{\vc{K}},\vcl{\vc{V}}$ into
+    column tiles, update $(m_i,\ell_i,\vc{O}_i)$ in SRAM, and write only
+    $\vc{O}$ to HBM. Memory drops from $\mathcal{O}(T^2)$ to $\mathcal{O}(T)$
+    and speed improves $2$--$4\times$ at the same FLOPs; the backward pass
+    recomputes blocks from $(m,\ell)$ (\pythoninline{F.scaled_dot_product_attention}).
+
+    \SlideSource{\href{https://arxiv.org/abs/2205.14135}{Dao et al., FlashAttention (2022)}, NeurIPS; \href{https://arxiv.org/abs/2307.08691}{Dao, FlashAttention-2 (2023)}, ICLR.}
+
+\end{frame}
+
+\begin{frame}{Managing the KV cache: PagedAttention}
+    \setlength{\parskip}{4pt}
+
+    In serving, answer lengths are unknown; pre-allocating a contiguous buffer
+    up to $T_{\max}$ for every request wastes most of GPU memory:
+
+    \centering
+    \input{../../shared/assets/images/transformers/paged_attention.tex}
+    \par\vspace{-0.3em}
+    \justifying
+
+    \myalert{PagedAttention} (vLLM) borrows virtual memory paging: each KV
+    cache is split into fixed-size blocks (e.g., $16$ tokens) allocated on
+    demand in non-contiguous physical memory via a block table. This removes
+    fragmentation and lets requests with a common system prompt share KV
+    blocks.
+
+    \SlideSource{\href{https://arxiv.org/abs/2309.06180}{Kwon et al., vLLM / PagedAttention (2023)}, SOSP.}
+
+\end{frame}
+
+\subsection{Quantization and speculative decoding}
+
+\begin{frame}{Quantization}
+    \setlength{\parskip}{6pt}
+
+    Because decoding is limited by reading weights and caches from HBM,
+    storing numbers in fewer bits cuts both memory usage and latency:
+    \begin{itemize}
+        \setlength{\itemsep}{4pt}
+        \item \myalert{Weight quantization} (e.g., 16-bit $\to$ FP8 or
+              INT4/FP4): a $70$B model shrinks from $\approx 140$\,GB to
+              $\approx 35$\,GB in 4-bit, fitting on one GPU and reading
+              $4\times$ fewer bytes per step.
+        \item \myalert{KV-cache quantization} (e.g., FP8 or INT4): cuts cache
+              memory and bandwidth by another $2$--$4\times$ at long contexts.
+    \end{itemize}
+
+    In \myalert{post-training quantization} (e.g., GPTQ, AWQ), we quantize
+    weights in small blocks with per-block scales; quantizing activations is
+    harder because a few channels carry large outliers (LLM.int8()). Recent
+    frontier models instead train natively in FP8 (DeepSeek-V3) or FP4
+    (Inkling 2, DeepSeek-V4) with fine-grained block scaling.
+
+    \SlideSource{\href{https://arxiv.org/abs/2208.07339}{Dettmers et al., LLM.int8() (2022)}; \href{https://arxiv.org/abs/2210.17323}{Frantar et al., GPTQ (2023)}; \href{https://arxiv.org/abs/2306.00978}{Lin et al., AWQ (2024)}; \href{https://arxiv.org/abs/2412.19437}{DeepSeek-V3 (2024)}.}
+
+\end{frame}
+
+\begin{frame}{Speculative decoding: draft and verify}
+    \setlength{\parskip}{4pt}
+
+    Because decode is memory-bound, scoring $\gamma+1$ tokens in parallel
+    takes nearly the same time as $1$. \myalert{Speculative decoding} uses
+    this in two steps:
+    {\small
+    \begin{enumerate}
+        \setlength{\itemsep}{1pt}
+        \item A small \textbf{draft} model $q$ proposes $\gamma$ candidate
+              tokens $\hat{z}_1,\ldots,\hat{z}_\gamma$.
+        \item The large \textbf{target} model $p$ scores all $\gamma+1$
+              positions in \textbf{one parallel pass}, accepting the valid
+              prefix plus one corrected or bonus token.
+    \end{enumerate}}
+
+    \centering
+    \input{../../shared/assets/images/transformers/speculative_decoding.tex}
+    \par\vspace{-0.2em}
+    \justifying
+
+    {\small For greedy decoding, we accept $\hat{z}_i$ while it matches
+    $\argmax p$. Next, we keep the exact distribution under sampling.}
+
+    \SlideSource{\href{https://arxiv.org/abs/2211.17192}{Leviathan et al. (2023)}, ICML; \href{https://arxiv.org/abs/2302.01318}{Chen et al. (2023)}.}
+
+\end{frame}
+
+\begin{frame}{Speculative decoding: keeping the target distribution}
+    \small\setlength{\parskip}{4pt}
+    \setlength{\abovedisplayskip}{4pt}\setlength{\belowdisplayskip}{4pt}
+
+    At a drafted position, let $q(x)$ be the draft distribution and $p(x)$ the
+    target distribution. Given a candidate $x\sim q$:
+    \begin{itemize}
+        \setlength{\itemsep}{2pt}
+        \item We \myalert{accept} $x$ with probability
+              $\min\!\big(1,\,p(x)/q(x)\big)$ (always if $p(x)\ge q(x)$).
+        \item If \myalert{rejected}, we discard all later draft tokens and
+              resample from the residual distribution
+              $p'(x)=\max(0,\,p(x)-q(x))\big/\sum_{x'}\max(0,\,p(x')-q(x'))$.
+    \end{itemize}
+
+    The total probability of emitting token $x$ is then \emph{identically} $p(x)$:
+    \[\begin{aligned}
+        P(x) &= \underbrace{q(x)\min\!\Big(1,\frac{p(x)}{q(x)}\Big)}_{\text{accepted directly}}
+        + \underbrace{\Big(1-\sum_{x'}\min(q(x'),p(x'))\Big)\,p'(x)}_{\text{rejected, then resampled}} \\
+        &= \min(q(x),p(x)) + \max(0,\,p(x)-q(x)) = p(x) \,,
+    \end{aligned}\]
+    since $1-\sum_{x'}\min(q,p)=\sum_{x'}\max(0,p-q)$. We get $2$--$3\times$
+    faster generation with \myalert{zero change} in the model's distribution.
+
+    \SlideSource{\href{https://arxiv.org/abs/2211.17192}{Leviathan et al. (2023)}, ICML; \href{https://arxiv.org/abs/2302.01318}{Chen et al. (2023)}.}
+
+\end{frame}
+
+\begin{frame}{Multi-token prediction (MTP) as a drafter}
+    \setlength{\parskip}{5pt}
+
+    Maintaining a separate draft model is inconvenient: it must share the same
+    tokenizer, stay aligned with the target model, and keep its own KV cache.
+
+    \myalert{Multi-token prediction} (MTP) adds lightweight extra heads (e.g.,
+    one small block per offset) to predict $z_{t+2}, z_{t+3}, \ldots$ from the
+    main hidden state:
+
+    \begin{columns}[T,onlytextwidth]
+        \begin{column}{0.48\textwidth}
+            \begin{tcolorbox}[nndsblue,courseheight={mtp-role}{0.25\textheight},boxsep=1mm,top=1.5mm,bottom=1.5mm]\small
+                \textbf{\color{darkcerulean}During training}\par
+                Predicting several future tokens at every position gives
+                denser supervision and improves downstream quality.
+            \end{tcolorbox}
+        \end{column}
+        \begin{column}{0.48\textwidth}
+            \begin{tcolorbox}[nndsgreen,courseheight={mtp-role}{0.25\textheight},boxsep=1mm,top=1.5mm,bottom=1.5mm]\small
+                \textbf{\color{darkgreen}During inference}\par
+                The MTP heads act as a \textbf{built-in drafter} for
+                speculative decoding, reusing the main hidden states at low
+                cost.
+            \end{tcolorbox}
+        \end{column}
+    \end{columns}
+
+    \smallskip
+    Because it helps both training and inference, MTP is now standard in
+    recent open models (e.g., DeepSeek-V3/V4, Qwen3.8, Inkling 2).
+
+    \SlideSource{\href{https://arxiv.org/abs/2404.19737}{Gloeckle et al. (2024)}, ICML; \href{https://arxiv.org/abs/2412.19437}{DeepSeek-AI, DeepSeek-V3 (2024)}.}
+
+\end{frame}
+
+\section{Beyond the standard block (optional)}
+\subsection{A tour of recent open models}
+
+\begin{frame}{Three 2026 open models at a glance}
+    \setlength{\parskip}{3pt}
+
+    {\small Recent open releases push beyond the standard block in four directions:}
+
+    \centering
+    \renewcommand{\arraystretch}{1.15}
+    {\scriptsize
+    \begin{tabular}{@{}p{0.19\textwidth}p{0.15\textwidth}p{0.27\textwidth}p{0.29\textwidth}@{}}
+        \textbf{Model} & \textbf{MoE (tot./act.)} & \textbf{Attention / long context} & \textbf{Beyond the standard block} \\
+        \hline
+        Inkling 2 Small & $594$B / $17$B & $40$ local ($1024$) + $8$ global, GQA $48/8$, no RoPE & Attention residuals, dynamic sink + gate, short KV conv, NVFP4, MTP \\
+        DeepSeek-V4 Pro & $1.6$T / $49$B & MLA + compressed/sparse (top-$1024$ indexer), $w=128$ & mHC ($4$-stream residuals), FP4 experts, MTP + DSpark drafter \\
+        Qwen3.8-Flash-Next & $125$B / $6$B & $12\times$($3$ Gated DeltaNet + $1$ sparse GQA $24/2$) & Hybrid linear recurrence, output gate, $4$-stream HC, $51$B n-gram table, MTP \\
+    \end{tabular}}
+    \par\vspace{0.35em}
+    \centering
+    \input{../../shared/assets/images/transformers/residual_generalizations.tex}
+    \par\vspace{-0.3em}
+    \justifying
+    {\scriptsize Four trends: \textbf{learned sparse/compressed attention}, \textbf{generalized residuals} (above), \textbf{hybrid linear layers}, and \textbf{n-gram memory / MTP}.}
+
+\end{frame}
+
+\begin{frame}{Inkling 2 Small (Thinking Machines, 2026)}
+    \setlength{\parskip}{4pt}
+
+    Inkling 2 Small ($594$B / $17$B MoE, $8$ of $384$ experts, $48$ layers,
+    $1$M context) uses $5{:}1$ local/global GQA, native NVFP4, and MTP, plus
+    three notable ideas:
+    \begin{itemize}
+        \setlength{\itemsep}{3pt}
+        \item \myalert{Attention residuals} (Kimi Team, 2026): replaces fixed
+              pre-norm addition with softmax attention over earlier block
+              outputs ($8$ blocks of $6$ layers), countering the $\mathcal{O}(N)$
+              growth of hidden-state norms with depth.
+        \item \myalert{Dynamic sink and gated attention}: a per-token,
+              per-head sink logit $s_{t,h}=\vc{w}_h^{\top}\vc{x}_t$ with zero
+              value multiplies the attention output by
+              $\sigma(\operatorname{lse}-s_{t,h})$, linking sinks to
+              \textbf{gated attention} (Qiu et al., 2025).
+        \item \myalert{No RoPE} in the main model: uses a small learned
+              relative bias plus log length scaling beyond $128$K, and a short
+              kernel-$4$ convolution on global keys and values.
+    \end{itemize}
+
+    \SlideSource{\href{https://huggingface.co/thinkingmachines/Inkling-2-Small}{Inkling 2 Small (2026)}; \href{https://arxiv.org/abs/2603.15031}{Kimi Team, AttnRes (2026)}; \href{https://arxiv.org/abs/2505.06708}{Qiu et al., Gated Attention (2025)}.}
+
+\end{frame}
+
+\begin{frame}{DeepSeek-V4 (2026)}
+    \setlength{\parskip}{4pt}
+
+    DeepSeek-V4 Pro ($1.6$T / $49$B MoE, $384$ routed + $1$ shared, $6$
+    active, FP4 experts, $1$M context) extends DeepSeek-V3 in three ways:
+    \begin{itemize}
+        \setlength{\itemsep}{3pt}
+        \item \myalert{Compressed and sparse attention}: pairs MLA ($512+64$
+              RoPE) and a $128$-token window with an indexer selecting the
+              top-$1024$ compressed blocks per query.
+        \item \myalert{Manifold-constrained hyper-connections (mHC)}: widens
+              the residual path to $4$ streams mixed by a doubly stochastic
+              (Sinkhorn) matrix, keeping residual stability.
+        \item \myalert{MTP + DSpark}: combines an MTP layer with a dedicated
+              multi-step speculative drafter in the checkpoint.
+    \end{itemize}
+
+    \textbf{DeepSeek-V4.1-Flash} ($552$B, $8$B--$16$B active) adds a
+    \emph{causal encoder-decoder} ($20+20$ layers sharing KV and sparse
+    indices), an FP4 KV cache ($890$\,B/token), and \textbf{Engram} ($196$B
+    n-gram memory).
+
+    \SlideSource{\href{https://arxiv.org/abs/2512.24880}{DeepSeek-AI, mHC (2025)}; \href{https://arxiv.org/abs/2606.19348}{DeepSeek-AI, DeepSeek-V4 (2026)}.}
+
+\end{frame}
+
+\begin{frame}{Qwen3.8-Flash-Next (2026)}
+    \setlength{\parskip}{5pt}
+
+    Qwen3.8-Flash-Next ($125$B / $6$B MoE, plus a $51$B n-gram embedding table
+    and a $4$B MTP module) previews the Qwen4 architecture:
+    \begin{itemize}
+        \setlength{\itemsep}{3pt}
+        \item \myalert{Hybrid linear and sparse attention}: repeats $12$
+              blocks of \textbf{three Gated DeltaNet layers} followed by
+              \textbf{one Qwen Sparse Attention} layer (GQA $24/2$, partial
+              RoPE, micro-block MQA indexer).
+        \item \myalert{Gated attention and hyper-connections}: applies a
+              learned sigmoid gate to attention outputs (suppressing attention
+              sinks) and widens the residual path to $4$ streams.
+    \end{itemize}
+
+    \begin{tcolorbox}[nndsblue,boxsep=1mm,top=1.5mm,bottom=1.5mm]
+        Notice the shift: \textbf{three out of every four layers} here are not
+        softmax attention at all, but a \textbf{linear recurrent layer}
+        (Gated DeltaNet) whose memory stays constant in $T$.
+    \end{tcolorbox}
+
+    \SlideSource{\href{https://arxiv.org/abs/2412.06464}{Yang et al., Gated DeltaNet (2025)}, ICLR; \href{https://arxiv.org/abs/2505.06708}{Qiu et al., Gated Attention (2025)}, NeurIPS.}
+
+\end{frame}
+
+\begin{frame}{Further readings}
+    \setlength{\parskip}{5pt}
+
+    \begin{itemize}
+        \setlength{\itemsep}{2pt}
+        \item \textbf{Chapter 11} of \textit{Alice's Adventures in a Differentiable Wonderland} (KV caching, GQA, FlashAttention, and MoE layers).
+        \item \href{https://arxiv.org/abs/2205.14135}{FlashAttention} (Dao et al., 2022) and \href{https://arxiv.org/abs/1805.02867}{online softmax} (Milakov and Gimelshein, 2018).
+        \item \href{https://arxiv.org/abs/2412.19437}{DeepSeek-V3 Technical Report} (2024), for MLA, fine-grained MoE, auxiliary-loss-free balancing, FP8 training, and MTP in one model.
+        \item \href{https://arxiv.org/abs/2309.06180}{vLLM / PagedAttention} (Kwon et al., 2023) and \href{https://arxiv.org/abs/2211.17192}{Speculative Decoding} (Leviathan et al., 2023).
+    \end{itemize}
+
+    \smallskip
+    Even with GQA, sliding windows and FlashAttention, global attention still
+    keeps a cache that grows with $T$. In the next lecture, we study
+    \myalert{recurrent models}---from classical RNNs to modern linear
+    attention and state-space layers---that compress the history into a
+    fixed-size state.
 
 \end{frame}
 

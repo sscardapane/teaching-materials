@@ -1,0 +1,44 @@
+% Three residual designs: standard pre-norm addition, depth-wise attention
+% residuals (Inkling 2 / Kimi), and multi-stream hyper-connections (mHC).
+\begin{tikzpicture}[x=0.98cm, y=0.82cm,
+        blk/.style={tfblk, minimum width=0.90cm, minimum height=0.44cm, font=\scriptsize},
+        ttl/.style={font=\scriptsize\bfseries, text=black!80},
+        sub/.style={font=\scriptsize, text=black!60},
+    ]
+    % (a) Standard residual
+    \begin{scope}
+        \node[ttl] at (1.3,1.72) {Standard residual};
+        \node[font=\scriptsize] (x0) at (0,0.88) {$\vc{h}_{l-1}$};
+        \node[blk] (f0) at (1.3,0.88) {$f_l$};
+        \node[tfsum, minimum size=0.36cm, font=\scriptsize] (s0) at (2.4,0.88) {$+$};
+        \draw[tfarr] (x0) -- (f0);
+        \draw[tfarr] (f0) -- (s0);
+        \draw[tfarr] (0.52,0.88) -- (0.52,1.38) -| (s0.north);
+        \fill[drawgray] (0.52,0.88) circle (1.1pt);
+        \node[sub] at (1.3,0.22) {single stream, weight $1$};
+    \end{scope}
+
+    % (b) Attention residuals (depth)
+    \begin{scope}[xshift=3.85cm]
+        \node[ttl] at (1.5,1.72) {Attention residuals (depth)};
+        \foreach \i/\xx in {1/0.25, 2/1.05, 3/1.85} {
+            \node[blk, minimum width=0.54cm] (b\i) at (\xx,1.24) {$v_{\i}$};
+        }
+        \node[tfnorm, minimum width=0.82cm, minimum height=0.40cm, font=\scriptsize] (sm) at (2.75,0.82) {softmax};
+        \foreach \i in {1,2,3} {
+            \draw[tfarr, draw=drawgreen!80!black] (b\i.south) |- (sm.west);
+        }
+        \node[sub] at (1.5,0.22) {learned weights over blocks};
+    \end{scope}
+
+    % (c) mHC (width / multi-stream)
+    \begin{scope}[xshift=8.15cm]
+        \node[ttl] at (1.5,1.72) {Hyper-connections (mHC)};
+        \foreach \k/\yy in {1/1.28, 2/1.00, 3/0.72} {
+            \draw[tfarr] (0,\yy) -- (1.08,\yy);
+            \draw[tfarr] (2.02,\yy) -- (3.0,\yy);
+        }
+        \node[draw=draworange, fill=draworange_l!65, rounded corners=2pt, minimum width=0.92cm, minimum height=0.82cm, align=center, font=\scriptsize] (mx) at (1.55,1.00) {mix\\$4\times 4$};
+        \node[sub] at (1.5,0.22) {$4$ streams, doubly stochastic};
+    \end{scope}
+\end{tikzpicture}
