@@ -7803,9 +7803,8 @@ a.anchor-link {
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
 <h1 id="PT02:-Logistic-regression-in-PyTorch">PT02: Logistic regression in PyTorch<a class="anchor-link" href="#PT02:-Logistic-regression-in-PyTorch">¶</a></h1><p>Given a few measurements of a penguin, can we predict its species? In this lab we build a linear classifier, train it with gradient descent and evaluate it.</p>
-<p>You should be comfortable with PT01 up to its short check: tensor operations, <code>backward()</code> and parameter updates. Data loading and plotting are provided. There are six activities. In the first three you write the forward pass, the loss and the training step. Then you investigate why the largest learning rate wins on this data, diagnose a faulty training step, and check when a mini-batch update equals a full-batch one. Along the way we switch to PyTorch's standard components and train on mini-batches. After the MLP lecture, Section 9 replaces the linear model with an MLP, keeping the rest of the code. Exercises are rated from 1 to 3 stars based on expected difficulty.</p>
-<p>Two optional sections close the notebook. The first uses per-example gradients to look inside the trained classifier. The second is an exercise for after the MLP lecture, where we reuse the same training loop with an MLP to fit an image.</p>
-<p>Complete each activity before moving on: if you run a later cell first, you get an error that names the missing activity. Solutions are not included in this version.</p>
+<p>You should be comfortable with PT01 up to its short check: tensor operations, <code>backward()</code> and parameter updates. Data loading, plotting and the training loop are provided. You write three functions: the forward pass (Activity 1), the loss (Activity 2) and one training step (Activity 3). With them we compare three learning rates, switch to PyTorch's standard components, train on mini-batches and evaluate the selected model on the test set. Each activity ends with a one-line check. Later cells use your functions, so complete the activities in order.</p>
+<p>Six optional sections follow: why the largest learning rate wins, a faulty training step, a mini-batch as large as the training set, the same training loop with an MLP, per-example gradients, and an MLP that stores an image. The fourth and the last are meant for after the MLP lecture. Exercises are rated from 1 to 3 stars based on expected difficulty. The solutions, with a short explanation for each exercise, are in <a href="https://colab.research.google.com/github/sscardapane/teaching-materials/blob/main/notebooks/PT02_Logistic_regression_solutions.ipynb">PT02 solutions</a>.</p>
 <blockquote>
 <p>Try to solve these exercises without AI coding assistants.</p>
 </blockquote>
@@ -7846,7 +7845,9 @@ a.anchor-link {
 <div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython3"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<div class="highlight hl-ipython3"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">io</span><span class="w"> </span><span class="kn">import</span> <span class="n">BytesIO</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">urllib.request</span><span class="w"> </span><span class="kn">import</span> <span class="n">urlopen</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">copy</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">hashlib</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
@@ -7854,13 +7855,70 @@ a.anchor-link {
 <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">jaxtyping</span><span class="w"> </span><span class="kn">import</span> <span class="n">Float</span><span class="p">,</span> <span class="n">Int</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">torch.nn.functional</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">F</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.model_selection</span><span class="w"> </span><span class="kn">import</span> <span class="n">train_test_split</span>
 
 <span class="n">torch</span><span class="o">.</span><span class="n">manual_seed</span><span class="p">(</span><span class="mi">7</span><span class="p">)</span>
 <span class="n">torch</span><span class="o">.</span><span class="n">set_printoptions</span><span class="p">(</span><span class="n">precision</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">sci_mode</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">"PyTorch"</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">__version__</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=pt02-checks">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="cm-editor cm-s-jupyter">
+<div class="highlight hl-ipython3"><pre><span></span><span class="c1">#@title Checks for the activities (run this cell; you do not need to read it)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">check_linear_logits</span><span class="p">(</span><span class="n">linear_logits</span><span class="p">):</span>
+    <span class="n">X</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([[</span><span class="mf">1.</span><span class="p">,</span> <span class="mf">2.</span><span class="p">],</span> <span class="p">[</span><span class="mf">3.</span><span class="p">,</span> <span class="mf">4.</span><span class="p">]])</span>
+    <span class="n">W</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([[</span><span class="mf">1.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">],</span> <span class="p">[</span><span class="o">-</span><span class="mf">1.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">]])</span>
+    <span class="n">b</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="mf">0.5</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">1.</span><span class="p">])</span>
+    <span class="n">expected</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([[</span><span class="mf">1.5</span><span class="p">,</span> <span class="mf">1.5</span><span class="p">,</span> <span class="mf">2.</span><span class="p">],</span> <span class="p">[</span><span class="mf">3.5</span><span class="p">,</span> <span class="mf">3.5</span><span class="p">,</span> <span class="mf">2.</span><span class="p">]])</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">linear_logits</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">W</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">result</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="sa">f</span><span class="s2">"Expected one row of 3 logits per example, shape (2, 3), got </span><span class="si">{</span><span class="nb">tuple</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span><span class="si">}</span><span class="s2">."</span>
+    <span class="k">assert</span> <span class="n">torch</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">expected</span><span class="p">),</span> <span class="sa">f</span><span class="s2">"Expected</span><span class="se">\n</span><span class="si">{</span><span class="n">expected</span><span class="si">}</span><span class="se">\n</span><span class="s2">got</span><span class="se">\n</span><span class="si">{</span><span class="n">result</span><span class="si">}</span><span class="s2">"</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"linear_logits is correct."</span><span class="p">)</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">check_cross_entropy</span><span class="p">(</span><span class="n">cross_entropy</span><span class="p">):</span>
+    <span class="c1"># Ordinary logits, then logits so large that log(softmax(...)) overflows.</span>
+    <span class="n">cases</span> <span class="o">=</span> <span class="p">[(</span><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([[</span><span class="mf">2.</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">,</span> <span class="o">-</span><span class="mf">2.</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">3.</span><span class="p">]]),</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">])),</span>
+             <span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([[</span><span class="mf">1000.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="o">-</span><span class="mf">1000.</span><span class="p">],</span> <span class="p">[</span><span class="o">-</span><span class="mf">1000.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">1000.</span><span class="p">]]),</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">]))]</span>
+    <span class="k">for</span> <span class="n">logits</span><span class="p">,</span> <span class="n">targets</span> <span class="ow">in</span> <span class="n">cases</span><span class="p">:</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">cross_entropy</span><span class="p">(</span><span class="n">logits</span><span class="p">,</span> <span class="n">targets</span><span class="p">)</span>
+        <span class="n">expected</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">cross_entropy</span><span class="p">(</span><span class="n">logits</span><span class="p">,</span> <span class="n">targets</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">result</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(),</span> <span class="sa">f</span><span class="s2">"The loss must be a scalar, got shape </span><span class="si">{</span><span class="nb">tuple</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span><span class="si">}</span><span class="s2">."</span>
+        <span class="k">assert</span> <span class="n">torch</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">result</span><span class="p">),</span> <span class="s2">"The loss is not finite for very large logits: use torch.logsumexp."</span>
+        <span class="k">assert</span> <span class="n">torch</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">expected</span><span class="p">),</span> <span class="p">(</span>
+            <span class="sa">f</span><span class="s2">"For logits</span><span class="se">\n</span><span class="si">{</span><span class="n">logits</span><span class="si">}</span><span class="se">\n</span><span class="s2">and targets </span><span class="si">{</span><span class="n">targets</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span><span class="si">}</span><span class="s2">, expected </span><span class="si">{</span><span class="n">expected</span><span class="o">.</span><span class="n">item</span><span class="p">()</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">, got </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">item</span><span class="p">()</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">."</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"cross_entropy is correct."</span><span class="p">)</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">check_training_step</span><span class="p">(</span><span class="n">training_step</span><span class="p">):</span>
+    <span class="c1"># Two consecutive steps on the same data: the second fails if the gradients are not cleared.</span>
+    <span class="n">generator</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">Generator</span><span class="p">()</span><span class="o">.</span><span class="n">manual_seed</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">X</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">16</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="n">generator</span><span class="o">=</span><span class="n">generator</span><span class="p">),</span> <span class="n">torch</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="p">(</span><span class="mi">16</span><span class="p">,),</span> <span class="n">generator</span><span class="o">=</span><span class="n">generator</span><span class="p">)</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+    <span class="n">expected_model</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">step</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">):</span>
+        <span class="n">loss</span> <span class="o">=</span> <span class="n">training_step</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">)</span>
+        <span class="n">expected_model</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
+        <span class="n">expected_loss</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">cross_entropy</span><span class="p">(</span><span class="n">expected_model</span><span class="p">(</span><span class="n">X</span><span class="p">),</span> <span class="n">y</span><span class="p">)</span>
+        <span class="n">expected_loss</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
+        <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">parameter</span> <span class="ow">in</span> <span class="n">expected_model</span><span class="o">.</span><span class="n">parameters</span><span class="p">():</span>
+                <span class="n">parameter</span> <span class="o">-=</span> <span class="mf">0.1</span> <span class="o">*</span> <span class="n">parameter</span><span class="o">.</span><span class="n">grad</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">loss</span><span class="p">,</span> <span class="nb">float</span><span class="p">),</span> <span class="s2">"Return loss.item(), a Python number, not a tensor."</span>
+        <span class="k">assert</span> <span class="nb">abs</span><span class="p">(</span><span class="n">loss</span> <span class="o">-</span> <span class="n">expected_loss</span><span class="o">.</span><span class="n">item</span><span class="p">())</span> <span class="o">&lt;</span> <span class="mf">1e-5</span><span class="p">,</span> <span class="p">(</span>
+            <span class="sa">f</span><span class="s2">"Step </span><span class="si">{</span><span class="n">step</span><span class="si">}</span><span class="s2">: return the loss computed before the update (</span><span class="si">{</span><span class="n">expected_loss</span><span class="o">.</span><span class="n">item</span><span class="p">()</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">), got </span><span class="si">{</span><span class="n">loss</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">."</span><span class="p">)</span>
+        <span class="k">for</span> <span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">parameter</span><span class="p">),</span> <span class="n">expected</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">named_parameters</span><span class="p">(),</span> <span class="n">expected_model</span><span class="o">.</span><span class="n">parameters</span><span class="p">()):</span>
+            <span class="n">hint</span> <span class="o">=</span> <span class="s2">" Did you clear the gradients before backward()?"</span> <span class="k">if</span> <span class="n">step</span> <span class="o">==</span> <span class="mi">2</span> <span class="k">else</span> <span class="s2">""</span>
+            <span class="k">assert</span> <span class="n">torch</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">parameter</span><span class="p">,</span> <span class="n">expected</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">),</span> <span class="sa">f</span><span class="s2">"Step </span><span class="si">{</span><span class="n">step</span><span class="si">}</span><span class="s2">: wrong </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> after the update.</span><span class="si">{</span><span class="n">hint</span><span class="si">}</span><span class="s2">"</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"training_step is correct."</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -7888,15 +7946,12 @@ a.anchor-link {
 <div class="highlight hl-ipython3"><pre><span></span><span class="n">DATA_URL</span> <span class="o">=</span> <span class="s2">"https://raw.githubusercontent.com/allisonhorst/palmerpenguins/main/inst/extdata/penguins.csv"</span>
 <span class="n">DATA_SHA256</span> <span class="o">=</span> <span class="s2">"f204db2c753b0937caac3cb35258562c14f073e4bbc76be24b4c51ce22767a93"</span>
 <span class="n">data_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s2">"data/penguins.csv"</span><span class="p">)</span>
-<span class="k">if</span> <span class="ow">not</span> <span class="n">data_path</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
-    <span class="kn">from</span><span class="w"> </span><span class="nn">urllib.request</span><span class="w"> </span><span class="kn">import</span> <span class="n">urlopen</span>
-    <span class="n">data_path</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-    <span class="n">data_path</span><span class="o">.</span><span class="n">write_bytes</span><span class="p">(</span><span class="n">urlopen</span><span class="p">(</span><span class="n">DATA_URL</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span><span class="o">.</span><span class="n">read</span><span class="p">())</span>
-<span class="k">assert</span> <span class="n">hashlib</span><span class="o">.</span><span class="n">sha256</span><span class="p">(</span><span class="n">data_path</span><span class="o">.</span><span class="n">read_bytes</span><span class="p">())</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">()</span> <span class="o">==</span> <span class="n">DATA_SHA256</span><span class="p">,</span> <span class="s2">"Dataset changed; use the supplied data/penguins.csv."</span>
+<span class="n">data_bytes</span> <span class="o">=</span> <span class="n">data_path</span><span class="o">.</span><span class="n">read_bytes</span><span class="p">()</span> <span class="k">if</span> <span class="n">data_path</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span> <span class="k">else</span> <span class="n">urlopen</span><span class="p">(</span><span class="n">DATA_URL</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+<span class="k">assert</span> <span class="n">hashlib</span><span class="o">.</span><span class="n">sha256</span><span class="p">(</span><span class="n">data_bytes</span><span class="p">)</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">()</span> <span class="o">==</span> <span class="n">DATA_SHA256</span><span class="p">,</span> <span class="s2">"Dataset changed; use the supplied data/penguins.csv."</span>
 
 <span class="n">features</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"bill_length_mm"</span><span class="p">,</span> <span class="s2">"bill_depth_mm"</span><span class="p">,</span> <span class="s2">"flipper_length_mm"</span><span class="p">,</span> <span class="s2">"body_mass_g"</span><span class="p">]</span>
 <span class="n">classes</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"Adelie"</span><span class="p">,</span> <span class="s2">"Chinstrap"</span><span class="p">,</span> <span class="s2">"Gentoo"</span><span class="p">]</span>
-<span class="n">penguins</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">data_path</span><span class="p">)</span><span class="o">.</span><span class="n">dropna</span><span class="p">(</span><span class="n">subset</span><span class="o">=</span><span class="n">features</span> <span class="o">+</span> <span class="p">[</span><span class="s2">"species"</span><span class="p">])</span>
+<span class="n">penguins</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">BytesIO</span><span class="p">(</span><span class="n">data_bytes</span><span class="p">))</span><span class="o">.</span><span class="n">dropna</span><span class="p">(</span><span class="n">subset</span><span class="o">=</span><span class="n">features</span> <span class="o">+</span> <span class="p">[</span><span class="s2">"species"</span><span class="p">])</span>
 <span class="n">X</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">penguins</span><span class="p">[</span><span class="n">features</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
 <span class="n">y</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">Categorical</span><span class="p">(</span><span class="n">penguins</span><span class="o">.</span><span class="n">species</span><span class="p">,</span> <span class="n">categories</span><span class="o">=</span><span class="n">classes</span><span class="p">)</span><span class="o">.</span><span class="n">codes</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">long</span><span class="p">)</span>
 <span class="k">assert</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(</span><span class="mi">342</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span> <span class="ow">and</span> <span class="n">y</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(</span><span class="mi">342</span><span class="p">,)</span>
@@ -7978,11 +8033,11 @@ a.anchor-link {
 <h2 id="2.-The-model">2. The model<a class="anchor-link" href="#2.-The-model">¶</a></h2><p>Recall the batched linear model from PT01,</p>
 <p>$$Z=XW^\top+b,$$</p>
 <p>with $X\sim(B,D)$, $W\sim(C,D)$, $b\sim(C,)$ and $Z\sim(B,C)$. Here $D=4$ features and $C=3$ classes. The outputs are logits; we apply a softmax only when we need probabilities.</p>
-<h3 id="Activity-1:-a-batched-forward-pass-%E2%98%85">Activity 1: a batched forward pass ★<a class="anchor-link" href="#Activity-1:-a-batched-forward-pass-%E2%98%85">¶</a></h3><p>Implement <code>linear_logits</code> with tensor operations and run the check on the small example. How is the bias added to each example? The model class that uses your function is provided after the check.</p>
+<h3 id="Activity-1:-a-batched-forward-pass-%E2%98%85">Activity 1: a batched forward pass ★<a class="anchor-link" href="#Activity-1:-a-batched-forward-pass-%E2%98%85">¶</a></h3><p>Implement <code>linear_logits</code> with tensor operations and run the check. How is the bias added to each example? The model class that uses your function comes after the check.</p>
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=81f5c4d5">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs celltag_exercise" id="cell-id=81f5c4d5">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -7990,15 +8045,9 @@ a.anchor-link {
 <div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython3"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">linear_logits</span><span class="p">(</span><span class="n">X</span><span class="p">:</span> <span class="n">Float</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="s2">"batch features"</span><span class="p">],</span> <span class="n">W</span><span class="p">:</span> <span class="n">Float</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="s2">"classes features"</span><span class="p">],</span> <span class="n">b</span><span class="p">:</span> <span class="n">Float</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="s2">"classes"</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Float</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="s2">"batch classes"</span><span class="p">]]:</span>
-    <span class="c1"># Replace None with your batched computation.</span>
-    <span class="k">return</span> <span class="kc">None</span>
-
-<span class="k">def</span><span class="w"> </span><span class="nf">forward_logits</span><span class="p">(</span><span class="n">X</span><span class="p">:</span> <span class="n">Float</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="s2">"batch features"</span><span class="p">],</span> <span class="n">W</span><span class="p">:</span> <span class="n">Float</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="s2">"classes features"</span><span class="p">],</span> <span class="n">b</span><span class="p">:</span> <span class="n">Float</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="s2">"classes"</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Float</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="s2">"batch classes"</span><span class="p">]:</span>
-    <span class="n">result</span> <span class="o">=</span> <span class="n">linear_logits</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">W</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">result</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">"Complete Activity 1 before continuing."</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">result</span>
+<div class="highlight hl-ipython3"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">linear_logits</span><span class="p">(</span><span class="n">X</span><span class="p">:</span> <span class="n">Float</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="s2">"batch features"</span><span class="p">],</span> <span class="n">W</span><span class="p">:</span> <span class="n">Float</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="s2">"classes features"</span><span class="p">],</span> <span class="n">b</span><span class="p">:</span> <span class="n">Float</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="s2">"classes"</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Float</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="s2">"batch classes"</span><span class="p">]:</span>
+    <span class="c1"># TODO: compute the logits of the whole batch.</span>
+    <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">"Activity 1: write linear_logits"</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -8012,12 +8061,7 @@ a.anchor-link {
 <div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython3"><pre><span></span><span class="n">small_X</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([[</span><span class="mf">1.</span><span class="p">,</span> <span class="mf">2.</span><span class="p">],</span> <span class="p">[</span><span class="mf">3.</span><span class="p">,</span> <span class="mf">4.</span><span class="p">]])</span>
-<span class="n">small_W</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([[</span><span class="mf">1.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">],</span> <span class="p">[</span><span class="o">-</span><span class="mf">1.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">]])</span>
-<span class="n">small_b</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="mf">0.5</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">1.</span><span class="p">])</span>
-<span class="n">expected</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([[</span><span class="mf">1.5</span><span class="p">,</span> <span class="mf">1.5</span><span class="p">,</span> <span class="mf">2.</span><span class="p">],</span> <span class="p">[</span><span class="mf">3.5</span><span class="p">,</span> <span class="mf">3.5</span><span class="p">,</span> <span class="mf">2.</span><span class="p">]])</span>
-<span class="n">torch</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_close</span><span class="p">(</span><span class="n">forward_logits</span><span class="p">(</span><span class="n">small_X</span><span class="p">,</span> <span class="n">small_W</span><span class="p">,</span> <span class="n">small_b</span><span class="p">),</span> <span class="n">expected</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"Forward-pass check passed."</span><span class="p">)</span>
+<div class="highlight hl-ipython3"><pre><span></span><span class="n">check_linear_logits</span><span class="p">(</span><span class="n">linear_logits</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -8030,7 +8074,7 @@ a.anchor-link {
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<p>A <code>torch.nn.Module</code> keeps track of the parameters of a model. Wrapping a tensor in <code>nn.Parameter</code> registers it as a parameter and sets <code>requires_grad=True</code>. We initialize everything to zero. This is fine for a linear classifier, but it would not work for the hidden layers of an MLP, as Section 9 shows.</p>
+<p>A <code>torch.nn.Module</code> keeps track of the parameters of a model. Wrapping a tensor in <code>nn.Parameter</code> registers it as a parameter and sets <code>requires_grad=True</code>. We initialize everything to zero. This is fine for a linear classifier, but it would not work for the hidden layers of an MLP, as Optional D shows.</p>
 </div>
 </div>
 </div>
@@ -8049,7 +8093,7 @@ a.anchor-link {
         <span class="bp">self</span><span class="o">.</span><span class="n">bias</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">output_dim</span><span class="p">))</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="n">Float</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="s2">"batch features"</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Float</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="s2">"batch classes"</span><span class="p">]:</span>
-        <span class="k">return</span> <span class="n">forward_logits</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">weight</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">bias</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">linear_logits</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">weight</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">bias</span><span class="p">)</span>
 
 <span class="n">model</span> <span class="o">=</span> <span class="n">LogisticRegression</span><span class="p">(</span><span class="n">Xtrain</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="nb">len</span><span class="p">(</span><span class="n">classes</span><span class="p">))</span>
 <span class="k">assert</span> <span class="n">model</span><span class="p">(</span><span class="n">Xtrain</span><span class="p">[:</span><span class="mi">5</span><span class="p">])</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
@@ -8069,13 +8113,13 @@ a.anchor-link {
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
 <h2 id="3.-Loss-and-accuracy">3. Loss and accuracy<a class="anchor-link" href="#3.-Loss-and-accuracy">¶</a></h2><p>For a vector of logits $z$ and correct class $y$, the cross-entropy is</p>
 <p>$$\ell(z,y)=\log\sum_c\exp(z_c)-z_y.$$</p>
-<h3 id="Activity-2:-the-loss-%E2%98%85%E2%98%85">Activity 2: the loss ★★<a class="anchor-link" href="#Activity-2:-the-loss-%E2%98%85%E2%98%85">¶</a></h3><p>Implement <code>student_cross_entropy</code> from this formula, averaged over the examples in the batch. Use <code>torch.logsumexp</code> for the first term, and select the logit of the correct class from each row. Do not call <code>F.cross_entropy</code>: we use it below to check your result.</p>
-<p>Before writing code, work out the shapes of the first term, of the selected logits and of the final loss. The accuracy function is provided.</p>
+<h3 id="Activity-2:-the-loss-%E2%98%85%E2%98%85">Activity 2: the loss ★★<a class="anchor-link" href="#Activity-2:-the-loss-%E2%98%85%E2%98%85">¶</a></h3><p>Implement <code>cross_entropy</code> from this formula, averaged over the examples in the batch. Use <code>torch.logsumexp</code> for the first term, and select the logit of the correct class from each row. Do not call <code>F.cross_entropy</code>: the check uses it to test your result, including on very large logits, where computing <code>log(softmax(...))</code> directly gives infinite values.</p>
+<p>Before writing code, work out the shapes of the first term, of the selected logits and of the final loss.</p>
 <p>Hint: see NumPy's <a href="https://numpy.org/doc/stable/user/basics.indexing.html">Indexing on ndarrays</a>, especially <a href="https://numpy.org/doc/stable/user/basics.indexing.html#integer-array-indexing">integer array indexing</a>, for selecting one element from each row. The same indexing pattern works with PyTorch tensors.</p>
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=97278cda">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs celltag_exercise" id="cell-id=97278cda">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -8083,17 +8127,36 @@ a.anchor-link {
 <div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython3"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">student_cross_entropy</span><span class="p">(</span><span class="n">logits</span><span class="p">:</span> <span class="n">Float</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="s2">"batch classes"</span><span class="p">],</span> <span class="n">targets</span><span class="p">:</span> <span class="n">Int</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="s2">"batch"</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Float</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="s2">""</span><span class="p">]]:</span>
-    <span class="c1"># Replace None with the batched loss.</span>
-    <span class="k">return</span> <span class="kc">None</span>
-
-<span class="k">def</span><span class="w"> </span><span class="nf">cross_entropy</span><span class="p">(</span><span class="n">logits</span><span class="p">:</span> <span class="n">Float</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="s2">"batch classes"</span><span class="p">],</span> <span class="n">targets</span><span class="p">:</span> <span class="n">Int</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="s2">"batch"</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Float</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="s2">""</span><span class="p">]:</span>
-    <span class="n">result</span> <span class="o">=</span> <span class="n">student_cross_entropy</span><span class="p">(</span><span class="n">logits</span><span class="p">,</span> <span class="n">targets</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">result</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">"Complete Activity 2 before continuing."</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">result</span>
+<div class="highlight hl-ipython3"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">cross_entropy</span><span class="p">(</span><span class="n">logits</span><span class="p">:</span> <span class="n">Float</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="s2">"batch classes"</span><span class="p">],</span> <span class="n">targets</span><span class="p">:</span> <span class="n">Int</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="s2">"batch"</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Float</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="s2">""</span><span class="p">]:</span>
+    <span class="c1"># TODO: compute the mean cross-entropy over the batch.</span>
+    <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">"Activity 2: write cross_entropy"</span><span class="p">)</span>
 </pre></div>
 </div>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=cd35619f">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="cm-editor cm-s-jupyter">
+<div class="highlight hl-ipython3"><pre><span></span><span class="n">check_cross_entropy</span><span class="p">(</span><span class="n">cross_entropy</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=2f844225-intro">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<p>The accuracy function is provided. The next cell computes the loss and the accuracy of the model at initialization.</p>
 </div>
 </div>
 </div>
@@ -8111,9 +8174,6 @@ a.anchor-link {
 <span class="n">logits</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">Xtrain</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">"Initial loss:"</span><span class="p">,</span> <span class="n">cross_entropy</span><span class="p">(</span><span class="n">logits</span><span class="p">,</span> <span class="n">ytrain</span><span class="p">)</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">"Initial accuracy:"</span><span class="p">,</span> <span class="n">accuracy</span><span class="p">(</span><span class="n">logits</span><span class="p">,</span> <span class="n">ytrain</span><span class="p">)</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
-<span class="c1"># Zero logits give uniform probabilities and loss log(C).</span>
-<span class="n">torch</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_close</span><span class="p">(</span><span class="n">cross_entropy</span><span class="p">(</span><span class="n">logits</span><span class="p">,</span> <span class="n">ytrain</span><span class="p">),</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">3</span><span class="p">))))</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"Initial-loss check passed."</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -8126,34 +8186,7 @@ a.anchor-link {
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<p>At initialization all logits are zero, so the predicted probabilities are uniform and the loss is $\log 3$. The accuracy is not one third, though: <code>argmax</code> breaks ties by picking the first class (Adelie), so the initial accuracy is the fraction of Adelie penguins in the training set.</p>
-<p>The next cell compares your loss and its gradient with PyTorch's. The second test uses very large logits, where computing <code>log(softmax(...))</code> directly would give infinite values.</p>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=cd35619f">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython3"><pre><span></span><span class="c1"># Check unequal losses as well as extreme logits: averaging must be over examples.</span>
-<span class="k">for</span> <span class="n">values</span><span class="p">,</span> <span class="n">labels</span> <span class="ow">in</span> <span class="p">[([[</span><span class="mf">2.</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">,</span> <span class="o">-</span><span class="mf">2.</span><span class="p">]],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">]),</span>
-                       <span class="p">([[</span><span class="mf">1000.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="o">-</span><span class="mf">1000.</span><span class="p">],</span> <span class="p">[</span><span class="o">-</span><span class="mf">1000.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">1000.</span><span class="p">]],</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">])]:</span>
-    <span class="n">probe</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-    <span class="n">targets</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">labels</span><span class="p">)</span>
-    <span class="n">ours</span> <span class="o">=</span> <span class="n">cross_entropy</span><span class="p">(</span><span class="n">probe</span><span class="p">,</span> <span class="n">targets</span><span class="p">)</span>
-    <span class="n">builtin</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">cross_entropy</span><span class="p">(</span><span class="n">probe</span><span class="p">,</span> <span class="n">targets</span><span class="p">)</span>
-    <span class="n">torch</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_close</span><span class="p">(</span><span class="n">ours</span><span class="p">,</span> <span class="n">builtin</span><span class="p">)</span>
-    <span class="n">g_ours</span><span class="p">,</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">grad</span><span class="p">(</span><span class="n">ours</span><span class="p">,</span> <span class="n">probe</span><span class="p">)</span>
-    <span class="n">g_builtin</span><span class="p">,</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">grad</span><span class="p">(</span><span class="n">builtin</span><span class="p">,</span> <span class="n">probe</span><span class="p">)</span>
-    <span class="n">torch</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_close</span><span class="p">(</span><span class="n">g_ours</span><span class="p">,</span> <span class="n">g_builtin</span><span class="p">)</span>
-    <span class="k">assert</span> <span class="n">torch</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">ours</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"Loss values and gradients agree."</span><span class="p">)</span>
-</pre></div>
-</div>
+<p>At initialization all logits are zero, so the predicted probabilities are uniform and the loss is $\log 3 \approx 1.0986$. The accuracy is not one third, though: <code>argmax</code> breaks ties by picking the first class (Adelie), so the initial accuracy is the fraction of Adelie penguins in the training set.</p>
 </div>
 </div>
 </div>
@@ -8183,11 +8216,11 @@ a.anchor-link {
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
 <h3 id="Activity-3:-train-the-classifier-%E2%98%85">Activity 3: train the classifier ★<a class="anchor-link" href="#Activity-3:-train-the-classifier-%E2%98%85">¶</a></h3><p>Write <code>training_step</code>. It makes one step on the data it receives, changes the model in place and returns the loss computed <strong>before</strong> the update, as a Python number. Loop over <code>model.parameters()</code>, so that the same code updates the weight and the bias. The data are arguments rather than global variables, so later we can call the same function on mini-batches.</p>
-<p>The next cell checks your function over two consecutive steps; the second step catches gradients that were not cleared. Then run the training loop and look at the training and validation curves together. Leave the test set alone until the end.</p>
+<p>The check runs two consecutive steps; the second one fails if the gradients of the first step were not cleared. Then run the training loop and look at the training and validation curves together. Leave the test set alone until the end.</p>
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=05b55ab1">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs celltag_exercise" id="cell-id=05b55ab1">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -8195,23 +8228,9 @@ a.anchor-link {
 <div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython3"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">training_step</span><span class="p">(</span><span class="n">model</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="n">Float</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="s2">"batch features"</span><span class="p">],</span> <span class="n">y</span><span class="p">:</span> <span class="n">Int</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="s2">"batch"</span><span class="p">],</span> <span class="n">lr</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
-    <span class="c1"># Replace None with your training step.</span>
-    <span class="k">return</span> <span class="kc">None</span>
-
-<span class="k">def</span><span class="w"> </span><span class="nf">run_step</span><span class="p">(</span><span class="n">model</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="n">Float</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="s2">"batch features"</span><span class="p">],</span> <span class="n">y</span><span class="p">:</span> <span class="n">Int</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="s2">"batch"</span><span class="p">],</span> <span class="n">lr</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-    <span class="n">result</span> <span class="o">=</span> <span class="n">training_step</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">lr</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">result</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">"Complete Activity 3 before continuing."</span><span class="p">)</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">"Return loss.item(), not a tensor."</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">result</span>
-
-<span class="nd">@torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">()</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">evaluate</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
-    <span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
-    <span class="n">logits</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">cross_entropy</span><span class="p">(</span><span class="n">logits</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span><span class="o">.</span><span class="n">item</span><span class="p">(),</span> <span class="n">accuracy</span><span class="p">(</span><span class="n">logits</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+<div class="highlight hl-ipython3"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">training_step</span><span class="p">(</span><span class="n">model</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="n">Float</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="s2">"batch features"</span><span class="p">],</span> <span class="n">y</span><span class="p">:</span> <span class="n">Int</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="s2">"batch"</span><span class="p">],</span> <span class="n">lr</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+    <span class="c1"># TODO: clear the gradients, compute the loss, call backward() and update the parameters.</span>
+    <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">"Activity 3: write training_step"</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -8225,18 +8244,7 @@ a.anchor-link {
 <div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython3"><pre><span></span><span class="c1"># Compare two consecutive updates: the second detects uncleared gradients.</span>
-<span class="n">check_model</span> <span class="o">=</span> <span class="n">LogisticRegression</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
-<span class="n">first_loss</span> <span class="o">=</span> <span class="n">run_step</span><span class="p">(</span><span class="n">check_model</span><span class="p">,</span> <span class="n">Xtrain</span><span class="p">[:</span><span class="mi">16</span><span class="p">],</span> <span class="n">ytrain</span><span class="p">[:</span><span class="mi">16</span><span class="p">],</span> <span class="mf">0.1</span><span class="p">)</span>
-<span class="n">before_second</span> <span class="o">=</span> <span class="p">[</span><span class="n">parameter</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span> <span class="k">for</span> <span class="n">parameter</span> <span class="ow">in</span> <span class="n">check_model</span><span class="o">.</span><span class="n">parameters</span><span class="p">()]</span>
-<span class="n">expected_second_loss</span> <span class="o">=</span> <span class="n">cross_entropy</span><span class="p">(</span><span class="n">check_model</span><span class="p">(</span><span class="n">Xtrain</span><span class="p">[:</span><span class="mi">16</span><span class="p">]),</span> <span class="n">ytrain</span><span class="p">[:</span><span class="mi">16</span><span class="p">])</span>
-<span class="n">expected_second_gradients</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">grad</span><span class="p">(</span><span class="n">expected_second_loss</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">check_model</span><span class="o">.</span><span class="n">parameters</span><span class="p">()))</span>
-<span class="n">second_loss</span> <span class="o">=</span> <span class="n">run_step</span><span class="p">(</span><span class="n">check_model</span><span class="p">,</span> <span class="n">Xtrain</span><span class="p">[:</span><span class="mi">16</span><span class="p">],</span> <span class="n">ytrain</span><span class="p">[:</span><span class="mi">16</span><span class="p">],</span> <span class="mf">0.1</span><span class="p">)</span>
-<span class="k">assert</span> <span class="nb">abs</span><span class="p">(</span><span class="n">second_loss</span> <span class="o">-</span> <span class="n">expected_second_loss</span><span class="o">.</span><span class="n">item</span><span class="p">())</span> <span class="o">&lt;</span> <span class="mf">1e-6</span>
-<span class="k">for</span> <span class="n">parameter</span><span class="p">,</span> <span class="n">before</span><span class="p">,</span> <span class="n">expected_gradient</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">check_model</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">before_second</span><span class="p">,</span> <span class="n">expected_second_gradients</span><span class="p">):</span>
-    <span class="n">torch</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_close</span><span class="p">(</span><span class="n">parameter</span><span class="o">.</span><span class="n">grad</span><span class="p">,</span> <span class="n">expected_gradient</span><span class="p">)</span>
-    <span class="n">torch</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_close</span><span class="p">(</span><span class="n">parameter</span><span class="p">,</span> <span class="n">before</span> <span class="o">-</span> <span class="mf">0.1</span> <span class="o">*</span> <span class="n">expected_gradient</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"Both updates passed the checks."</span><span class="p">)</span>
+<div class="highlight hl-ipython3"><pre><span></span><span class="n">check_training_step</span><span class="p">(</span><span class="n">training_step</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -8250,11 +8258,17 @@ a.anchor-link {
 <div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython3"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">fit</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">Xtrain</span><span class="p">,</span> <span class="n">ytrain</span><span class="p">,</span> <span class="n">Xval</span><span class="p">,</span> <span class="n">yval</span><span class="p">,</span> <span class="n">lr</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="mi">200</span><span class="p">):</span>
+<div class="highlight hl-ipython3"><pre><span></span><span class="nd">@torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">()</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">evaluate</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+    <span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+    <span class="n">logits</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">cross_entropy</span><span class="p">(</span><span class="n">logits</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span><span class="o">.</span><span class="n">item</span><span class="p">(),</span> <span class="n">accuracy</span><span class="p">(</span><span class="n">logits</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">fit</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">Xtrain</span><span class="p">,</span> <span class="n">ytrain</span><span class="p">,</span> <span class="n">Xval</span><span class="p">,</span> <span class="n">yval</span><span class="p">,</span> <span class="n">lr</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="mi">200</span><span class="p">):</span>
     <span class="n">history</span> <span class="o">=</span> <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="p">[]</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">"train_loss"</span><span class="p">,</span> <span class="s2">"val_loss"</span><span class="p">,</span> <span class="s2">"train_accuracy"</span><span class="p">,</span> <span class="s2">"val_accuracy"</span><span class="p">]}</span>
     <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">epochs</span><span class="p">):</span>
         <span class="n">model</span><span class="o">.</span><span class="n">train</span><span class="p">()</span>
-        <span class="n">run_step</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">Xtrain</span><span class="p">,</span> <span class="n">ytrain</span><span class="p">,</span> <span class="n">lr</span><span class="p">)</span>
+        <span class="n">training_step</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">Xtrain</span><span class="p">,</span> <span class="n">ytrain</span><span class="p">,</span> <span class="n">lr</span><span class="p">)</span>
         <span class="c1"># Both curves measure the model after the same update.</span>
         <span class="n">train_loss</span><span class="p">,</span> <span class="n">train_acc</span> <span class="o">=</span> <span class="n">evaluate</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">Xtrain</span><span class="p">,</span> <span class="n">ytrain</span><span class="p">)</span>
         <span class="n">val_loss</span><span class="p">,</span> <span class="n">val_acc</span> <span class="o">=</span> <span class="n">evaluate</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">Xval</span><span class="p">,</span> <span class="n">yval</span><span class="p">)</span>
@@ -8344,105 +8358,7 @@ a.anchor-link {
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<p>On this dataset the largest rate wins clearly. Do not read this as a general rule: the next activity asks why it happens here.</p>
-<h3 id="Activity-4:-why-does-the-largest-rate-win?-%E2%98%85%E2%98%85%E2%98%85">Activity 4: why does the largest rate win? ★★★<a class="anchor-link" href="#Activity-4:-why-does-the-largest-rate-win?-%E2%98%85%E2%98%85%E2%98%85">¶</a></h3><p>Write down a prediction before each step, then check it.</p>
-<ol>
-<li>Which of the three runs has the largest weight norm? Print <code>lr_models[rate].weight.norm()</code> and the training accuracy of each run.</li>
-<li>Copy the <code>lr=10</code> model with <code>copy.deepcopy</code> and keep training it with <code>fit</code> for 2000 more updates, recording the weight norm every 200 updates. Does the training loss reach zero? Does the norm level off?</li>
-<li>The norm keeps changing, but does the <em>direction</em> <code>W / ‖W‖</code> keep changing too? Compute the cosine between the directions at consecutive checkpoints.</li>
-<li>Train from <code>initial_model</code> with <code>lr=100</code> and <code>lr=1000</code>, and print the first ten training losses. Does anything break? In Section 9 we will see what a rate of 10 does to an MLP.</li>
-</ol>
-<p>Do not overwrite <code>model</code> or <code>lr_models</code>: Section 8 evaluates the selected run.</p>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=lr-activity-work">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython3"><pre><span></span><span class="c1"># Activity 4: your experiments here.</span>
-</pre></div>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=lr-activity-discussion">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<details>
-<summary>Discussion (open after the activity)</summary>
-<p>With these four features the three species are linearly separable on the training set: the <code>lr=10</code> run reaches 100% training accuracy. Once a linear classifier separates the data, scaling up its weights makes every correct logit larger relative to the others, so the cross-entropy keeps falling as the norm grows. The loss never reaches zero and the norm never levels off, though both change more and more slowly. The direction, instead, settles: training keeps pushing the same separator further out. A larger step simply travels this path faster, which is why <code>lr=10</code> wins.</p>
-<p>Even rates of 100 and 1000 do not break anything. The first update overshoots and the loss jumps, but the loss is convex in the parameters and the data are separable, so training recovers. This is a property of this problem, not of gradient descent: with an MLP, or with classes that overlap, the same rates behave very differently.</p>
-</details>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=3b5d1689">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="5.-Investigating-a-training-run">5. Investigating a training run<a class="anchor-link" href="#5.-Investigating-a-training-run">¶</a></h2><h3 id="Activity-5:-a-different-training-step-%E2%98%85%E2%98%85">Activity 5: a different training step ★★<a class="anchor-link" href="#Activity-5:-a-different-training-step-%E2%98%85%E2%98%85">¶</a></h3><p>A colleague gives you the function below. It runs, and at first its loss may even fall faster than yours. Is it the same gradient descent?</p>
-<p>Compare it with your <code>training_step</code>, starting from the same parameters and data. Design a small experiment that tells the two apart: write down what you expect, run it, then fix the function. A decreasing loss alone does not settle the question. The cell below only defines the function; the experiment is up to you.</p>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=5c09e5ad">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython3"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">suspect_step</span><span class="p">(</span><span class="n">model</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="n">Float</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="s2">"batch features"</span><span class="p">],</span> <span class="n">y</span><span class="p">:</span> <span class="n">Int</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="s2">"batch"</span><span class="p">],</span> <span class="n">lr</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-    <span class="n">loss</span> <span class="o">=</span> <span class="n">cross_entropy</span><span class="p">(</span><span class="n">model</span><span class="p">(</span><span class="n">X</span><span class="p">),</span> <span class="n">y</span><span class="p">)</span>
-    <span class="n">loss</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
-    <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
-        <span class="k">for</span> <span class="n">parameter</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">():</span>
-            <span class="n">parameter</span> <span class="o">-=</span> <span class="n">lr</span> <span class="o">*</span> <span class="n">parameter</span><span class="o">.</span><span class="n">grad</span>
-    <span class="k">return</span> <span class="n">loss</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
-</pre></div>
-</div>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=74631f24">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython3"><pre><span></span><span class="c1"># Activity 5: your experiment here. What do you expect, and what do you observe?</span>
-</pre></div>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=5fc10ff8">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<details>
-<summary>Discussion (open after the investigation)</summary>
-<p><code>suspect_step</code> never clears the gradients, so each update uses the sum of all gradients computed so far, most of them at older parameter values. This is no longer gradient descent. The loss can still go down, which is why the loss curve alone does not reveal the bug.</p>
-<p>Accumulating gradients is sometimes what we want, for example to combine several mini-batches into one update, as long as the loss is scaled correctly (see case 3 of the autograd detective in PT01). Here, instead, we update after every <code>backward()</code> and never clear.</p>
-</details>
+<p>On this dataset the largest rate wins clearly. Do not read this as a general rule: Optional A asks why it happens here.</p>
 </div>
 </div>
 </div>
@@ -8453,7 +8369,7 @@ a.anchor-link {
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="6.-Using-the-standard-components">6. Using the standard components<a class="anchor-link" href="#6.-Using-the-standard-components">¶</a></h2><p>In practice we do not write these pieces ourselves: <code>nn.Linear</code> holds the weight and bias, <code>F.cross_entropy</code> computes the loss, and an optimizer such as <code>torch.optim.SGD</code> performs the update. They should compute exactly what our code computes.</p>
+<h2 id="5.-Using-the-standard-components">5. Using the standard components<a class="anchor-link" href="#5.-Using-the-standard-components">¶</a></h2><p>In practice we do not write these pieces ourselves: <code>nn.Linear</code> holds the weight and bias, <code>F.cross_entropy</code> computes the loss, and an optimizer such as <code>torch.optim.SGD</code> performs the update. They should compute exactly what our code computes.</p>
 <p>To check it, we copy the parameters of our model into the standard one and compare a single update. If the two models started from different random parameters, we could not tell implementation differences apart from initialization differences.</p>
 </div>
 </div>
@@ -8473,7 +8389,7 @@ a.anchor-link {
     <span class="n">standard</span><span class="o">.</span><span class="n">bias</span><span class="o">.</span><span class="n">copy_</span><span class="p">(</span><span class="n">manual</span><span class="o">.</span><span class="n">bias</span><span class="p">)</span>
 <span class="n">optimizer</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">SGD</span><span class="p">(</span><span class="n">standard</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
 
-<span class="n">manual_loss</span> <span class="o">=</span> <span class="n">run_step</span><span class="p">(</span><span class="n">manual</span><span class="p">,</span> <span class="n">Xtrain</span><span class="p">,</span> <span class="n">ytrain</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">)</span>
+<span class="n">manual_loss</span> <span class="o">=</span> <span class="n">training_step</span><span class="p">(</span><span class="n">manual</span><span class="p">,</span> <span class="n">Xtrain</span><span class="p">,</span> <span class="n">ytrain</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">)</span>
 <span class="n">optimizer</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">(</span><span class="n">set_to_none</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="n">standard_loss</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">cross_entropy</span><span class="p">(</span><span class="n">standard</span><span class="p">(</span><span class="n">Xtrain</span><span class="p">),</span> <span class="n">ytrain</span><span class="p">)</span>
 <span class="n">standard_loss</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
@@ -8495,7 +8411,7 @@ a.anchor-link {
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="7.-From-full-batches-to-mini-batches">7. From full batches to mini-batches<a class="anchor-link" href="#7.-From-full-batches-to-mini-batches">¶</a></h2><p>A <code>TensorDataset</code> pairs each row of features with its label. A <code>DataLoader</code> splits the dataset into batches and, with <code>shuffle=True</code>, uses a new order in every epoch.</p>
+<h2 id="6.-From-full-batches-to-mini-batches">6. From full batches to mini-batches<a class="anchor-link" href="#6.-From-full-batches-to-mini-batches">¶</a></h2><p>A <code>TensorDataset</code> pairs each row of features with its label. A <code>DataLoader</code> splits the dataset into batches and, with <code>shuffle=True</code>, uses a new order in every epoch.</p>
 <p>Before running: with 205 training examples and batches of 32, how many updates are there in one epoch? How large is the last batch?</p>
 <p>We train a new model from the same initial parameters with <code>lr=0.1</code> and compare it with the full-batch run at the same rate. After the same number of epochs, both models have seen the data equally often, but the mini-batch model has made many more updates.</p>
 </div>
@@ -8521,7 +8437,7 @@ a.anchor-link {
 <span class="k">for</span> <span class="n">epoch</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">30</span><span class="p">):</span>
     <span class="n">mini_model</span><span class="o">.</span><span class="n">train</span><span class="p">()</span>
     <span class="k">for</span> <span class="n">batch_X</span><span class="p">,</span> <span class="n">batch_y</span> <span class="ow">in</span> <span class="n">train_loader</span><span class="p">:</span>
-        <span class="n">run_step</span><span class="p">(</span><span class="n">mini_model</span><span class="p">,</span> <span class="n">batch_X</span><span class="p">,</span> <span class="n">batch_y</span><span class="p">,</span> <span class="n">lr</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
+        <span class="n">training_step</span><span class="p">(</span><span class="n">mini_model</span><span class="p">,</span> <span class="n">batch_X</span><span class="p">,</span> <span class="n">batch_y</span><span class="p">,</span> <span class="n">lr</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
         <span class="n">mini_updates</span> <span class="o">+=</span> <span class="mi">1</span>
         <span class="k">if</span> <span class="n">epoch</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="n">batch_sizes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">batch_y</span><span class="p">))</span>
@@ -8544,52 +8460,13 @@ a.anchor-link {
 </div>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=46cd33d8">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h3 id="Activity-6:-a-batch-as-large-as-the-training-set-%E2%98%85">Activity 6: a batch as large as the training set ★<a class="anchor-link" href="#Activity-6:-a-batch-as-large-as-the-training-set-%E2%98%85">¶</a></h3><p>Why do two batches give different gradients for the same parameters? Write down your answer, then test a consequence of it. Build a <code>DataLoader</code> with <code>batch_size=len(ytrain)</code> and <code>shuffle=True</code>, and show that one epoch with it, starting from <code>initial_model</code>, gives the same parameters as one full-batch <code>run_step</code> from the same start. Does the shuffling matter here? What would change with <code>batch_size=len(ytrain) - 1</code>?</p>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=minibatch-activity-work">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython3"><pre><span></span><span class="c1"># Activity 6: your check here.</span>
-</pre></div>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=minibatch-activity-discussion">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<details>
-<summary>Discussion (open after the activity)</summary>
-<p>Each batch gradient is the average of the per-example gradients in that batch, so different examples give different averages. With a single batch containing every example, the average is the full-batch gradient, and shuffling only changes the order of the terms in the sum: the result agrees up to floating-point rounding, which is why the check uses <code>assert_close</code> and not exact equality. With <code>batch_size=len(ytrain) - 1</code> an epoch has two updates, the second computed from a single example, so its gradient is far noisier than the first.</p>
-</details>
-</div>
-</div>
-</div>
-</div>
 <div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=80f28f5d">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="8.-Final-evaluation">8. Final evaluation<a class="anchor-link" href="#8.-Final-evaluation">¶</a></h2><p>We now evaluate <code>model</code>, the full-batch run selected by validation loss, on the test set. This is the first time we use the test set.</p>
+<h2 id="7.-Final-evaluation">7. Final evaluation<a class="anchor-link" href="#7.-Final-evaluation">¶</a></h2><p>We now evaluate <code>model</code>, the full-batch run selected by validation loss, on the test set. This is the first time we use the test set.</p>
 <p>For reference, we compare its accuracy with a trivial baseline that always predicts the most common class in the training set. The confusion matrix shows which species are mistaken for which. If you go back and change the model after seeing these numbers, the test set no longer gives a fair final evaluation.</p>
 </div>
 </div>
@@ -8629,7 +8506,110 @@ a.anchor-link {
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
 <p>Pick one misclassified penguin and look at its logits or probabilities. Was the model confident? What can you conclude from a single example, and what would need more evidence?</p>
-<p>The same training loop works unchanged when we replace the linear model with an MLP. Section 9 shows this; come back to it after the MLP lecture.</p>
+<p>This is the end of the core of the lab.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=optional-intro">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h2 id="Optional-A:-why-does-the-largest-rate-win?-%E2%98%85%E2%98%85%E2%98%85">Optional A: why does the largest rate win? ★★★<a class="anchor-link" href="#Optional-A:-why-does-the-largest-rate-win?-%E2%98%85%E2%98%85%E2%98%85">¶</a></h2><p>The optional sections do not depend on each other, except for the last one, which builds on Optional D. Here we return to the learning-rate comparison. Write down a prediction before each step, then check it.</p>
+<ol>
+<li>Which of the three runs has the largest weight norm? Print <code>lr_models[rate].weight.norm()</code> and the training accuracy of each run.</li>
+<li>Copy the <code>lr=10</code> model with <code>copy.deepcopy</code> and keep training it with <code>fit</code> for 2000 more updates, recording the weight norm every 200 updates. Does the training loss reach zero? Does the norm level off?</li>
+<li>The norm keeps changing, but does the <em>direction</em> <code>W / ‖W‖</code> keep changing too? Compute the cosine between the directions at consecutive checkpoints.</li>
+<li>Train from <code>initial_model</code> with <code>lr=100</code> and <code>lr=1000</code>, and print the first ten training losses. Does anything break? In Optional D we will see what a rate of 10 does to an MLP.</li>
+</ol>
+<p>Do not overwrite <code>lr_models</code>: Optional E uses it.</p>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=lr-activity-work">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="cm-editor cm-s-jupyter">
+<div class="highlight hl-ipython3"><pre><span></span><span class="c1"># Your experiments here.</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=3b5d1689">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h2 id="Optional-B:-a-different-training-step-%E2%98%85%E2%98%85">Optional B: a different training step ★★<a class="anchor-link" href="#Optional-B:-a-different-training-step-%E2%98%85%E2%98%85">¶</a></h2><p>A colleague gives you the function below. It runs, and at first its loss may even fall faster than yours. Is it the same gradient descent?</p>
+<p>Compare it with your <code>training_step</code>, starting from the same parameters and data. Design a small experiment that tells the two apart: write down what you expect, run it, then fix the function. A decreasing loss alone does not settle the question. The cell below only defines the function; the experiment is up to you.</p>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=5c09e5ad">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="cm-editor cm-s-jupyter">
+<div class="highlight hl-ipython3"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">suspect_step</span><span class="p">(</span><span class="n">model</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="n">Float</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="s2">"batch features"</span><span class="p">],</span> <span class="n">y</span><span class="p">:</span> <span class="n">Int</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="s2">"batch"</span><span class="p">],</span> <span class="n">lr</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+    <span class="n">loss</span> <span class="o">=</span> <span class="n">cross_entropy</span><span class="p">(</span><span class="n">model</span><span class="p">(</span><span class="n">X</span><span class="p">),</span> <span class="n">y</span><span class="p">)</span>
+    <span class="n">loss</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
+    <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+        <span class="k">for</span> <span class="n">parameter</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">():</span>
+            <span class="n">parameter</span> <span class="o">-=</span> <span class="n">lr</span> <span class="o">*</span> <span class="n">parameter</span><span class="o">.</span><span class="n">grad</span>
+    <span class="k">return</span> <span class="n">loss</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=74631f24">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="cm-editor cm-s-jupyter">
+<div class="highlight hl-ipython3"><pre><span></span><span class="c1"># Your experiment here. What do you expect, and what do you observe?</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=46cd33d8">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h2 id="Optional-C:-a-batch-as-large-as-the-training-set-%E2%98%85">Optional C: a batch as large as the training set ★<a class="anchor-link" href="#Optional-C:-a-batch-as-large-as-the-training-set-%E2%98%85">¶</a></h2><p>Why do two batches give different gradients for the same parameters? Write down your answer, then test a consequence of it. Build a <code>DataLoader</code> with <code>batch_size=len(ytrain)</code> and <code>shuffle=True</code>, and show that one epoch with it, starting from <code>initial_model</code>, gives the same parameters as one full-batch <code>training_step</code> from the same start. Does the shuffling matter here? What would change with <code>batch_size=len(ytrain) - 1</code>?</p>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=minibatch-activity-work">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="cm-editor cm-s-jupyter">
+<div class="highlight hl-ipython3"><pre><span></span><span class="c1"># Your check here.</span>
+</pre></div>
+</div>
 </div>
 </div>
 </div>
@@ -8640,8 +8620,8 @@ a.anchor-link {
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="9.-From-logistic-regression-to-an-MLP">9. From logistic regression to an MLP<a class="anchor-link" href="#9.-From-logistic-regression-to-an-MLP">¶</a></h2><p>Come back to this section after the MLP lecture. We replace the linear model with an MLP with one hidden layer of 16 ReLU units. Nothing else changes: <code>fit</code>, <code>evaluate</code>, your <code>training_step</code> and your <code>cross_entropy</code> only need a module that maps a batch of features to a batch of logits, and they work as they are.</p>
-<p><code>nn.Sequential</code> chains layers. Unlike our <code>LogisticRegression</code>, each <code>nn.Linear</code> starts from small random weights. We train with the same learning rate and number of updates as the linear run at <code>lr=0.1</code>, and compare the two on the validation set. The test set stays untouched: the model we evaluated in Section 8 remains our final one.</p>
+<h2 id="Optional-D:-from-logistic-regression-to-an-MLP-%E2%98%85%E2%98%85">Optional D: from logistic regression to an MLP ★★<a class="anchor-link" href="#Optional-D:-from-logistic-regression-to-an-MLP-%E2%98%85%E2%98%85">¶</a></h2><p>Do this section after the MLP lecture. We replace the linear model with an MLP with one hidden layer of 16 ReLU units. Nothing else changes: <code>fit</code>, <code>evaluate</code>, your <code>training_step</code> and your <code>cross_entropy</code> only need a module that maps a batch of features to a batch of logits, and they work as they are.</p>
+<p><code>nn.Sequential</code> chains layers. Unlike our <code>LogisticRegression</code>, each <code>nn.Linear</code> starts from small random weights. We train with the same learning rate and number of updates as the linear run at <code>lr=0.1</code>, and compare the two on the validation set. The test set stays untouched: the model we evaluated in Section 7 remains our final one.</p>
 </div>
 </div>
 </div>
@@ -8684,7 +8664,7 @@ a.anchor-link {
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<p>At the same learning rate the MLP reaches a lower validation loss, but remember that the linear model at <code>lr=10</code> was already close to perfect on this data. The point of this section is how little code changed. Two experiments show where the MLP does behave differently:</p>
+<p>At the same learning rate the MLP reaches a lower validation loss, but remember that the linear model at <code>lr=10</code> was already close to perfect on this data. Two experiments show where the MLP does behave differently:</p>
 <ol>
 <li>Train a new MLP with <code>lr=10.0</code>, the rate that won the comparison for the linear model. Before running, predict the training curve. What happens, and why could the linear model take such large steps?</li>
 <li>In Section 2 we initialized the linear model with zeros. Do the same for the MLP: after building it, set every parameter to zero inside <code>torch.no_grad()</code>, then train with <code>lr=0.1</code>. Predict the final loss. Which parameters change during training, and which stay at zero?</li>
@@ -8713,8 +8693,7 @@ a.anchor-link {
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="Optional:-which-examples-drive-the-update?">Optional: which examples drive the update?<a class="anchor-link" href="#Optional:-which-examples-drive-the-update?">¶</a></h2><p>Nothing later in the notebook depends on this section, so you can skip it.</p>
-<p>Autodiff is also useful to inspect a model, not only to train it. Fix the parameters and compute one gradient per training example, $g_i=\nabla_\theta\ell_i$. The gradient of the mean training loss is their average, $\bar g=\frac{1}{N}\sum_i g_i$, and a full-batch step moves along $-\bar g$. The individual $g_i$ show which examples pull the parameters, and in which direction.</p>
+<h2 id="Optional-E:-which-examples-drive-the-update?">Optional E: which examples drive the update?<a class="anchor-link" href="#Optional-E:-which-examples-drive-the-update?">¶</a></h2><p>Autodiff is also useful to inspect a model, not only to train it. Fix the parameters and compute one gradient per training example, $g_i=\nabla_\theta\ell_i$. The gradient of the mean training loss is their average, $\bar g=\frac{1}{N}\sum_i g_i$, and a full-batch step moves along $-\bar g$. The individual $g_i$ show which examples pull the parameters, and in which direction.</p>
 <p>We use a copy of the <code>lr=0.1</code> run after 200 updates, whose loss is still far enough from zero to be interesting. We use only training examples, and nothing here changes the model evaluated above.</p>
 <p>The simplest approach is a loop over the examples. <code>torch.autograd.grad</code> returns each gradient without touching the <code>.grad</code> fields. We flatten the weight and bias gradients into one vector, which gives a matrix with one row per example and one column per parameter.</p>
 </div>
@@ -8901,7 +8880,7 @@ a.anchor-link {
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="Optional-exercise-(after-the-MLP-lecture):-store-an-image-in-an-MLP-%E2%98%85%E2%98%85%E2%98%85">Optional exercise (after the MLP lecture): store an image in an MLP ★★★<a class="anchor-link" href="#Optional-exercise-(after-the-MLP-lecture):-store-an-image-in-an-MLP-%E2%98%85%E2%98%85%E2%98%85">¶</a></h2><p>Section 9 swapped the linear model for an MLP on the penguins. Here we take the same tools to a different problem: a regression with a different loss and input. We fit a function that maps a pixel position <code>(x, y)</code> to its color <code>(r, g, b)</code>, so that the network itself stores the image. The next cell generates a small target image, so no download is needed.</p>
+<h2 id="Optional-F:-store-an-image-in-an-MLP-%E2%98%85%E2%98%85%E2%98%85">Optional F: store an image in an MLP ★★★<a class="anchor-link" href="#Optional-F:-store-an-image-in-an-MLP-%E2%98%85%E2%98%85%E2%98%85">¶</a></h2><p>Do this section after the MLP lecture. Optional D swapped the linear model for an MLP on the penguins. Here we take the same tools to a different problem: a regression with a different loss and input. We fit a function that maps a pixel position <code>(x, y)</code> to its color <code>(r, g, b)</code>, so that the network itself stores the image. The next cell generates a small target image, so no download is needed.</p>
 <ol>
 <li>Build an MLP with two ReLU hidden layers and three sigmoid outputs. Train it with the mean squared error, using only the pixels in <code>image_train_mask</code> (one pixel in four). Coordinates are in <code>[-1, 1]</code> and colors in <code>[0, 1]</code>.</li>
 <li>Compare two inputs: the raw coordinates, and <em>Fourier features</em>, the concatenation of <code>sin(2*pi*coordinates @ frequencies.T)</code> and <code>cos(...)</code>. Here <code>frequencies</code> is a fixed matrix of 16 two-dimensional vectors, drawn once from a normal distribution with standard deviation 1.5 and never trained.</li>
@@ -8910,7 +8889,7 @@ a.anchor-link {
 </ol>
 <p>The held-out pixels test interpolation inside this one image, not generalization to new images. If you tune your choices on them, keep another set of pixels for the final evaluation.</p>
 <p>If you want to go further: plot the held-out error against the number of trainable parameters (at the same width, the two inputs give different counts), and compare the float32 size of the network, including the frequency matrix, with the original image at one byte per channel. What does this comparison leave out? You can also query coordinates outside <code>[-1, 1]</code>, where the network is extrapolating.</p>
-<p>The instructor version contains a reference solution. Background: <a href="https://bmild.github.io/fourfeat/">Tancik et al., Fourier Features Let Networks Learn High Frequency Functions in Low Dimensional Domains</a>.</p>
+<p>The solutions notebook contains a reference experiment. Background: <a href="https://bmild.github.io/fourfeat/">Tancik et al., Fourier Features Let Networks Learn High Frequency Functions in Low Dimensional Domains</a>.</p>
 </div>
 </div>
 </div>

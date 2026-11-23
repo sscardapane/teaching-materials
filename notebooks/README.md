@@ -1,8 +1,8 @@
 # Shared course notebooks
 
-> [!note] Written by Codex (2026-09-14)
+> [!note] Written by Codex (2026-09-14), restructured by Claude (2026-11-20)
 
-PT01, PT02 and PT03 (autodiff) are maintained here as one shared set for all courses, including
+PT01 to PT05 are maintained here as one shared set for all courses, including
 NN and NNDS (Simone's decision, October 1, 2026). Lectures can select different
 sections from the same notebooks; additions do not require course-specific copies.
 The canonical directory is `teaching-materials/notebooks/`. The former dated
@@ -13,68 +13,85 @@ course-wide policy on agent use.
 ## Open the notebooks
 
 These links open the current GitHub notebooks directly in Colab, without a
-download/upload step.
+download/upload step. A solutions notebook is published only after its lab has
+taken place (see `RELEASED` in `make_student_notebook.py`).
 
 | Notebook | Run online | Local copy |
 |---|---|---|
-| PT01 · student | [Open in Colab](https://colab.research.google.com/github/sscardapane/teaching-materials/blob/main/notebooks/PT01_Introduction_to_PyTorch.ipynb) | [Download](https://raw.githubusercontent.com/sscardapane/teaching-materials/main/notebooks/PT01_Introduction_to_PyTorch.ipynb) |
-| PT01 · instructor | [Open in Colab](https://colab.research.google.com/github/sscardapane/teaching-materials/blob/main/notebooks/PT01_Introduction_to_PyTorch_solutions.ipynb) | [Download](https://raw.githubusercontent.com/sscardapane/teaching-materials/main/notebooks/PT01_Introduction_to_PyTorch_solutions.ipynb) |
-| PT02 · student | [Open in Colab](https://colab.research.google.com/github/sscardapane/teaching-materials/blob/main/notebooks/PT02_Logistic_regression.ipynb) | [Download](https://raw.githubusercontent.com/sscardapane/teaching-materials/main/notebooks/PT02_Logistic_regression.ipynb) |
-| PT02 · instructor | [Open in Colab](https://colab.research.google.com/github/sscardapane/teaching-materials/blob/main/notebooks/PT02_Logistic_regression_solutions.ipynb) | [Download](https://raw.githubusercontent.com/sscardapane/teaching-materials/main/notebooks/PT02_Logistic_regression_solutions.ipynb) |
-| PT03 · student | [Open in Colab](https://colab.research.google.com/github/sscardapane/teaching-materials/blob/main/notebooks/PT03_Automatic_differentiation.ipynb) | [Download](https://raw.githubusercontent.com/sscardapane/teaching-materials/main/notebooks/PT03_Automatic_differentiation.ipynb) |
-| PT03 · instructor | [Open in Colab](https://colab.research.google.com/github/sscardapane/teaching-materials/blob/main/notebooks/PT03_Automatic_differentiation_solutions.ipynb) | [Download](https://raw.githubusercontent.com/sscardapane/teaching-materials/main/notebooks/PT03_Automatic_differentiation_solutions.ipynb) |
-| PT04 · student | [Open in Colab](https://colab.research.google.com/github/sscardapane/teaching-materials/blob/main/notebooks/PT04_Convolutional_neural_networks.ipynb) | [Download](https://raw.githubusercontent.com/sscardapane/teaching-materials/main/notebooks/PT04_Convolutional_neural_networks.ipynb) |
-| PT04 · instructor | [Open in Colab](https://colab.research.google.com/github/sscardapane/teaching-materials/blob/main/notebooks/PT04_Convolutional_neural_networks_solutions.ipynb) | [Download](https://raw.githubusercontent.com/sscardapane/teaching-materials/main/notebooks/PT04_Convolutional_neural_networks_solutions.ipynb) |
+| PT01 · lab | [Open in Colab](https://colab.research.google.com/github/sscardapane/teaching-materials/blob/main/notebooks/PT01_Introduction_to_PyTorch.ipynb) | [Download](https://raw.githubusercontent.com/sscardapane/teaching-materials/main/notebooks/PT01_Introduction_to_PyTorch.ipynb) |
+| PT01 · solutions | [Open in Colab](https://colab.research.google.com/github/sscardapane/teaching-materials/blob/main/notebooks/PT01_Introduction_to_PyTorch_solutions.ipynb) | [Download](https://raw.githubusercontent.com/sscardapane/teaching-materials/main/notebooks/PT01_Introduction_to_PyTorch_solutions.ipynb) |
+| PT02 · lab | [Open in Colab](https://colab.research.google.com/github/sscardapane/teaching-materials/blob/main/notebooks/PT02_Logistic_regression.ipynb) | [Download](https://raw.githubusercontent.com/sscardapane/teaching-materials/main/notebooks/PT02_Logistic_regression.ipynb) |
+| PT02 · solutions | [Open in Colab](https://colab.research.google.com/github/sscardapane/teaching-materials/blob/main/notebooks/PT02_Logistic_regression_solutions.ipynb) | [Download](https://raw.githubusercontent.com/sscardapane/teaching-materials/main/notebooks/PT02_Logistic_regression_solutions.ipynb) |
+| PT03 · lab | [Open in Colab](https://colab.research.google.com/github/sscardapane/teaching-materials/blob/main/notebooks/PT03_Automatic_differentiation.ipynb) | [Download](https://raw.githubusercontent.com/sscardapane/teaching-materials/main/notebooks/PT03_Automatic_differentiation.ipynb) |
+| PT03 · solutions | [Open in Colab](https://colab.research.google.com/github/sscardapane/teaching-materials/blob/main/notebooks/PT03_Automatic_differentiation_solutions.ipynb) | [Download](https://raw.githubusercontent.com/sscardapane/teaching-materials/main/notebooks/PT03_Automatic_differentiation_solutions.ipynb) |
+| PT04 · lab | [Open in Colab](https://colab.research.google.com/github/sscardapane/teaching-materials/blob/main/notebooks/PT04_Convolutional_neural_networks.ipynb) | [Download](https://raw.githubusercontent.com/sscardapane/teaching-materials/main/notebooks/PT04_Convolutional_neural_networks.ipynb) |
+| PT04 · solutions | [Open in Colab](https://colab.research.google.com/github/sscardapane/teaching-materials/blob/main/notebooks/PT04_Convolutional_neural_networks_solutions.ipynb) | [Download](https://raw.githubusercontent.com/sscardapane/teaching-materials/main/notebooks/PT04_Convolutional_neural_networks_solutions.ipynb) |
+| PT05 · lab | [Open in Colab](https://colab.research.google.com/github/sscardapane/teaching-materials/blob/main/notebooks/PT05_Training_deeper_networks.ipynb) | [Download](https://raw.githubusercontent.com/sscardapane/teaching-materials/main/notebooks/PT05_Training_deeper_networks.ipynb) |
+| PT05 · solutions | [Open in Colab](https://colab.research.google.com/github/sscardapane/teaching-materials/blob/main/notebooks/PT05_Training_deeper_networks_solutions.ipynb) | [Download](https://raw.githubusercontent.com/sscardapane/teaching-materials/main/notebooks/PT05_Training_deeper_networks_solutions.ipynb) |
+
+## Lab format (November 2026 redesign)
+
+Simone asked on November 20, 2026 for labs that fit a 2–3 hour session. The
+plan is in the vault note "NN and NNDS - Lab notebooks redesign (plan 2026-11-20)".
+
+- **Core and optional parts.** Each lab has a core of a few activities, about two
+  hours of work, followed by optional sections (Optional A, B, ...). Students write
+  the idea from the lecture; the surrounding code is given.
+- **One-line checks.** Each activity ends with a call such as `check_conv(MyConv2d)`.
+  It compares the student's code with PyTorch (or with finite differences) on one or
+  two realistic inputs and stops with one readable message. The check functions are
+  in a collapsed Colab cell near the top ("Checks for the activities"). There are
+  no checks on what PyTorch already guarantees, such as gradients of a correct
+  forward pass or initialization constants.
+- **Solutions notebooks.** `PTxx_..._solutions.ipynb` contains only the solutions:
+  for each exercise, the lab's heading, a short explanation and the solution code,
+  in the order of the lab. It is meant for reading, or for pasting a solution into
+  the lab notebook to catch up. The lab notebooks have no hidden fallbacks.
+- **PT04 split.** The old PT04 had two parts; Part 2 is now PT05 (training deeper
+  networks), which does not depend on the student's PT04 code.
+
+| Lab | Core activities | Optional sections |
+|---|---|---|
+| PT01 | Read and run Sections 1–5, short check | Tensor semantics, closer look at autograd, autograd detective, views and strides, three array functions |
+| PT02 | Forward pass, loss, training step; learning-rate comparison, standard components, mini-batches and test evaluation are given | A why the largest rate wins, B a faulty training step, C a full-size mini-batch, D the same loop with an MLP, E per-example gradients, F an MLP that stores an image |
+| PT03 | VJPs of `+`, `*`, `@` (matrices only), `tanh`, `relu`; `backward`; the classifier step | A an MLP with the engine, B `grad`, C Jacobians from VJPs, D JVP and VJP side by side |
+| PT04 | `MyConv2d` (weights and forward, stride 1, padding), `MyMaxPool2d`, a CNN, occlusion maps | A stride, B depthwise convolutions, C translation equivariance, D locally-connected layer, E patches without copies, F receptive fields, G causal convolutions |
+| PT05 | `MyBatchNorm2d` (with running statistics), a residual block and the depth experiment, `MyDropout` | A fusing BN into a convolution, B two bugs with BN, C augmentation and MixUp |
 
 ## Files
 
-- `PT01_Introduction_to_PyTorch.ipynb`: required preparation, with complete
-  examples, including a walkthrough of a tensor's autograd attributes.
-  Optional tensor-semantics and autograd exercises, array operations and layout
-  material follow the main path. Exercise answers are in the instructor notebook.
-- `PT01_Introduction_to_PyTorch_solutions.ipynb`: instructor source with readiness
-  answers, tensor-semantics solutions and autograd diagnoses as executable cells.
-- `PT02_Logistic_regression.ipynb`: student lab with six activities: forward
-  computation, loss and training step, then why the largest learning rate wins,
-  a faulty training step, and a full-size mini-batch check. An optional per-example-gradient demonstration and
-  a coordinate-to-RGB reader exercise follow the core. It contains no exercise
-  reference implementations.
-- `PT02_Logistic_regression_solutions.ipynb`: instructor copy with the
-  activity references and runnable fallbacks, discussion notes for the gradient
-  diagnostic, and a complete coordinate-MLP reference experiment.
-- Matching `.html` files: reading previews; use the notebooks to edit or run
-  code.
-- `PT03_Automatic_differentiation.ipynb`: standalone NumPy reverse-mode lab with a
-  PyTorch-like `Tensor` (`requires_grad`, `.grad`, `backward()`), which gains its
-  operations section by section. Students write local VJPs (including `tanh`/`relu`),
-  the `backward` method and a classifier update; `sum_to_shape` and the topological
-  order are given. Terminology follows the lecture
-  slides (JVP, VJP, adjoint). A live demonstration shows why each node must wait for
-  all its consumers.
-- `PT03_Automatic_differentiation_solutions.ipynb`: editable instructor source with
-  executable core and optional solutions, graph plots and training comparisons.
-- `PT04_Convolutional_neural_networks.ipynb`: CNN building blocks from scratch on
-  KMNIST, in two parts (after the CNN lecture; after the deeper-models lecture),
-  with eleven rated activities and five optional sections.
-- `PT04_Convolutional_neural_networks_solutions.ipynb`: instructor source with
-  reference implementations, answers and the recorded training runs.
-- `make_student_notebook.py`: reproducibly rebuilds all four student notebooks from
-  the instructor sources, removing reference cells, fallbacks and saved outputs.
-  Use `--check` to verify that the generated sources are current. Edit instructor
-  notebooks first; shared code and prose belong there, with instructor-only
-  cells tagged `reference`.
+- `instructor/PTxx_*.ipynb`: the instructor notebooks, the only files to edit.
+  Cells tagged `reference` are instructor-only; cells also tagged `solution` form
+  the solutions notebook; code cells tagged `exercise` are the stubs. Every stub
+  must be followed by a solution cell that defines the same functions and classes
+  with the same signatures. This folder is not copied to the Pages site.
+- `PTxx_*.ipynb`: the student notebooks, generated from the instructor notebooks
+  without reference cells and outputs.
+- `PTxx_*_solutions.ipynb`: the solutions notebooks, generated for released labs.
+- Matching `.html` files: reading previews of the student and solutions notebooks.
+- `make_student_notebook.py`: builds the student and solutions notebooks. `--check`
+  verifies that the committed notebooks match the instructor sources.
+- `verify_notebooks.py`: executes every lab (unfilled student path, instructor
+  notebook, completed student path) and runs `verify_regressions.py`, which checks
+  that every activity check rejects plausible wrong implementations.
 - `data/penguins.csv`: unscaled Palmer Penguins data, supplied for offline use.
-- `verify_notebooks.py`: reproducible execution and exercise-path checks.
-- `verify_autodiff.py`: autodiff checks called by the notebook verifier.
-- `verify_cnn.py`: PT04 checks called by the notebook verifier.
-- `kmnist/` (not tracked): KMNIST, downloaded by PT04 on first use.
+- `kmnist/` (not tracked): KMNIST, downloaded by PT04 and PT05 on first use.
 
-Open the folder in Jupyter and select the notebook, so `data/penguins.csv` is
-available relative to it. The notebook and data folder travel together. When
-PT02 is opened alone in Colab, it downloads the dataset from the source and
-checks its SHA-256. If the remote file changes, use the bundled file instead.
-PT01 requires PyTorch. PT02 also uses NumPy, pandas, scikit-learn and Matplotlib.
-An environment without these packages can install `requirements.txt`.
+```sh
+python make_student_notebook.py              # after editing an instructor notebook
+python verify_notebooks.py --only PT02       # one lab; without --only, all five
+python verify_notebooks.py --write-outputs   # also saves instructor outputs and HTML previews
+```
+
+Open the folder in Jupyter, so `data/penguins.csv` is available relative to the
+notebooks. When PT02 or PT03 is opened alone in Colab, it downloads the dataset
+from the source and checks its SHA-256. If the remote file changes, use the bundled
+file instead. An environment without the packages can install `requirements.txt`.
+
+> [!note] History
+> The sections below record earlier versions of the notebooks and their checks.
+> Names such as "Activity 4" or "Part 2" and the check descriptions refer to the
+> versions before the November 2026 redesign.
 
 ## Proposed teaching format
 
