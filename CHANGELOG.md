@@ -1,5 +1,22 @@
 # Changelog
 
+## 2026-11-25
+
+> [!note] Written by Claude (2026-11-25)
+
+- New NNDS deck `Lecture_recurrent_models` (draft, not exported), refreshed
+  from the 2024 Lecture 10 in the same order. New opening on the KV cache and
+  sliding windows; *Linearized attention* and *Kernel functions* kept; two new
+  code slides (causal linear attention in parallel and recurrent form, a
+  for-loop RNN). The SSM part is shorter: one convolutional-view slide, the
+  scan example on one slide, two diagonal-SSM slides. Corrected: linear
+  attention costs O(TED_v) (not O(n(e²+ev))), the scan takes O(log n) steps and
+  O(n) work, each scan product costs O(E³), B̄ = P⁻¹B, Mamba keeps the scan but
+  loses the convolutional view. Book figures (recurrence, BPTT, associative
+  scan, Mamba) copied with their draw.io sources to
+  `courses/nnds/assets/images/recurrent/`. Sections on modern linear
+  recurrences and hybrid models follow.
+
 ## 2026-11-20
 
 > [!note] Written by Claude (2026-11-20)
