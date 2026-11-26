@@ -83,15 +83,19 @@
 \begin{frame}{Kernel functions}
     \setlength{\parskip}{6pt}
 
-    Any non-negative $\alpha$ is a valid similarity function. In machine
-    learning, these are known as \textbf{kernel functions}. Most kernel
-    functions (e.g., polynomial, Gaussian) can be written as a generalized
-    dot product
+    Any non-negative $\alpha$ can be used as a similarity function. Many
+    \textbf{kernel functions} (the positive semi-definite similarities used,
+    e.g., in support vector machines) can be written as a generalized dot
+    product
     \[
         \alpha(\vc{x},\vc{y})=\phi(\vc{x})^{\top}\phi(\vc{y})
     \]
     for some function $\phi:\mathbb{R}^{D_k}\rightarrow\mathbb{R}^{E}$
-    performing a feature expansion. A \textbf{linearized attention} layer is
+    performing a feature expansion. For example, the polynomial kernel
+    $(1+\vc{x}^{\top}\vc{y})^d$ uses all monomials of its input up to degree
+    $d$. Others, such as the Gaussian kernel, need an infinite-dimensional
+    $\phi$, which can be approximated with random features. A
+    \textbf{linearized attention} layer is
     obtained by using this $\alpha$ in the attention layer.
 
 \end{frame}
@@ -387,7 +391,7 @@
     We can obtain a gated layer by combining a gate with the transition
     function:
     \begin{align*}
-        f(\vc{s}_{t-1},\vc{x}_t)= & \overbrace{\gamma(\vc{s}_{t-1},\vc{x}_t)\odot\left(\vc{A}\vc{s}_{t-1}+\vc{B}\vc{x}_t\right)}^{\text{New values}} \\
+        f(\vc{s}_{t-1},\vc{x}_t)= & \overbrace{\gamma(\vc{s}_{t-1},\vc{x}_t)\odot\phi\left(\vc{A}\vc{s}_{t-1}+\vc{B}\vc{x}_t\right)}^{\text{New values}} \\
                                   & +\underbrace{(1-\gamma(\vc{s}_{t-1},\vc{x}_t))\odot\vc{s}_{t-1}}_{\text{Old values}}
     \end{align*}
 
@@ -431,7 +435,7 @@
     recovered by adding activation functions after the output, or by
     interleaving these layers with token-wise MLPs.
 
-    \SlideSource{\href{https://arxiv.org/abs/2307.11888}{Orvieto et al., On the universality of linear recurrences followed by nonlinear projections (2023)}.}
+    \SlideSource{\href{https://arxiv.org/abs/2307.11888}{Orvieto et al., Universality of linear recurrences followed by non-linear projections (2024)}, ICML.}
 
 \end{frame}
 
