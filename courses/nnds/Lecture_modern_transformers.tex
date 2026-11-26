@@ -327,14 +327,12 @@
     \begin{python}[gobble=8,aboveskip=2pt,belowskip=2pt]
         q, k, v = self.qkv_heads(x, start)            # RoPE from position start
         if start > 0:                                 # decode: append to the cache
-            k = torch.cat([self.k_cache, k], dim=2)
-            v = torch.cat([self.v_cache, v], dim=2)
+            k, v = torch.cat([self.k_cache, k], 2), torch.cat([self.v_cache, v], 2)
         self.k_cache, self.v_cache = k, v
         a = F.scaled_dot_product_attention(q, k, v, is_causal=(start == 0))
     \end{python}
 
-    Generation is a single prefill call, followed by one call for each new
-    token (here, with greedy decoding):
+    Generation is one prefill call, then one call per new token (greedy):
     \vspace{1em}
     \begin{python}[gobble=8,aboveskip=2pt,belowskip=2pt]
         logits = model(prompt, start=0)               # prefill: fills the caches
