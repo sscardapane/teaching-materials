@@ -106,11 +106,11 @@
     \setlength{\parskip}{6pt}
 
     We have already seen three of these changes in the previous lectures:
-    \[
+    $$
         \vc{H}'=\vc{X}+\operatorname{MHA}(\operatorname{RMSNorm}(\vc{X})) \,,
         \qquad
         \vc{H}=\vc{H}'+\operatorname{MLP}(\operatorname{RMSNorm}(\vc{H}')) \,.
-    \]
+    $$\vspace{-2em}
     \begin{itemize}
         \setlength{\itemsep}{5pt}
         \item \myalert{Pre-normalization}: the residual path carries $\vc{X}$
@@ -323,19 +323,17 @@
 
     Inside each attention layer, \pythoninline{x} now contains only the new
     tokens:
-
+    \vspace{1em}
     \begin{python}[gobble=8,aboveskip=2pt,belowskip=2pt]
         q, k, v = self.qkv_heads(x, start)            # RoPE from position start
         if start > 0:                                 # decode: append to the cache
-            k = torch.cat([self.k_cache, k], dim=2)
-            v = torch.cat([self.v_cache, v], dim=2)
+            k, v = torch.cat([self.k_cache, k], 2), torch.cat([self.v_cache, v], 2)
         self.k_cache, self.v_cache = k, v
         a = F.scaled_dot_product_attention(q, k, v, is_causal=(start == 0))
     \end{python}
 
-    Generation is a single prefill call, followed by one call for each new
-    token (here, with greedy decoding):
-
+    Generation is one prefill call, then one call per new token (greedy):
+    \vspace{1em}
     \begin{python}[gobble=8,aboveskip=2pt,belowskip=2pt]
         logits = model(prompt, start=0)               # prefill: fills the caches
         for t in range(T_p, T_p + n):
@@ -362,6 +360,7 @@
         \end{column}
         \begin{column}{0.5\textwidth}
             \centering
+            \vspace{2em}
             \begin{tikzpicture}
                 \begin{axis}[
                         width=\linewidth, height=0.53\textheight,
@@ -387,8 +386,6 @@
     \medskip
     Memory capacity limits how many sequences we can serve at once, and
     reading the entire cache at every decoding step limits generation speed.
-    Next, we shrink the cache by sharing \kc{keys} and \vcl{values} among
-    heads.
 
     \SlideSource{\href{https://arxiv.org/abs/2307.09288}{Touvron et al., Llama 2 (2023)}; \href{https://arxiv.org/abs/2211.05102}{Pope et al., Efficiently scaling transformer inference (2023)}.}
 
