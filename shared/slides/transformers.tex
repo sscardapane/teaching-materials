@@ -274,7 +274,7 @@
     {\footnotesize\color{black!60} $^1$ We could also combine the two ideas, with a
         weight $\alpha(\vc{x}_t,\vc{x}_{t'},t'-t)$ that depends on both the tokens and
         their offset. We will return to this with \textit{relative positional
-            embeddings}.\par}
+            embeddings}\NNDSorNN{ in the next lecture}{}.\par}
 
     \SlideSource{Wang et al. (2018), \href{https://arxiv.org/abs/1711.07971}{\textit{Non-local Neural Networks}}, CVPR.}
 
@@ -1068,9 +1068,8 @@
             $2\pi b$.
 
             We choose the \myalert{base} $b$ larger than the longest
-            sequence. With $b=10^4$, as in the original transformer, the
-            slowest hand turns by about $60^\circ$ over $10^4$ tokens, so no
-            two positions get the same reading.
+            sequence. With $b=10^4$ (original transformer), the slowest hand
+            turns by about $60^\circ$ over $10^4$ tokens.
         \end{column}
         \begin{column}{0.42\textwidth}
             \centering
@@ -1168,7 +1167,7 @@
         \qquad
         \vc{R}(\theta)=\begin{bmatrix}\cos\theta&-\sin\theta\\\sin\theta&\cos\theta\end{bmatrix}.
     \]
-    With all the hands together the new embedding is given by a block diagonal matrix collecting all the individual rotations:
+    With all the hands together the new embedding is given by a block-diagonal matrix collecting all the individual rotations:
     \[
         \idx{\vc{E}}{t+p,:}=\idx{\vc{E}}{t,:}\,\eqnmarkbox[drawblue]{tp}{\vc{T}(p)},
         \qquad
@@ -1182,145 +1181,9 @@
 
 \end{frame}
 
-\begin{frame}{Relative positional embeddings}
-    \setlength{\parskip}{6pt}
-
-    Another possibility is \myalert{relative positional embeddings}: we
-    modify the attention function to make it depend on the distance $t-t'$
-    between tokens, as in the weight $\alpha(\vc{x}_t,\vc{x}_{t'},t'-t)$ of
-    non-local networks. Nothing is added to $\vc{X}$, and position enters
-    every attention layer.
-
-    \begin{columns}[T,onlytextwidth]
-        \begin{column}{0.49\textwidth}
-            \begin{tcolorbox}[nndsblue,courseheight={tf-relative}{0.3\textheight}]
-                \textbf{\color{darkcerulean}Rotate queries and keys}
-
-                Rotary embeddings (RoPE): Llama, Qwen, Gemma, Mistral, and most
-                current language models\NNDSorNN{ (next lecture)}{}.
-            \end{tcolorbox}
-        \end{column}
-        \begin{column}{0.49\textwidth}
-            \begin{tcolorbox}[nndsgreen,courseheight={tf-relative}{0.3\textheight}]
-                \textbf{\color{darkgreen}Add a bias to the scores}
-
-                Linear biases (ALiBi, used in BLOOM and MPT), or the learned
-                biases of T5.
-            \end{tcolorbox}
-        \end{column}
-    \end{columns}
-
-\end{frame}
-
-\begin{frame}{Attention with linear biases (ALiBi)}
-    \setlength{\parskip}{6pt}
-
-    \myalert{ALiBi} adds no embedding to $\vc{X}$; it subtracts from the
-    scores a penalty proportional to the distance:
-    \[
-        s_{t,t'}=\frac{\qc{\vc{q}_t^{\top}}\kc{\vc{k}_{t'}}}{\sqrt{D_k}}
-        -\eqnmarkbox[drawblue]{slope}{m_i}\,(t-t'),
-        \qquad t'\le t \,.
-    \]
-    \annotate[yshift=-0.8em]{below,right}{slope}{fixed slope of head $i$ (e.g., $1/2, 1/4, \ldots$)}
-    \vspace{0.6em}
-
-    The penalty is not trained. Heads with a large slope look at nearby
-    tokens, heads with a small one at the whole past. Models trained on short
-    sequences still work on longer ones.
-
-    \SlideSource{Press et al. (2022), \textit{Train short, test long: Attention with linear biases enables input length extrapolation}, ICLR.}
-
-\end{frame}
-
-\begin{frame}{Visualizing ALiBi}
-    \centering
-    \vspace{0.5em}
-    \begin{tikzpicture}[x=0.58cm, y=0.58cm,
-            cell/.style={draw=drawgray!70, line width=0.4pt},
-            mlab/.style={font=\small},
-            num/.style={font=\scriptsize, text=black!70},
-            inf/.style={font=\tiny, text=drawred},
-        ]
-        % Bias matrix: -(t - t') below the diagonal, -inf above
-        \foreach \r in {0,...,4} \foreach \c in {0,...,4} {
-                \ifnum\c>\r
-                    \draw[cell, fill=drawred!12] (\c,-\r) rectangle ++(1,-1);
-                    \node[inf] at ({\c+0.5},{-\r-0.5}) {$-\infty$};
-                \else
-                    \pgfmathtruncatemacro{\d}{\r-\c}
-                    \pgfmathtruncatemacro{\sh}{6*\d}
-                    \draw[cell, fill=drawblue!\sh] (\c,-\r) rectangle ++(1,-1);
-                    \node[num] at ({\c+0.5},{-\r-0.5}) {$\ifnum\d=0 0\else -\d\fi$};
-                \fi
-            }
-        \node[mlab] at (2.5,-6) {bias $/\,m_i$};
-        % Two heads
-        \foreach \x/\m/\rows in {
-        8.5/{m_i=1}/{{85},{23,62},{8,21,57},{3,7,20,55},{1,3,7,20,54}},
-        16/{m_i=1/4}/{{85},{37,48},{22,28,36},{14,18,23,30},{10,12,16,21,26}}} {
-        \foreach \r in {0,...,4} \foreach \c in {0,...,4}
-        \draw[cell, fill=white] ({\x+\c},-\r) rectangle ++(1,-1);
-        \foreach \row [count=\r from 0] in \rows {
-            \foreach \v [count=\c from 0] in \row {
-                \draw[cell, fill=black!\v] ({\x+\c},-\r) rectangle ++(1,-1);
-            }
-        }
-        \node[mlab] at ({\x+2.5},-6) {$\vc{A}$, $\m$};
-        }
-        \draw[-{Stealth[length=5pt]}, drawgray, line width=0.6pt] (5.4,-2.5) -- (8.1,-2.5)
-        node[midway, above=1pt, font=\small] {softmax};
-    \end{tikzpicture}
-
-    \vspace{1.2em}
-    {\small Attention weights when all the scores $\qc{\vc{q}_t^{\top}}\kc{\vc{k}_{t'}}$
-        are equal. A large slope gives a soft local window, a small one an
-        almost uniform average over the past.\par}
-
-\end{frame}
-
-\begin{frame}{No positional embeddings (NoPE)}
-    \setlength{\parskip}{6pt}
-
-    In a decoder, the causal mask already breaks the equivariance: token $t$
-    attends to exactly $t+1$ tokens. For example, a head with equal scores
-    outputs $\vc{h}_t=\frac{1}{t+1}\sum_{t'\le t}\vcl{\vc{v}_{t'}}$, where the
-    contribution of the first token shrinks as $1/(t+1)$: later layers can
-    read the position from it.
-
-    Causal language models with \myalert{no positional embeddings} (NoPE)
-    train almost as well as with them, and degrade less on sequences longer
-    than those seen in training.
-
-    This only works for decoders: without the mask, an encoder with no
-    positional embeddings is still equivariant.
-
-    \SlideSource{Haviv et al. (2022), \textit{Transformer language models without positional encodings still learn positional information}, Findings of EMNLP;
-        Kazemnejad et al. (2023), \textit{The impact of positional encoding on length generalization in transformers}, NeurIPS.}
-
-\end{frame}
-
 \ifNNcourse
-\input{../../shared/slides/rope.tex}
+\input{../../shared/slides/relative-positions.tex}
 \fi
-
-\begin{frame}{Positional embeddings at a glance}
-
-    \small
-    \renewcommand{\arraystretch}{1.35}
-    \begin{tabular}{@{}p{0.17\textwidth}p{0.2\textwidth}p{0.11\textwidth}p{0.2\textwidth}p{0.24\textwidth}@{}}
-        \textbf{Method} & \textbf{Position enters}                 & \textbf{Trained} & \textbf{Longer sequences} & \textbf{Used in}      \\
-        \hline
-        Learned         & added to $\vc{X}$                        & yes              & no                        & BERT, GPT-2, ViT      \\
-        Sinusoidal      & added to $\vc{X}$                        & no               & only in theory            & original transformer  \\
-        ALiBi           & bias on the scores                       & no               & yes                       & BLOOM, MPT            \\
-        RoPE            & rotation of $\qc{\vc{q}}$, $\kc{\vc{k}}$ & no               & degrades                  & most current LLMs     \\
-        NoPE            & causal mask only                         & no               & better than RoPE          & interleaved with RoPE \\
-    \end{tabular}
-    \NNDSorNN{\par\vspace{1em}
-    We will see RoPE, and how it is combined with NoPE, in the next lecture.}{}
-
-\end{frame}
 
 \subsection{The complete transformer model}
 
@@ -1794,7 +1657,7 @@
                 \textbf{\color{darkgreen}Graphs}\par
                 \RaggedRight
                 Nodes become tokens, and the connectivity enters through
-                positional embeddings or biases on the scores, as in ALiBi.
+                positional embeddings or biases on the \NNDSorNN{attention scores}{scores, as in ALiBi}.
             \end{tcolorbox}
         \end{column}
         \begin{column}{0.32\textwidth}
@@ -2023,7 +1886,7 @@
     \end{itemize}\NNDSorNN{
 
         In the next lecture, we go from the 2017 block to a modern language model:
-        normalization and MLP variants, rotary embeddings, the KV cache and how to make it smaller,
+        normalization and MLP variants, relative positional embeddings, the KV cache and how to make it smaller,
         restricted attention, mixtures of experts, and efficient inference.}{}
 
 \end{frame}

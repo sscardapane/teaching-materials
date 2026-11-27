@@ -17,6 +17,11 @@
   `shared/slides/rope.tex`. NNDS teaches them in `Lecture_modern_transformers`
   (new subsection after SwiGLU); NN keeps them in its transformer deck, after
   NoPE. Not exported.
+- Same day, at Simone's request: the whole relative part moved, not only RoPE.
+  `rope.tex` became `shared/slides/relative-positions.tex` (relative
+  embeddings, RoPE, ALiBi, NoPE, RoPE/NoPE interleaving, summary table). The
+  first NNDS deck now ends its positional section with the sinusoidal shift
+  T(p); NN keeps the whole block right after it.
 
 ## 2026-11-25
 
