@@ -9,8 +9,8 @@
 \pgfplotsset{compat=1.18}
 
 % Written by Claude (2026-11-12): second deck of the Transformer refresh (plan
-% in the vault's NNDS Slide Refresh Log, 2026-11-12). Built block by block;
-% this file starts with the first block, the modern transformer block.
+% in the vault's NNDS Slide Refresh Log, 2026-11-12), built block by block.
+% RoPE (shared/slides/rope.tex) moved here from the first deck on 2026-11-27.
 
 \begin{document}
 
@@ -35,7 +35,7 @@
 \part{1}
 
 \section{The modern transformer block}
-\subsection{Normalization, positions and the MLP}
+\subsection{Normalization and the MLP}
 
 \begin{frame}{From 2017 to today}
     \setlength{\parskip}{5pt}
@@ -105,7 +105,7 @@
 \begin{frame}{Changes we have already seen}
     \setlength{\parskip}{6pt}
 
-    We have already seen three of these changes in the previous lectures:
+    We have already seen two of these changes in the previous lectures:
     $$
         \vc{H}'=\vc{X}+\operatorname{MHA}(\operatorname{RMSNorm}(\vc{X})) \,,
         \qquad
@@ -119,12 +119,9 @@
         \item \myalert{RMSNorm} instead of LayerNorm: we only divide by the
               norm, without subtracting the mean (the previous linear layer
               can learn it).
-        \item \myalert{RoPE} instead of additive positional embeddings: the
-              \qc{queries} and \kc{keys} are rotated in every MHA layer, so
-              that the scores depend on the relative position $t'-t$.
     \end{itemize}
 
-    \SlideSource{\href{https://arxiv.org/abs/2002.04745}{Xiong et al. (2020)}; \href{https://arxiv.org/abs/1910.07467}{Zhang and Sennrich (2019)}; \href{https://arxiv.org/abs/2104.09864}{Su et al., RoFormer (2024)}.}
+    \SlideSource{\href{https://arxiv.org/abs/2002.04745}{Xiong et al. (2020)}; \href{https://arxiv.org/abs/1910.07467}{Zhang and Sennrich (2019)}.}
 
 \end{frame}
 
@@ -153,6 +150,10 @@
     \SlideSource{\href{https://arxiv.org/abs/2002.05202}{Shazeer (2020)}; \href{https://arxiv.org/abs/2302.13971}{Touvron et al., LLaMA (2023)}.}
 
 \end{frame}
+
+\subsection{Rotary positional embeddings}
+
+\input{../../shared/slides/rope.tex}
 
 \subsection{Biases, QK-norm and parallel blocks}
 
@@ -269,7 +270,7 @@
 
     Here, the two normalizations are \pythoninline{nn.RMSNorm(D)}, all other
     layers are \pythoninline{nn.Linear} with \pythoninline{bias=False}, and
-    \pythoninline{rope} is the function we wrote in the last lecture. In
+    \pythoninline{rope} is the function we wrote above. In
     total, the block has $12D^2+2D$ parameters (the $2D$ are the two gains).
 
 \end{frame}
@@ -528,7 +529,7 @@
     (global) layers, e.g., five local layers ($w=1024$) for each global one in
     Gemma~3, or one every other layer ($w=128$) in gpt-oss. The local layers
     handle nearby tokens, while the global layers retrieve from the entire
-    context (as the NoPE layers of the last lecture).
+    context (as the NoPE layers we saw with RoPE).
 
     Only the global layers have a cache that grows with $T$. For example,
     Inkling 2 Small has 40 local and 8 global layers, with $8$ key/value heads

@@ -1010,26 +1010,68 @@
 
 \end{frame}
 
-\begin{frame}{Sinusoidal embeddings}
+\begin{frame}{A clock with one hand}
 
     \begin{columns}[c,onlytextwidth]
         \begin{column}{0.55\textwidth}%
-            \small\setlength{\parskip}{5pt}%
+            \setlength{\parskip}{6pt}%
             \RaggedRight\setlength{\parindent}{0pt}%
-            A sinusoid $\sin(\omega t)$ is a clock with frequency $\omega$:
-            it gives the position only modulo its period.
+            Consider a clock hand that turns by an angle $\omega$ at every
+            token. At position $t$ it points at the angle $\omega t$, and two
+            numbers describe it: $[\sin(\omega t),\cos(\omega t)]$.
 
-            With multiple frequencies, we get a clock with $D$ hands, each
-            rotating at its own speed:
+            The hand comes back to the same point every $2\pi/\omega$ tokens:
+            one hand gives the position only modulo its \myalert{period}.
+
+            A fast hand separates nearby tokens, but repeats quickly. A slow
+            hand covers long sequences, but barely moves from one token to the
+            next. As in a real clock, we need several hands.
+        \end{column}
+        \begin{column}{0.42\textwidth}
+            \centering
+            \begin{tikzpicture}[scale=1.25,
+                    lab/.style={font=\small}]
+                \draw[drawgray!40, ->] (-1.75,0) -- (1.8,0);
+                \draw[drawgray!40, ->] (0,-1.75) -- (0,1.8);
+                \draw[drawgray!60] (0,0) circle (1.4);
+                \foreach \t in {0,...,5} {
+                        \fill[drawgray] ({40*\t}:1.4) circle (1.6pt);
+                        \node[font=\scriptsize, text=drawgray] at ({40*\t}:1.68) {$\t$};
+                    }
+                \draw[drawgray, dashed] (120:1.4) -- (-0.7,0);
+                \draw[drawgray, dashed] (120:1.4) -- (0,1.212);
+                \draw[drawblue, thick] (0.45,0) arc (0:120:0.45);
+                \node[font=\scriptsize, text=drawblue] at (60:0.72) {$3\omega$};
+                \draw[-{Stealth[length=5pt]}, line width=1.1pt, black!75] (0,0) -- (120:1.4);
+                \node[lab, below] at (-0.7,0) {$\cos(3\omega)$};
+                \node[lab, right] at (0,1.212) {$\sin(3\omega)$};
+            \end{tikzpicture}
+            \par{\scriptsize One hand turning by $\omega=40^\circ$ per token, at
+                position $t=3$ (dots: positions $0$ to $5$).\par}
+        \end{column}
+    \end{columns}
+
+\end{frame}
+
+\begin{frame}{A clock with many hands}
+
+    \begin{columns}[c,onlytextwidth]
+        \begin{column}{0.55\textwidth}%
+            \setlength{\parskip}{5pt}%
+            \RaggedRight\setlength{\parindent}{0pt}%
+            We use $D/2$ hands, each slower than the previous one by the
+            same factor (like seconds, minutes and hours):
             \[
-                \idx{\vc{E}}{t,j}=\sin(\omega_j t),
-                \qquad \omega_j=\frac{1}{b^{j/D}} \,.
+                \omega_j=\frac{1}{b^{2j/D}} \,,
+                \qquad j=0,\ldots,D/2-1 \,.
             \]
-            The frequencies decrease geometrically, from a period of $2\pi$
-            tokens ($j=0$) to about $b\cdot 2\pi$. The \myalert{base} $b$ is
-            a hyperparameter, larger than the longest sequence.
+            The periods go from $2\pi\approx6$ tokens ($j=0$) to about
+            $2\pi b$.
 
-            No parameters, and no maximum length fixed \textit{a priori}.
+            We choose the \myalert{base} $b$ larger than the longest
+            sequence. With $b=10^4$, as in the original transformer, the
+            slowest hand turns by about $60^\circ$ over $10^4$ tokens, so no
+            two positions get the same reading.
         \end{column}
         \begin{column}{0.42\textwidth}
             \centering
@@ -1040,31 +1082,105 @@
 
 \end{frame}
 
-\begin{frame}{Sines and cosines}
-    \setlength{\parskip}{3pt}
+\begin{frame}{The sinusoidal embedding matrix}
+    \setlength{\parskip}{5pt}
     \setlength{\abovedisplayskip}{4pt}\setlength{\belowdisplayskip}{4pt}
 
-    The original transformer alternates sines and cosines of the same
-    frequency, with $\omega_j=b^{-2j/D}$ and $b=10000$:
+    Each hand gives two columns of $\vc{E}$, with no parameters to train:
     \[
         \idx{\vc{E}}{t,2j}=\sin(\omega_j t), \qquad
         \idx{\vc{E}}{t,2j+1}=\cos(\omega_j t) \,.
     \]
-    Each pair is a point on a circle. Moving by $p$ positions rotates it by
-    the angle $\omega_j p$, whatever $t$ is:
-    \[
-        \idx{\vc{E}}{t+p,:}=\idx{\vc{E}}{t,:}\,\vc{T}(p),
-        \qquad
-        \vc{T}(p)=\operatorname{diag}\big(\vc{R}(\omega_0p),\ldots\big),
-        \quad
-        \vc{R}(\theta)=\begin{bmatrix}\cos\theta&-\sin\theta\\\sin\theta&\cos\theta\end{bmatrix}.
-    \]
 
-    Hence $\idx{\vc{E}}{t,:}\idx{\vc{E}}{t+p,:}^{\top}=\sum_j\cos(\omega_jp)$
-    depends only on $p$. Rotating queries and keys gives \myalert{rotary
-        embeddings} (RoPE), shortly.
+    \centering
+    \includegraphics{images/transformers/sinusoidal_embeddings}
+    \par
+    \justifying
+    {\small With $D=64$ and $b=10^4$. Left: the frequencies, a straight line
+        in log scale. Right: the first $100$ rows of $\vc{E}$; the first
+        columns change at every token, the last ones barely move.\par}
 
     \SlideSource{Vaswani et al. (2017), \textit{Attention is all you need}, NeurIPS.}
+
+\end{frame}
+
+\begin{frame}{Shifting the position rotates the hands}
+    \setlength{\parskip}{6pt}
+
+    Moving from position $t$ to position $t+p$ turns hand $j$ by the angle
+    $\omega_jp$, whatever $t$ is: fast hands turn a lot, slow hands a little.
+
+    \centering
+    \begin{tikzpicture}[scale=1.05,
+            hand/.style={-{Stealth[length=4pt]}, black!75},
+            old/.style={drawgray!70, dashed},
+            arc/.style={drawblue, thick, -{Stealth[length=3pt]}},
+            lab/.style={font=\small},
+            alab/.style={font=\scriptsize, text=drawblue}]
+        \foreach \x in {0,6.5} {
+                \begin{scope}[xshift=\x cm]
+                    \draw[drawgray!60] (0,0) circle (1.3);
+                    \foreach \a in {0,30,...,330} \draw[drawgray!60] (\a:1.22) -- (\a:1.3);
+                \end{scope}
+            }
+        % position t
+        \draw[hand, line width=0.7pt] (0,0) -- (10:1.2);
+        \draw[hand, line width=1.1pt] (0,0) -- (170:0.9);
+        \draw[hand, line width=1.6pt] (0,0) -- (300:0.65);
+        \fill[black!75] (0,0) circle (1.5pt);
+        \node[lab] at (10:1.6) {$\omega_0$};
+        \node[lab] at (170:1.6) {$\omega_1$};
+        \node[lab] at (300:1.6) {$\omega_2$};
+        \node[lab] at (0,-2.0) {position $t$};
+        % position t+p
+        \begin{scope}[xshift=6.5cm]
+            \draw[old] (0,0) -- (10:1.2);
+            \draw[old] (0,0) -- (170:0.9);
+            \draw[old] (0,0) -- (300:0.65);
+            \draw[arc] (10:1.2) arc (10:150:1.2);
+            \draw[arc] (170:0.9) arc (170:215:0.9);
+            \draw[arc] (300:0.65) arc (300:315:0.65);
+            \draw[hand, line width=0.7pt] (0,0) -- (150:1.2);
+            \draw[hand, line width=1.1pt] (0,0) -- (215:0.9);
+            \draw[hand, line width=1.6pt] (0,0) -- (315:0.65);
+            \fill[black!75] (0,0) circle (1.5pt);
+            \node[alab] at (80:1.6) {$\omega_0p$};
+            \node[alab] at (192:1.65) {$\omega_1p$};
+            \node[alab] at (308:1.6) {$\omega_2p$};
+            \node[lab] at (0,-2.0) {position $t+p$};
+        \end{scope}
+        \draw[-{Stealth[length=5pt]}, drawgray, line width=0.6pt] (2.15,0) -- (4.35,0)
+        node[midway, above=1pt, font=\small] {rotate by $\vc{T}(p)$};
+    \end{tikzpicture}
+    \par\vspace{0.3em}
+    \justifying
+    {\small Three hands of the same clock (dashed: before the shift). The
+        rotation depends only on $p$, not on $t$.\par}
+
+\end{frame}
+
+\begin{frame}{Shifts as a linear map}
+    \setlength{\parskip}{6pt}
+
+    Rotating pair $j$ by $\omega_jp$ gives the pair at position $t+p$:
+    \[
+        \big[\sin(\omega_j(t+p)),\;\cos(\omega_j(t+p))\big]
+        =\big[\sin(\omega_jt),\;\cos(\omega_jt)\big]\,\vc{R}(\omega_jp),
+        \qquad
+        \vc{R}(\theta)=\begin{bmatrix}\cos\theta&-\sin\theta\\\sin\theta&\cos\theta\end{bmatrix}.
+    \]
+    With all the hands together, one matrix shifts every row of $\vc{E}$:
+    \[
+        \idx{\vc{E}}{t+p,:}=\idx{\vc{E}}{t,:}\,\eqnmarkbox[drawblue]{tp}{\vc{T}(p)},
+        \qquad
+        \vc{T}(p)=\operatorname{diag}\big(\vc{R}(\omega_0p),\ldots,\vc{R}(\omega_{D/2-1}p)\big) \,.
+    \]
+    \annotate[yshift=-0.6em]{below,right}{tp}{rotates hand $j$ by $\omega_jp$, for every $t$}
+    \vspace{0.6em}
+
+    Hence $\idx{\vc{E}}{t,:}\idx{\vc{E}}{t+p,:}^{\top}=\sum_j\cos(\omega_jp)$
+    depends only on $p$. Rotating queries and keys in the same way gives
+    \myalert{rotary embeddings} (RoPE)\NNDSorNN{, in the next lecture}{, shortly}.
 
 \end{frame}
 
@@ -1083,7 +1199,7 @@
                 \textbf{\color{darkcerulean}Rotate queries and keys}
 
                 Rotary embeddings (RoPE): Llama, Qwen, Gemma, Mistral, and most
-                current language models.
+                current language models\NNDSorNN{ (next lecture)}{}.
             \end{tcolorbox}
         \end{column}
         \begin{column}{0.49\textwidth}
@@ -1095,119 +1211,6 @@
             \end{tcolorbox}
         \end{column}
     \end{columns}
-
-\end{frame}
-
-\begin{frame}{Rotary positional embeddings (RoPE)}
-    \setlength{\parskip}{6pt}
-
-    RoPE splits each query and key into $D_k/2$ pairs of components, and
-    treats every pair as a point in the plane. Pair $j$ of the query (and of
-    the key) at position $t$ is rotated by an angle proportional to $t$:
-    \[
-        \qc{\begin{bmatrix}\tilde{q}_{t,2j}\\\tilde{q}_{t,2j+1}\end{bmatrix}}
-        =\vc{R}(\omega_jt)\qc{\begin{bmatrix}q_{t,2j}\\q_{t,2j+1}\end{bmatrix}},
-        \qquad
-        \vc{R}(\theta)=\begin{bmatrix}\cos\theta&-\sin\theta\\\sin\theta&\cos\theta\end{bmatrix}.
-    \]
-    \vspace{0.3em}
-
-    \begin{columns}[T,onlytextwidth]
-        \begin{column}{0.49\textwidth}
-            \begin{tcolorbox}[nndsblue,boxsep=1mm,top=1mm,bottom=1mm,courseheight={tf-rope}{0.17\textheight}]
-                \small
-                \textbf{\color{darkcerulean}Why pairs?}\par
-                A rotation needs two dimensions. It keeps the norm, and two
-                rotations add their angles.
-            \end{tcolorbox}
-        \end{column}
-        \begin{column}{0.49\textwidth}
-            \begin{tcolorbox}[nndsgreen,boxsep=1mm,top=1mm,bottom=1mm,courseheight={tf-rope}{0.17\textheight}]
-                \small
-                \textbf{\color{darkgreen}Why many frequencies?}\par
-                One pair is a clock with one hand. With
-                $\omega_j=b^{-2j/D_k}$, fast pairs separate nearby tokens,
-                slow pairs distant ones.
-            \end{tcolorbox}
-        \end{column}
-    \end{columns}
-
-    \SlideSource{Su et al. (2024), \textit{RoFormer: Enhanced transformer with rotary position embedding}, Neurocomputing.}
-
-\end{frame}
-
-\begin{frame}{Visualizing RoPE}
-    \centering
-    \vspace{0.5em}
-    \begin{tikzpicture}[scale=1.15,
-        vec/.style={-{Stealth[length=5pt]}, line width=1.1pt},
-        lab/.style={font=\small},
-        ]
-        \foreach \x/\t/\tp/\qa/\ka in {0/1/3/35/115, 5/4/6/110/190} {
-                \begin{scope}[xshift=\x cm]
-                    \draw[drawgray!60] (0,0) circle (1.4);
-                    \draw[drawgray!40, ->] (-1.7,0) -- (1.8,0);
-                    \draw[drawgray!40, ->] (0,-1.7) -- (0,1.8);
-                    \draw[vec, qcolor] (0,0) -- (\qa:1.4)
-                    node[lab, anchor=\qa+180, shift={(\qa:0.12)}] {$\qc{\tilde{\vc{q}}_{\t}}$};
-                    \draw[vec, kcolor] (0,0) -- (\ka:1.4)
-                    node[lab, anchor=\ka+180, shift={(\ka:0.12)}] {$\kc{\tilde{\vc{k}}_{\tp}}$};
-                    \draw[drawblue, thick] (\qa:0.55) arc (\qa:\ka:0.55);
-                    \node[font=\scriptsize, text=drawblue] at ({(\qa+\ka)/2}:0.85) {$80^\circ$};
-                    \node[lab] at (0,-2.2) {$t=\t$, $t'=\tp$};
-                \end{scope}
-            }
-    \end{tikzpicture}
-
-    \vspace{1em}
-    {\small One pair of components, rotating by $25^\circ$ per position. Moving
-        both tokens by three positions rotates both vectors: the angle between
-        them, hence the score, does not change.\par}
-
-\end{frame}
-
-\begin{frame}{RoPE for all pairs}
-    \setlength{\parskip}{5pt}
-
-    Collecting the rotations of all pairs in a block-diagonal matrix:
-    \[
-        \qc{\tilde{\vc{q}}_t=\vc{R}_t\vc{q}_t}, \qquad
-        \kc{\tilde{\vc{k}}_{t'}=\vc{R}_{t'}\vc{k}_{t'}}, \qquad
-        \vc{R}_t=\operatorname{diag}\big(\vc{R}(\omega_0t),\ldots,\vc{R}(\omega_{D_k/2-1}t)\big) \,.
-    \]
-    Rotations compose, $\vc{R}_t^{\top}\vc{R}_{t'}=\vc{R}_{t'-t}$, so the
-    score becomes:
-    \vspace{0.8em}
-    \[
-        s_{t,t'}=\frac{\qc{\tilde{\vc{q}}_t^{\top}}\kc{\tilde{\vc{k}}_{t'}}}{\sqrt{D_k}}
-        =\frac{\qc{\vc{q}_t^{\top}}\eqnmarkbox[drawblue]{rot}{\vc{R}_{t'-t}}\kc{\vc{k}_{t'}}}{\sqrt{D_k}} \,.
-    \]
-    \annotate[yshift=0.6em]{above,right}{rot}{position enters only through $t'-t$}
-
-    The values are not rotated, nothing is added to $\vc{X}$, and there are no
-    parameters.
-
-\end{frame}
-
-\begin{frame}[fragile]{RoPE in code}
-    \setlength{\parskip}{5pt}
-
-    \begin{python}[gobble=8,aboveskip=4pt,belowskip=4pt]
-        def rope(x, base=10000.0):                     # x: (..., T, D_k)
-            T, D = x.shape[-2:]
-            w = base ** (-torch.arange(0, D, 2) / D)   # (D_k/2,) frequencies
-            ang = torch.arange(T)[:, None] * w         # (T, D_k/2) angles
-            cos, sin = ang.cos(), ang.sin()
-            x1, x2 = x[..., 0::2], x[..., 1::2]        # the pairs
-            return torch.stack([x1 * cos - x2 * sin,
-                    x1 * sin + x2 * cos], -1).flatten(-2)
-
-        scores = rope(q) @ rope(k).transpose(-2, -1) / D_k ** 0.5
-    \end{python}
-
-    RoPE is applied in every attention layer, after the projections and
-    before the scores. The base $b$ sets the slowest rotation: recent models
-    raise it (Llama~3 uses \mbox{$b=500{,}000$}) to cover longer contexts.
 
 \end{frame}
 
@@ -1299,44 +1302,9 @@
 
 \end{frame}
 
-\begin{frame}{Interleaving RoPE and NoPE}
-    \setlength{\parskip}{6pt}
-
-    \centering
-    \vspace{0.3em}
-    \begin{tikzpicture}[x=1cm, y=1cm,
-            rl/.style={tfblk, minimum width=1.2cm, minimum height=1.05cm, align=center, font=\footnotesize},
-            nl/.style={rl, tfnorm, minimum width=1.2cm, minimum height=1.05cm}]
-        \node[font=\small] (in) at (-0.3,0) {$\vc{X}$};
-        \foreach \i/\kind in {0/r,1/r,2/r,3/n,4/r,5/r,6/r,7/n} {
-                \if\kind r
-                    \node[rl] (b\i) at ({1.1+\i*1.5},0) {RoPE\\local};
-                \else
-                    \node[nl] (b\i) at ({1.1+\i*1.5},0) {NoPE\\global};
-                \fi
-            }
-        \draw[tfarr] (in) -- (b0);
-        \foreach \i [evaluate=\i as \j using int(\i+1)] in {0,...,6}
-        \draw[tfarr] (b\i) -- (b\j);
-        \draw[tfarr] (b7) -- ++(1,0) node[right, font=\small] {$\cdots$};
-        \draw[decorate, decoration={brace, amplitude=5pt, mirror}, drawgray]
-        ([yshift=-4pt]b0.south west) -- ([yshift=-4pt]b3.south east)
-        node[midway, below=6pt, tflab] {repeated through the stack};
-    \end{tikzpicture}
-    \par\vspace{0.6em}
-    \justifying
-
-    Recent models combine both, for example three RoPE layers, then one NoPE
-    layer, repeated through the stack.
-
-    The RoPE layers handle word order among nearby tokens, often restricted to
-    a window of recent tokens\NNDSorNN{ (next lecture)}{}. The NoPE layers retrieve from the
-    whole context, with no rotation angle that was never seen in training.
-    Examples: Llama 4, Command A, SmolLM3.
-
-    \SlideSource{Yang et al. (2025), \textit{Rope to Nope and back again: A new hybrid attention strategy}.}
-
-\end{frame}
+\ifNNcourse
+\input{../../shared/slides/rope.tex}
+\fi
 
 \begin{frame}{Positional embeddings at a glance}
 
@@ -1351,6 +1319,8 @@
         RoPE            & rotation of $\qc{\vc{q}}$, $\kc{\vc{k}}$ & no               & degrades                  & most current LLMs     \\
         NoPE            & causal mask only                         & no               & better than RoPE          & interleaved with RoPE \\
     \end{tabular}
+    \NNDSorNN{\par\vspace{1em}
+    We will see RoPE, and how it is combined with NoPE, in the next lecture.}{}
 
 \end{frame}
 
@@ -2055,7 +2025,7 @@
     \end{itemize}\NNDSorNN{
 
         In the next lecture, we go from the 2017 block to a modern language model:
-        normalization and MLP variants, the KV cache and how to make it smaller,
+        normalization and MLP variants, rotary embeddings, the KV cache and how to make it smaller,
         restricted attention, mixtures of experts, and efficient inference.}{}
 
 \end{frame}

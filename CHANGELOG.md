@@ -1,5 +1,23 @@
 # Changelog
 
+## 2026-11-27
+
+> [!note] Written by Claude (2026-11-27)
+
+- Sinusoidal positional embeddings in `shared/slides/transformers.tex` (NN and
+  NNDS) rewritten around the clock analogy, after Simone's lectures of
+  November 27: *A clock with one hand* (a TikZ clock read as [sin ωt, cos ωt]),
+  *A clock with many hands* (geometric ω_j, base b chosen from the longest
+  sequence; the book plot is kept), *The sinusoidal embedding matrix* (new
+  figure from `sinusoidal_embeddings.py`: ω_j in log scale and E for D=64),
+  *Shifting the position rotates the hands* (two clocks, each hand turned by
+  ω_jp) and *Shifts as a linear map* (E_{t+p}=E_t T(p)). They replace
+  *Sinusoidal embeddings* and *Sines and cosines*.
+- RoPE (four slides) and *Interleaving RoPE and NoPE* moved to the new
+  `shared/slides/rope.tex`. NNDS teaches them in `Lecture_modern_transformers`
+  (new subsection after SwiGLU); NN keeps them in its transformer deck, after
+  NoPE. Not exported.
+
 ## 2026-11-25
 
 > [!note] Written by Claude (2026-11-25)

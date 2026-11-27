@@ -1,0 +1,157 @@
+% Written by Claude (2026-11-27): rotary embeddings and their combination with
+% NoPE, moved out of transformers.tex at Simone's request. NNDS teaches them in
+% the modern-transformers deck (after the sinusoidal embeddings of the previous
+% lecture); NN keeps them in its transformer deck, after NoPE.
+
+\begin{frame}{Rotary positional embeddings (RoPE)}
+    \setlength{\parskip}{6pt}
+
+    Shifting a sinusoidal embedding by $p$ positions rotates each of its
+    pairs by $\omega_jp$. \myalert{Rotary embeddings} (RoPE) apply the same
+    rotations to the \qc{queries} and \kc{keys}: pair $j$ of the query (and of
+    the key) at position $t$ is rotated by an angle proportional to $t$:
+    \[
+        \qc{\begin{bmatrix}\tilde{q}_{t,2j}\\\tilde{q}_{t,2j+1}\end{bmatrix}}
+        =\vc{R}(\omega_jt)\qc{\begin{bmatrix}q_{t,2j}\\q_{t,2j+1}\end{bmatrix}},
+        \qquad
+        \vc{R}(\theta)=\begin{bmatrix}\cos\theta&-\sin\theta\\\sin\theta&\cos\theta\end{bmatrix}.
+    \]
+    \vspace{0.3em}
+
+    \begin{columns}[T,onlytextwidth]
+        \begin{column}{0.49\textwidth}
+            \begin{tcolorbox}[nndsblue,boxsep=1mm,top=1mm,bottom=1mm,courseheight={tf-rope}{0.17\textheight}]
+                \small
+                \textbf{\color{darkcerulean}Why pairs?}\par
+                A rotation needs two dimensions. It keeps the norm, and two
+                rotations add their angles.
+            \end{tcolorbox}
+        \end{column}
+        \begin{column}{0.49\textwidth}
+            \begin{tcolorbox}[nndsgreen,boxsep=1mm,top=1mm,bottom=1mm,courseheight={tf-rope}{0.17\textheight}]
+                \small
+                \textbf{\color{darkgreen}Why many frequencies?}\par
+                One pair is a clock with one hand. With
+                $\omega_j=b^{-2j/D_k}$, fast pairs separate nearby tokens,
+                slow pairs distant ones.
+            \end{tcolorbox}
+        \end{column}
+    \end{columns}
+
+    \SlideSource{Su et al. (2024), \textit{RoFormer: Enhanced transformer with rotary position embedding}, Neurocomputing.}
+
+\end{frame}
+
+\begin{frame}{Visualizing RoPE}
+    \centering
+    \vspace{0.5em}
+    \begin{tikzpicture}[scale=1.15,
+        vec/.style={-{Stealth[length=5pt]}, line width=1.1pt},
+        lab/.style={font=\small},
+        ]
+        \foreach \x/\t/\tp/\qa/\ka in {0/1/3/35/115, 5/4/6/110/190} {
+                \begin{scope}[xshift=\x cm]
+                    \draw[drawgray!60] (0,0) circle (1.4);
+                    \draw[drawgray!40, ->] (-1.7,0) -- (1.8,0);
+                    \draw[drawgray!40, ->] (0,-1.7) -- (0,1.8);
+                    \draw[vec, qcolor] (0,0) -- (\qa:1.4)
+                    node[lab, anchor=\qa+180, shift={(\qa:0.12)}] {$\qc{\tilde{\vc{q}}_{\t}}$};
+                    \draw[vec, kcolor] (0,0) -- (\ka:1.4)
+                    node[lab, anchor=\ka+180, shift={(\ka:0.12)}] {$\kc{\tilde{\vc{k}}_{\tp}}$};
+                    \draw[drawblue, thick] (\qa:0.55) arc (\qa:\ka:0.55);
+                    \node[font=\scriptsize, text=drawblue] at ({(\qa+\ka)/2}:0.85) {$80^\circ$};
+                    \node[lab] at (0,-2.2) {$t=\t$, $t'=\tp$};
+                \end{scope}
+            }
+    \end{tikzpicture}
+
+    \vspace{1em}
+    {\small One pair of components, rotating by $25^\circ$ per position. Moving
+        both tokens by three positions rotates both vectors: the angle between
+        them, hence the score, does not change.\par}
+
+\end{frame}
+
+\begin{frame}{RoPE for all pairs}
+    \setlength{\parskip}{5pt}
+
+    Collecting the rotations of all pairs in a block-diagonal matrix:
+    \[
+        \qc{\tilde{\vc{q}}_t=\vc{R}_t\vc{q}_t}, \qquad
+        \kc{\tilde{\vc{k}}_{t'}=\vc{R}_{t'}\vc{k}_{t'}}, \qquad
+        \vc{R}_t=\operatorname{diag}\big(\vc{R}(\omega_0t),\ldots,\vc{R}(\omega_{D_k/2-1}t)\big) \,.
+    \]
+    Rotations compose, $\vc{R}_t^{\top}\vc{R}_{t'}=\vc{R}_{t'-t}$, so the
+    score becomes:
+    \vspace{0.8em}
+    \[
+        s_{t,t'}=\frac{\qc{\tilde{\vc{q}}_t^{\top}}\kc{\tilde{\vc{k}}_{t'}}}{\sqrt{D_k}}
+        =\frac{\qc{\vc{q}_t^{\top}}\eqnmarkbox[drawblue]{rot}{\vc{R}_{t'-t}}\kc{\vc{k}_{t'}}}{\sqrt{D_k}} \,.
+    \]
+    \annotate[yshift=0.6em]{above,right}{rot}{position enters only through $t'-t$}
+
+    The values are not rotated, nothing is added to $\vc{X}$, and there are no
+    parameters.
+
+\end{frame}
+
+\begin{frame}[fragile]{RoPE in code}
+    \setlength{\parskip}{5pt}
+
+    \begin{python}[gobble=8,aboveskip=4pt,belowskip=4pt]
+        def rope(x, base=10000.0):                     # x: (..., T, D_k)
+            T, D = x.shape[-2:]
+            w = base ** (-torch.arange(0, D, 2) / D)   # (D_k/2,) frequencies
+            ang = torch.arange(T)[:, None] * w         # (T, D_k/2) angles
+            cos, sin = ang.cos(), ang.sin()
+            x1, x2 = x[..., 0::2], x[..., 1::2]        # the pairs
+            return torch.stack([x1 * cos - x2 * sin,
+                    x1 * sin + x2 * cos], -1).flatten(-2)
+
+        scores = rope(q) @ rope(k).transpose(-2, -1) / D_k ** 0.5
+    \end{python}
+
+    RoPE is applied in every attention layer, after the projections and
+    before the scores. The base $b$ sets the slowest rotation: recent models
+    raise it (Llama~3 uses \mbox{$b=500{,}000$}) to cover longer contexts.
+
+\end{frame}
+
+\begin{frame}{Interleaving RoPE and NoPE}
+    \setlength{\parskip}{6pt}
+
+    \centering
+    \vspace{0.3em}
+    \begin{tikzpicture}[x=1cm, y=1cm,
+            rl/.style={tfblk, minimum width=1.2cm, minimum height=1.05cm, align=center, font=\footnotesize},
+            nl/.style={rl, tfnorm, minimum width=1.2cm, minimum height=1.05cm}]
+        \node[font=\small] (in) at (-0.3,0) {$\vc{X}$};
+        \foreach \i/\kind in {0/r,1/r,2/r,3/n,4/r,5/r,6/r,7/n} {
+                \if\kind r
+                    \node[rl] (b\i) at ({1.1+\i*1.5},0) {RoPE\\local};
+                \else
+                    \node[nl] (b\i) at ({1.1+\i*1.5},0) {NoPE\\global};
+                \fi
+            }
+        \draw[tfarr] (in) -- (b0);
+        \foreach \i [evaluate=\i as \j using int(\i+1)] in {0,...,6}
+        \draw[tfarr] (b\i) -- (b\j);
+        \draw[tfarr] (b7) -- ++(1,0) node[right, font=\small] {$\cdots$};
+        \draw[decorate, decoration={brace, amplitude=5pt, mirror}, drawgray]
+        ([yshift=-4pt]b0.south west) -- ([yshift=-4pt]b3.south east)
+        node[midway, below=6pt, tflab] {repeated through the stack};
+    \end{tikzpicture}
+    \par\vspace{0.6em}
+    \justifying
+
+    Recent models combine both, for example three RoPE layers, then one NoPE
+    layer, repeated through the stack.
+
+    The RoPE layers handle word order among nearby tokens, often restricted to
+    a window of recent tokens\NNDSorNN{ (later in this lecture)}{}. The NoPE layers retrieve from the
+    whole context, with no rotation angle that was never seen in training.
+    Examples: Llama 4, Command A, SmolLM3.
+
+    \SlideSource{Yang et al. (2025), \textit{Rope to Nope and back again: A new hybrid attention strategy}.}
+
+\end{frame}
