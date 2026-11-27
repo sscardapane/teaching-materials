@@ -1012,20 +1012,18 @@
 
 \begin{frame}{A clock with one hand}
 
+    \vspace{1em}
     \begin{columns}[c,onlytextwidth]
         \begin{column}{0.55\textwidth}%
             \setlength{\parskip}{6pt}%
             \RaggedRight\setlength{\parindent}{0pt}%
-            Consider a clock hand that turns by an angle $\omega$ at every
-            token. At position $t$ it points at the angle $\omega t$, and two
-            numbers describe it: $[\sin(\omega t),\cos(\omega t)]$.
+            Consider a clock hand that turns by an angle $\omega$ for every token. At the $t$-th token its angle is $\omega t$ and its position on the clock $[\sin(\omega t),\cos(\omega t)]$.
 
-            The hand comes back to the same point every $2\pi/\omega$ tokens:
-            one hand gives the position only modulo its \myalert{period}.
+            The hand comes back to the same point every $2\pi/\omega$ positions (the \myalert{period}), so it can only discriminate positions within its period.
 
-            A fast hand separates nearby tokens, but repeats quickly. A slow
-            hand covers long sequences, but barely moves from one token to the
-            next. As in a real clock, we need several hands.
+            A fast hand separates nearby positions well but repeats quickly. A slow
+            hand covers longer sequences, but barely moves from one step to the
+            next.
         \end{column}
         \begin{column}{0.42\textwidth}
             \centering
@@ -1046,7 +1044,7 @@
                 \node[lab, below] at (-0.7,0) {$\cos(3\omega)$};
                 \node[lab, right] at (0,1.212) {$\sin(3\omega)$};
             \end{tikzpicture}
-            \par{\scriptsize One hand turning by $\omega=40^\circ$ per token, at
+            \par{\scriptsize One hand turning by $\omega=40^\circ$ per position, at
                 position $t=3$ (dots: positions $0$ to $5$).\par}
         \end{column}
     \end{columns}
@@ -1055,11 +1053,12 @@
 
 \begin{frame}{A clock with many hands}
 
+    \vspace{1em}
     \begin{columns}[c,onlytextwidth]
         \begin{column}{0.55\textwidth}%
             \setlength{\parskip}{5pt}%
             \RaggedRight\setlength{\parindent}{0pt}%
-            We use $D/2$ hands, each slower than the previous one by the
+            To solve this, we use $D/2$ hands, each slower than the previous one by the
             same factor (like seconds, minutes and hours):
             \[
                 \omega_j=\frac{1}{b^{2j/D}} \,,
@@ -1169,7 +1168,7 @@
         \qquad
         \vc{R}(\theta)=\begin{bmatrix}\cos\theta&-\sin\theta\\\sin\theta&\cos\theta\end{bmatrix}.
     \]
-    With all the hands together, one matrix shifts every row of $\vc{E}$:
+    With all the hands together the new embedding is given by a block diagonal matrix collecting all the individual rotations:
     \[
         \idx{\vc{E}}{t+p,:}=\idx{\vc{E}}{t,:}\,\eqnmarkbox[drawblue]{tp}{\vc{T}(p)},
         \qquad
@@ -1178,8 +1177,7 @@
     \annotate[yshift=-0.6em]{below,right}{tp}{rotates hand $j$ by $\omega_jp$, for every $t$}
     \vspace{0.6em}
 
-    Hence $\idx{\vc{E}}{t,:}\idx{\vc{E}}{t+p,:}^{\top}=\sum_j\cos(\omega_jp)$
-    depends only on $p$. Rotating queries and keys in the same way gives
+    Rotating queries and keys in a similar way gives
     \myalert{rotary embeddings} (RoPE)\NNDSorNN{, in the next lecture}{, shortly}.
 
 \end{frame}
